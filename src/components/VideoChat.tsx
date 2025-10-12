@@ -37,37 +37,62 @@ const VideoChat = ({ userId, onEnd }: VideoChatProps) => {
 
   useEffect(() => {
     const init = async () => {
-      await initializeLocalStream();
+      try {
+        await initializeLocalStream();
+      } catch (error) {
+        console.error('Failed to initialize local stream:', error);
+        toast({
+          title: "Connection Failed",
+          description: "Could not access camera/microphone. Please refresh and allow access.",
+          variant: "destructive",
+        });
+        // Go back to home after error
+        setTimeout(() => onEnd(), 3000);
+      }
     };
     init();
-  }, [initializeLocalStream]);
+  }, [initializeLocalStream, toast, onEnd]);
 
   useEffect(() => {
-    if (matchedUserId) {
+    if (matchedUserId && peerConnection === null) {
       const initiator = userId > matchedUserId;
       setIsInitiator(initiator);
       console.log('Match found:', matchedUserId, 'Initiator:', initiator);
 
       const setupConnection = async () => {
-        const pc = createPeerConnection();
+        try {
+          const pc = createPeerConnection();
 
-        pc.onicecandidate = (event) => {
-          if (event.candidate) {
-            sendSignal(matchedUserId, 'ice-candidate', event.candidate);
-          }
-        };
+          pc.onicecandidate = (event) => {
+            if (event.candidate) {
+              console.log('Sending ICE candidate');
+              sendSignal(matchedUserId, 'ice-candidate', event.candidate);
+            }
+          };
 
-        if (initiator) {
-          const offer = await createOffer();
-          if (offer) {
-            sendSignal(matchedUserId, 'offer', offer);
+          if (initiator) {
+            console.log('Creating offer as initiator');
+            const offer = await createOffer();
+            if (offer) {
+              console.log('Sending offer');
+              sendSignal(matchedUserId, 'offer', offer);
+            }
+          } else {
+            console.log('Waiting for offer as receiver');
           }
+        } catch (error) {
+          console.error('Error setting up connection:', error);
+          toast({
+            title: "Connection Failed",
+            description: "Could not establish connection. Please try again.",
+            variant: "destructive",
+          });
         }
       };
 
       setupConnection();
     }
-  }, [matchedUserId, userId, createPeerConnection, createOffer, sendSignal]);
+  }, [matchedUserId, userId, createPeerConnection, createOffer, sendSignal, peerConnection, toast]);
 
   useEffect(() => {
     onSignal(async (message) => {

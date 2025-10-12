@@ -4,10 +4,13 @@ import { Video, Users, Shield, Zap } from 'lucide-react';
 import VideoChat from '@/components/VideoChat';
 import WaitingScreen from '@/components/WaitingScreen';
 import { useVideoMatch } from '@/hooks/useVideoMatch';
+import { useToast } from '@/hooks/use-toast';
 
 const Index = () => {
+  const { toast } = useToast();
   const [userId] = useState(() => `user_${Math.random().toString(36).substr(2, 9)}`);
   const [appState, setAppState] = useState<'home' | 'waiting' | 'chatting'>('home');
+  const [hasMediaAccess, setHasMediaAccess] = useState(false);
   const { isSearching, matchedUserId, joinMatchmaking, leaveMatchmaking } = useVideoMatch(userId);
 
   useEffect(() => {
@@ -18,16 +21,38 @@ const Index = () => {
     }
   }, [isSearching, matchedUserId]);
 
-  const handleStartChat = () => {
-    joinMatchmaking();
+  const handleStartChat = async () => {
+    // Request camera/microphone permissions before starting
+    try {
+      console.log('Requesting media permissions...');
+      const stream = await navigator.mediaDevices.getUserMedia({
+        video: true,
+        audio: true,
+      });
+      
+      console.log('Media permissions granted');
+      // Stop the test stream immediately
+      stream.getTracks().forEach(track => track.stop());
+      
+      setHasMediaAccess(true);
+      joinMatchmaking();
+    } catch (error) {
+      console.error('Media access denied:', error);
+      toast({
+        title: "Camera/Microphone Required",
+        description: "Please allow access to your camera and microphone to use video chat.",
+        variant: "destructive",
+      });
+    }
   };
 
   const handleEndChat = () => {
     leaveMatchmaking();
+    setHasMediaAccess(false);
     setAppState('home');
   };
 
-  if (appState === 'chatting' && matchedUserId) {
+  if (appState === 'chatting' && matchedUserId && hasMediaAccess) {
     return <VideoChat userId={userId} onEnd={handleEndChat} />;
   }
 
