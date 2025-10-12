@@ -66,7 +66,7 @@ const VideoChat = ({ userId, onEnd }: VideoChatProps) => {
           pc.onicecandidate = (event) => {
             if (event.candidate) {
               console.log('Sending ICE candidate');
-              sendSignal(matchedUserId, 'ice-candidate', event.candidate);
+              sendSignal(matchedUserId, 'ice-candidate', event.candidate.toJSON());
             }
           };
 

@@ -94,6 +94,7 @@ export const useWebRTC = (
   const addIceCandidate = useCallback(async (candidate: RTCIceCandidateInit) => {
     if (!peerConnection.current) return;
     try {
+      if (!candidate || !candidate.candidate) return; // Ignore end-of-candidates
       await peerConnection.current.addIceCandidate(new RTCIceCandidate(candidate));
     } catch (error) {
       console.error('Error adding ICE candidate:', error);

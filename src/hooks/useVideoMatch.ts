@@ -32,16 +32,18 @@ export const useVideoMatch = (userId: string) => {
     channel
       .on('presence', { event: 'sync' }, () => {
         const presenceState = channel.presenceState();
-        const users = Object.keys(presenceState);
+        const users = Object.keys(presenceState).sort();
         console.log('Users in channel:', users);
 
-        if (users.length >= 2 && !matchedUserId) {
-          const otherUsers = users.filter((id) => id !== userId);
-          if (otherUsers.length > 0) {
-            const randomMatch = otherUsers[Math.floor(Math.random() * otherUsers.length)];
-            console.log('Matched with:', randomMatch);
-            setMatchedUserId(randomMatch);
-            setIsSearching(false);
+        if (!matchedUserId) {
+          const myIndex = users.indexOf(userId);
+          if (myIndex !== -1) {
+            const partner = myIndex % 2 === 0 ? users[myIndex + 1] : users[myIndex - 1];
+            if (partner) {
+              console.log('Matched with:', partner);
+              setMatchedUserId(partner);
+              setIsSearching(false);
+            }
           }
         }
       })
