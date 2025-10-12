@@ -26,6 +26,20 @@ export const useWebRTC = (
         localVideoRef.current.srcObject = stream;
       }
 
+      // If a peer connection already exists, add/replace tracks and trigger renegotiation
+      if (peerConnection.current) {
+        const pc = peerConnection.current;
+        const senders = pc.getSenders();
+        stream.getTracks().forEach((track) => {
+          const existing = senders.find((s) => s.track?.kind === track.kind);
+          if (existing) {
+            existing.replaceTrack(track);
+          } else {
+            pc.addTrack(track, stream);
+          }
+        });
+      }
+
       return stream;
     } catch (error) {
       console.error('Error accessing media devices:', error);

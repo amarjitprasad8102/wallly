@@ -67,15 +67,39 @@ const VideoChat = ({ userId, onEnd }: VideoChatProps) => {
             if (event.candidate) {
               console.log('Sending ICE candidate');
               sendSignal(matchedUserId, 'ice-candidate', event.candidate.toJSON());
+            } else {
+              console.log('ICE gathering complete');
             }
           };
 
+          // Renegotiate whenever tracks are added (e.g., if local media initialized later)
+          pc.onnegotiationneeded = async () => {
+            try {
+              if (initiator) {
+                console.log('Negotiation needed - creating/sending offer');
+                const offer = await createOffer();
+                if (offer) {
+                  sendSignal(matchedUserId, 'offer', offer);
+                }
+              } else {
+                console.log('Negotiation needed - non-initiator will wait for offer');
+              }
+            } catch (err) {
+              console.error('Negotiation error:', err);
+            }
+          };
+
+          // If already initiator and local tracks are present, send initial offer
           if (initiator) {
-            console.log('Creating offer as initiator');
-            const offer = await createOffer();
-            if (offer) {
-              console.log('Sending offer');
-              sendSignal(matchedUserId, 'offer', offer);
+            try {
+              console.log('Creating initial offer as initiator');
+              const offer = await createOffer();
+              if (offer) {
+                console.log('Sending initial offer');
+                sendSignal(matchedUserId, 'offer', offer);
+              }
+            } catch (err) {
+              console.error('Initial offer error:', err);
             }
           } else {
             console.log('Waiting for offer as receiver');
