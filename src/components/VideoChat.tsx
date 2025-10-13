@@ -2,15 +2,18 @@ import { useEffect, useRef, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Mic, MicOff, Video, VideoOff, PhoneOff, SkipForward } from 'lucide-react';
 import { useWebRTC } from '@/hooks/useWebRTC';
-import { useVideoMatch } from '@/hooks/useVideoMatch';
 import { useToast } from '@/hooks/use-toast';
 
 interface VideoChatProps {
   userId: string;
+  matchedUserId: string;
+  sendSignal: (to: string, type: 'offer' | 'answer' | 'ice-candidate', data: any) => void;
+  onSignal: (callback: (message: { from: string; to: string; type: string; data: any }) => void) => void;
+  leaveMatchmaking: () => void;
   onEnd: () => void;
 }
 
-const VideoChat = ({ userId, onEnd }: VideoChatProps) => {
+const VideoChat = ({ userId, matchedUserId, sendSignal, onSignal, leaveMatchmaking, onEnd }: VideoChatProps) => {
   const { toast } = useToast();
   const localVideoRef = useRef<HTMLVideoElement>(null);
   const remoteVideoRef = useRef<HTMLVideoElement>(null);
@@ -23,6 +26,7 @@ const VideoChat = ({ userId, onEnd }: VideoChatProps) => {
   const [chatMessages, setChatMessages] = useState<Array<{ from: string; text: string }>>([]);
   const [messageText, setMessageText] = useState('');
   const dataChannelRef = useRef<RTCDataChannel | null>(null);
+  const connectionCreatedRef = useRef(false);
 
   const {
     initializeLocalStream,
@@ -37,7 +41,7 @@ const VideoChat = ({ userId, onEnd }: VideoChatProps) => {
     peerConnection,
   } = useWebRTC(localVideoRef, remoteVideoRef, setConnectionState);
 
-  const { matchedUserId, sendSignal, onSignal, leaveMatchmaking } = useVideoMatch(userId);
+  // matchmaking provided via props from parent
 
   useEffect(() => {
     const init = async () => {
@@ -59,27 +63,30 @@ const VideoChat = ({ userId, onEnd }: VideoChatProps) => {
   }, [initializeLocalStream, toast, onEnd]);
 
   useEffect(() => {
-    if (matchedUserId && peerConnection === null && localStreamReady) {
+    if (matchedUserId && localStreamReady && !connectionCreatedRef.current) {
       const initiator = userId > matchedUserId;
       setIsInitiator(initiator);
       console.log('Match found:', matchedUserId, 'Initiator:', initiator, 'Local stream ready:', localStreamReady);
 
       const setupConnection = async () => {
         try {
+          connectionCreatedRef.current = true;
           const pc = createPeerConnection();
 
-          // Create data channel for chat
-          const dataChannel = pc.createDataChannel('chat');
-          dataChannelRef.current = dataChannel;
+          // Create data channel for chat (initiator only)
+          if (initiator) {
+            const dataChannel = pc.createDataChannel('chat');
+            dataChannelRef.current = dataChannel;
 
-          dataChannel.onopen = () => {
-            console.log('Data channel opened');
-          };
+            dataChannel.onopen = () => {
+              console.log('Data channel opened');
+            };
 
-          dataChannel.onmessage = (event) => {
-            const message = JSON.parse(event.data);
-            setChatMessages((prev) => [...prev, { from: 'them', text: message.text }]);
-          };
+            dataChannel.onmessage = (event) => {
+              const message = JSON.parse(event.data);
+              setChatMessages((prev) => [...prev, { from: 'them', text: message.text }]);
+            };
+          }
 
           // Handle incoming data channel
           pc.ondatachannel = (event) => {

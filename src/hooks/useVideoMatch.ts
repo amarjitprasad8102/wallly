@@ -18,6 +18,10 @@ export const useVideoMatch = (userId: string) => {
   const onSignalRef = useRef<((message: SignalMessage) => void) | null>(null);
 
   const joinMatchmaking = useCallback(() => {
+    if (!userId) {
+      console.warn('joinMatchmaking called without userId; aborting.');
+      return;
+    }
     setIsSearching(true);
     setMatchedUserId(null);
 

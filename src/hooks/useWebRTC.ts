@@ -9,6 +9,7 @@ export const useWebRTC = (
   const { toast } = useToast();
   const peerConnection = useRef<RTCPeerConnection | null>(null);
   const localStream = useRef<MediaStream | null>(null);
+  const pendingIceCandidates = useRef<RTCIceCandidateInit[]>([]);
 
   const initializeLocalStream = useCallback(async () => {
     try {
@@ -102,14 +103,32 @@ export const useWebRTC = (
 
   const setRemoteDescription = useCallback(async (description: RTCSessionDescriptionInit) => {
     if (!peerConnection.current) return;
-    await peerConnection.current.setRemoteDescription(new RTCSessionDescription(description));
+    const pc = peerConnection.current;
+    await pc.setRemoteDescription(new RTCSessionDescription(description));
+    // Flush any queued ICE candidates now that remote description is set
+    if (pendingIceCandidates.current.length) {
+      for (const c of pendingIceCandidates.current) {
+        try {
+          await pc.addIceCandidate(new RTCIceCandidate(c));
+        } catch (err) {
+          console.error('Error flushing ICE candidate:', err);
+        }
+      }
+      pendingIceCandidates.current = [];
+    }
   }, []);
 
   const addIceCandidate = useCallback(async (candidate: RTCIceCandidateInit) => {
     if (!peerConnection.current) return;
     try {
       if (!candidate || !candidate.candidate) return; // Ignore end-of-candidates
-      await peerConnection.current.addIceCandidate(new RTCIceCandidate(candidate));
+      const pc = peerConnection.current;
+      // Queue candidates until remote description is set
+      if (!pc.remoteDescription || !pc.remoteDescription.type) {
+        pendingIceCandidates.current.push(candidate);
+        return;
+      }
+      await pc.addIceCandidate(new RTCIceCandidate(candidate));
     } catch (error) {
       console.error('Error adding ICE candidate:', error);
     }

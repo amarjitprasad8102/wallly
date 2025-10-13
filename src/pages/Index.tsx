@@ -15,7 +15,7 @@ const Index = () => {
   const [userProfile, setUserProfile] = useState<{ unique_id: string } | null>(null);
   const [appState, setAppState] = useState<'home' | 'waiting' | 'chatting'>('home');
   const [hasMediaAccess, setHasMediaAccess] = useState(false);
-  const { isSearching, matchedUserId, joinMatchmaking, leaveMatchmaking } = useVideoMatch(user?.id || '');
+  const { isSearching, matchedUserId, joinMatchmaking, leaveMatchmaking, sendSignal, onSignal } = useVideoMatch(user?.id || '');
 
   useEffect(() => {
     // Check authentication
@@ -104,7 +104,16 @@ const Index = () => {
   }
 
   if (appState === 'chatting' && matchedUserId && hasMediaAccess) {
-    return <VideoChat userId={user.id} onEnd={handleEndChat} />;
+    return (
+      <VideoChat
+        userId={user.id}
+        matchedUserId={matchedUserId}
+        sendSignal={sendSignal}
+        onSignal={onSignal}
+        leaveMatchmaking={leaveMatchmaking}
+        onEnd={handleEndChat}
+      />
+    );
   }
 
   if (appState === 'waiting') {
