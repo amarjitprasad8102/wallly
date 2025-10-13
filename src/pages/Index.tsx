@@ -1,17 +1,59 @@
 import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { Video, Users, Shield, Zap } from 'lucide-react';
+import { Video, Users, Shield, Zap, LogOut } from 'lucide-react';
 import VideoChat from '@/components/VideoChat';
 import WaitingScreen from '@/components/WaitingScreen';
 import { useVideoMatch } from '@/hooks/useVideoMatch';
-import { useToast } from '@/hooks/use-toast';
+import { supabase } from '@/integrations/supabase/client';
+import { toast } from 'sonner';
+import type { User } from '@supabase/supabase-js';
 
 const Index = () => {
-  const { toast } = useToast();
-  const [userId] = useState(() => `user_${Math.random().toString(36).substr(2, 9)}`);
+  const navigate = useNavigate();
+  const [user, setUser] = useState<User | null>(null);
+  const [userProfile, setUserProfile] = useState<{ unique_id: string } | null>(null);
   const [appState, setAppState] = useState<'home' | 'waiting' | 'chatting'>('home');
   const [hasMediaAccess, setHasMediaAccess] = useState(false);
-  const { isSearching, matchedUserId, joinMatchmaking, leaveMatchmaking } = useVideoMatch(userId);
+  const { isSearching, matchedUserId, joinMatchmaking, leaveMatchmaking } = useVideoMatch(user?.id || '');
+
+  useEffect(() => {
+    // Check authentication
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (!session) {
+        navigate('/auth');
+      } else {
+        setUser(session.user);
+        fetchUserProfile(session.user.id);
+      }
+    });
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      if (!session) {
+        navigate('/auth');
+      } else {
+        setUser(session.user);
+        fetchUserProfile(session.user.id);
+      }
+    });
+
+    return () => subscription.unsubscribe();
+  }, [navigate]);
+
+  const fetchUserProfile = async (userId: string) => {
+    const { data, error } = await supabase
+      .from('profiles')
+      .select('unique_id')
+      .eq('id', userId)
+      .single();
+
+    if (error) {
+      console.error('Error fetching profile:', error);
+      toast.error('Failed to load profile');
+    } else {
+      setUserProfile(data);
+    }
+  };
 
   useEffect(() => {
     if (isSearching && !matchedUserId) {
@@ -38,12 +80,13 @@ const Index = () => {
       joinMatchmaking();
     } catch (error) {
       console.error('Media access denied:', error);
-      toast({
-        title: "Camera/Microphone Required",
-        description: "Please allow access to your camera and microphone to use video chat.",
-        variant: "destructive",
-      });
+      toast.error('Please allow access to your camera and microphone to use video chat.');
     }
+  };
+
+  const handleSignOut = async () => {
+    await supabase.auth.signOut();
+    navigate('/auth');
   };
 
   const handleEndChat = () => {
@@ -52,8 +95,16 @@ const Index = () => {
     setAppState('home');
   };
 
+  if (!user || !userProfile) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <p className="text-muted-foreground">Loading...</p>
+      </div>
+    );
+  }
+
   if (appState === 'chatting' && matchedUserId && hasMediaAccess) {
-    return <VideoChat userId={userId} onEnd={handleEndChat} />;
+    return <VideoChat userId={user.id} onEnd={handleEndChat} />;
   }
 
   if (appState === 'waiting') {
@@ -62,6 +113,20 @@ const Index = () => {
 
   return (
     <div className="min-h-screen bg-gradient-subtle flex flex-col">
+      {/* Header with User Info */}
+      <div className="px-4 py-4 border-b border-border">
+        <div className="max-w-4xl mx-auto flex justify-between items-center">
+          <div className="text-sm">
+            <p className="text-muted-foreground">Your ID</p>
+            <p className="font-mono font-bold text-primary text-lg">{userProfile.unique_id}</p>
+          </div>
+          <Button variant="outline" size="sm" onClick={handleSignOut}>
+            <LogOut className="h-4 w-4 mr-2" />
+            Sign Out
+          </Button>
+        </div>
+      </div>
+
       {/* Hero Section */}
       <div className="flex-1 flex items-center justify-center px-4 py-12">
         <div className="max-w-4xl mx-auto text-center animate-fade-in">
@@ -129,9 +194,9 @@ const Index = () => {
               <div className="bg-destructive/10 w-12 h-12 rounded-lg flex items-center justify-center mb-4">
                 <Shield className="w-6 h-6 text-destructive" />
               </div>
-              <h3 className="text-xl font-semibold mb-2">Safe & Anonymous</h3>
+              <h3 className="text-xl font-semibold mb-2">Safe & Secure</h3>
               <p className="text-muted-foreground">
-                No registration required. Skip or end calls anytime
+                Authenticated users with unique IDs. Skip or end calls anytime
               </p>
             </div>
           </div>
