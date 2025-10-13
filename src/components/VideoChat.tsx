@@ -19,6 +19,10 @@ const VideoChat = ({ userId, onEnd }: VideoChatProps) => {
   const [connectionState, setConnectionState] = useState<RTCPeerConnectionState>('new');
   const [callDuration, setCallDuration] = useState(0);
   const [isInitiator, setIsInitiator] = useState(false);
+  const [localStreamReady, setLocalStreamReady] = useState(false);
+  const [chatMessages, setChatMessages] = useState<Array<{ from: string; text: string }>>([]);
+  const [messageText, setMessageText] = useState('');
+  const dataChannelRef = useRef<RTCDataChannel | null>(null);
 
   const {
     initializeLocalStream,
@@ -39,6 +43,8 @@ const VideoChat = ({ userId, onEnd }: VideoChatProps) => {
     const init = async () => {
       try {
         await initializeLocalStream();
+        setLocalStreamReady(true);
+        console.log('Local stream initialized successfully');
       } catch (error) {
         console.error('Failed to initialize local stream:', error);
         toast({
@@ -46,7 +52,6 @@ const VideoChat = ({ userId, onEnd }: VideoChatProps) => {
           description: "Could not access camera/microphone. Please refresh and allow access.",
           variant: "destructive",
         });
-        // Go back to home after error
         setTimeout(() => onEnd(), 3000);
       }
     };
@@ -54,14 +59,38 @@ const VideoChat = ({ userId, onEnd }: VideoChatProps) => {
   }, [initializeLocalStream, toast, onEnd]);
 
   useEffect(() => {
-    if (matchedUserId && peerConnection === null) {
+    if (matchedUserId && peerConnection === null && localStreamReady) {
       const initiator = userId > matchedUserId;
       setIsInitiator(initiator);
-      console.log('Match found:', matchedUserId, 'Initiator:', initiator);
+      console.log('Match found:', matchedUserId, 'Initiator:', initiator, 'Local stream ready:', localStreamReady);
 
       const setupConnection = async () => {
         try {
           const pc = createPeerConnection();
+
+          // Create data channel for chat
+          const dataChannel = pc.createDataChannel('chat');
+          dataChannelRef.current = dataChannel;
+
+          dataChannel.onopen = () => {
+            console.log('Data channel opened');
+          };
+
+          dataChannel.onmessage = (event) => {
+            const message = JSON.parse(event.data);
+            setChatMessages((prev) => [...prev, { from: 'them', text: message.text }]);
+          };
+
+          // Handle incoming data channel
+          pc.ondatachannel = (event) => {
+            const channel = event.channel;
+            dataChannelRef.current = channel;
+
+            channel.onmessage = (e) => {
+              const message = JSON.parse(e.data);
+              setChatMessages((prev) => [...prev, { from: 'them', text: message.text }]);
+            };
+          };
 
           pc.onicecandidate = (event) => {
             if (event.candidate) {
@@ -116,7 +145,7 @@ const VideoChat = ({ userId, onEnd }: VideoChatProps) => {
 
       setupConnection();
     }
-  }, [matchedUserId, userId, createPeerConnection, createOffer, sendSignal, peerConnection, toast]);
+  }, [matchedUserId, userId, createPeerConnection, createOffer, sendSignal, peerConnection, toast, localStreamReady]);
 
   useEffect(() => {
     onSignal(async (message) => {
@@ -167,7 +196,17 @@ const VideoChat = ({ userId, onEnd }: VideoChatProps) => {
   const handleEndCall = () => {
     cleanup();
     leaveMatchmaking();
+    dataChannelRef.current?.close();
     onEnd();
+  };
+
+  const handleSendMessage = () => {
+    if (messageText.trim() && dataChannelRef.current?.readyState === 'open') {
+      const message = { text: messageText };
+      dataChannelRef.current.send(JSON.stringify(message));
+      setChatMessages((prev) => [...prev, { from: 'you', text: messageText }]);
+      setMessageText('');
+    }
   };
 
   const formatDuration = (seconds: number) => {
@@ -178,9 +217,11 @@ const VideoChat = ({ userId, onEnd }: VideoChatProps) => {
 
   return (
     <div className="flex flex-col h-screen bg-gradient-subtle">
-      <div className="flex-1 flex flex-col lg:flex-row gap-4 p-4">
-        {/* Remote Video */}
-        <div className="flex-1 relative bg-card rounded-2xl overflow-hidden shadow-card">
+      <div className="flex-1 flex gap-4 p-4">
+        {/* Video Section */}
+        <div className="flex-1 flex flex-col gap-4">
+          {/* Remote Video */}
+          <div className="flex-1 relative bg-card rounded-2xl overflow-hidden shadow-card">
           <video
             ref={remoteVideoRef}
             autoPlay
@@ -202,10 +243,10 @@ const VideoChat = ({ userId, onEnd }: VideoChatProps) => {
               <span className="text-white font-mono">{formatDuration(callDuration)}</span>
             </div>
           )}
-        </div>
+          </div>
 
-        {/* Local Video */}
-        <div className="w-full lg:w-80 h-60 lg:h-auto relative bg-card rounded-2xl overflow-hidden shadow-card">
+          {/* Local Video */}
+          <div className="w-full h-48 relative bg-card rounded-2xl overflow-hidden shadow-card">
           <video
             ref={localVideoRef}
             autoPlay
@@ -215,6 +256,46 @@ const VideoChat = ({ userId, onEnd }: VideoChatProps) => {
           />
           <div className="absolute bottom-4 left-4 bg-black/60 backdrop-blur px-3 py-1 rounded-lg">
             <span className="text-white text-sm">You</span>
+          </div>
+          </div>
+        </div>
+
+        {/* Chat Panel */}
+        <div className="w-80 flex flex-col bg-card rounded-2xl shadow-card overflow-hidden">
+          <div className="p-4 border-b border-border">
+            <h3 className="font-semibold">Chat</h3>
+          </div>
+          
+          {/* Messages */}
+          <div className="flex-1 overflow-y-auto p-4 space-y-2">
+            {chatMessages.map((msg, idx) => (
+              <div key={idx} className={`flex ${msg.from === 'you' ? 'justify-end' : 'justify-start'}`}>
+                <div className={`max-w-[70%] rounded-lg px-3 py-2 ${
+                  msg.from === 'you' 
+                    ? 'bg-primary text-primary-foreground' 
+                    : 'bg-muted text-foreground'
+                }`}>
+                  <p className="text-sm">{msg.text}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {/* Input */}
+          <div className="p-4 border-t border-border">
+            <div className="flex gap-2">
+              <input
+                type="text"
+                value={messageText}
+                onChange={(e) => setMessageText(e.target.value)}
+                onKeyPress={(e) => e.key === 'Enter' && handleSendMessage()}
+                placeholder="Type a message..."
+                className="flex-1 px-3 py-2 rounded-lg bg-background border border-input text-sm"
+              />
+              <Button onClick={handleSendMessage} size="sm">
+                Send
+              </Button>
+            </div>
           </div>
         </div>
       </div>
