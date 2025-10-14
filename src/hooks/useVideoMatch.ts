@@ -2,7 +2,7 @@ import { useEffect, useRef, useState, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { RealtimeChannel } from '@supabase/supabase-js';
 
-type SignalType = 'offer' | 'answer' | 'ice-candidate';
+type SignalType = 'offer' | 'answer' | 'ice-candidate' | 'ready';
 
 interface SignalMessage {
   from: string;
@@ -16,6 +16,7 @@ export const useVideoMatch = (userId: string) => {
   const [matchedUserId, setMatchedUserId] = useState<string | null>(null);
   const channelRef = useRef<RealtimeChannel | null>(null);
   const onSignalRef = useRef<((message: SignalMessage) => void) | null>(null);
+  const hasMatchedRef = useRef(false);
 
   const joinMatchmaking = useCallback(() => {
     if (!userId) {
@@ -24,35 +25,38 @@ export const useVideoMatch = (userId: string) => {
     }
     setIsSearching(true);
     setMatchedUserId(null);
+    hasMatchedRef.current = false;
 
     const channel = supabase.channel('video-matchmaking', {
       config: {
         presence: {
           key: userId,
         },
+        broadcast: {
+          self: false,
+        },
       },
     });
 
     channel
       .on('presence', { event: 'sync' }, () => {
+        if (hasMatchedRef.current) return;
+        
         const presenceState = channel.presenceState();
-        const users = Object.keys(presenceState).sort();
-        console.log('Users in channel:', users);
+        const users = Object.keys(presenceState).filter(id => id !== userId);
+        console.log('Available users:', users);
 
-        if (!matchedUserId) {
-          const myIndex = users.indexOf(userId);
-          if (myIndex !== -1) {
-            const partner = myIndex % 2 === 0 ? users[myIndex + 1] : users[myIndex - 1];
-            if (partner) {
-              console.log('Matched with:', partner);
-              setMatchedUserId(partner);
-              setIsSearching(false);
-            }
-          }
+        if (users.length > 0) {
+          const partner = users[0];
+          hasMatchedRef.current = true;
+          console.log('Matched with:', partner);
+          setMatchedUserId(partner);
+          setIsSearching(false);
         }
       })
       .on('broadcast', { event: 'signal' }, (payload) => {
         const message = payload.payload as SignalMessage;
+        console.log('Broadcast received:', message.type, 'from:', message.from, 'to:', message.to);
         if (message.to === userId && onSignalRef.current) {
           onSignalRef.current(message);
         }
@@ -70,6 +74,7 @@ export const useVideoMatch = (userId: string) => {
     (to: string, type: SignalType, data: any) => {
       if (channelRef.current) {
         const message: SignalMessage = { from: userId, to, type, data };
+        console.log('Sending signal:', type, 'to:', to);
         channelRef.current.send({
           type: 'broadcast',
           event: 'signal',
@@ -92,6 +97,7 @@ export const useVideoMatch = (userId: string) => {
     }
     setIsSearching(false);
     setMatchedUserId(null);
+    hasMatchedRef.current = false;
   }, []);
 
   useEffect(() => {

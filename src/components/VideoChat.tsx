@@ -7,7 +7,7 @@ import { useToast } from '@/hooks/use-toast';
 interface VideoChatProps {
   userId: string;
   matchedUserId: string;
-  sendSignal: (to: string, type: 'offer' | 'answer' | 'ice-candidate', data: any) => void;
+  sendSignal: (to: string, type: 'offer' | 'answer' | 'ice-candidate' | 'ready', data: any) => void;
   onSignal: (callback: (message: { from: string; to: string; type: string; data: any }) => void) => void;
   leaveMatchmaking: () => void;
   onEnd: () => void;
@@ -21,12 +21,13 @@ const VideoChat = ({ userId, matchedUserId, sendSignal, onSignal, leaveMatchmaki
   const [isVideoEnabled, setIsVideoEnabled] = useState(true);
   const [connectionState, setConnectionState] = useState<RTCPeerConnectionState>('new');
   const [callDuration, setCallDuration] = useState(0);
-  const [isInitiator, setIsInitiator] = useState(false);
-  const [localStreamReady, setLocalStreamReady] = useState(false);
   const [chatMessages, setChatMessages] = useState<Array<{ from: string; text: string }>>([]);
   const [messageText, setMessageText] = useState('');
   const dataChannelRef = useRef<RTCDataChannel | null>(null);
-  const connectionCreatedRef = useRef(false);
+  const hasSetupConnection = useRef(false);
+  const hasReceivedReady = useRef(false);
+  const hasSentReady = useRef(false);
+  const isInitiator = userId < matchedUserId;
 
   const {
     initializeLocalStream,
@@ -41,136 +42,123 @@ const VideoChat = ({ userId, matchedUserId, sendSignal, onSignal, leaveMatchmaki
     peerConnection,
   } = useWebRTC(localVideoRef, remoteVideoRef, setConnectionState);
 
-  // matchmaking provided via props from parent
-
+  // Initialize local media stream
   useEffect(() => {
-    const init = async () => {
-      try {
-        await initializeLocalStream();
-        setLocalStreamReady(true);
-        console.log('Local stream initialized successfully');
-      } catch (error) {
-        console.error('Failed to initialize local stream:', error);
-        toast({
-          title: "Connection Failed",
-          description: "Could not access camera/microphone. Please refresh and allow access.",
-          variant: "destructive",
-        });
-        setTimeout(() => onEnd(), 3000);
-      }
-    };
-    init();
+    console.log('Initializing local stream...');
+    initializeLocalStream().catch((error) => {
+      console.error('Failed to initialize local stream:', error);
+      toast({
+        title: "Camera/Microphone Error",
+        description: "Could not access your camera/microphone. Please allow access and try again.",
+        variant: "destructive",
+      });
+      setTimeout(() => onEnd(), 3000);
+    });
   }, [initializeLocalStream, toast, onEnd]);
 
+  // Setup WebRTC peer connection
   useEffect(() => {
-    if (matchedUserId && localStreamReady && !connectionCreatedRef.current) {
-      const initiator = userId > matchedUserId;
-      setIsInitiator(initiator);
-      console.log('Match found:', matchedUserId, 'Initiator:', initiator, 'Local stream ready:', localStreamReady);
+    if (!matchedUserId || hasSetupConnection.current) return;
 
-      const setupConnection = async () => {
-        try {
-          connectionCreatedRef.current = true;
-          const pc = createPeerConnection();
+    console.log(`Setting up connection. I am ${isInitiator ? 'INITIATOR' : 'RECEIVER'}`);
+    hasSetupConnection.current = true;
 
-          // Create data channel for chat (initiator only)
-          if (initiator) {
-            const dataChannel = pc.createDataChannel('chat');
-            dataChannelRef.current = dataChannel;
+    const setupConnection = async () => {
+      try {
+        const pc = createPeerConnection();
 
-            dataChannel.onopen = () => {
-              console.log('Data channel opened');
-            };
+        // Handle ICE candidates
+        pc.onicecandidate = (event) => {
+          if (event.candidate) {
+            console.log('Sending ICE candidate');
+            sendSignal(matchedUserId, 'ice-candidate', event.candidate.toJSON());
+          }
+        };
 
-            dataChannel.onmessage = (event) => {
+        // Create data channel for chat (only initiator creates it)
+        if (isInitiator) {
+          const dc = pc.createDataChannel('chat');
+          dc.onopen = () => console.log('Data channel opened (initiator)');
+          dc.onmessage = (event) => {
+            const message = JSON.parse(event.data);
+            setChatMessages((prev) => [...prev, { from: 'them', text: message.text }]);
+          };
+          dataChannelRef.current = dc;
+        } else {
+          // Receiver waits for data channel
+          pc.ondatachannel = (event) => {
+            console.log('Data channel received');
+            const dc = event.channel;
+            dc.onopen = () => console.log('Data channel opened (receiver)');
+            dc.onmessage = (event) => {
               const message = JSON.parse(event.data);
               setChatMessages((prev) => [...prev, { from: 'them', text: message.text }]);
             };
-          }
-
-          // Handle incoming data channel
-          pc.ondatachannel = (event) => {
-            const channel = event.channel;
-            dataChannelRef.current = channel;
-
-            channel.onmessage = (e) => {
-              const message = JSON.parse(e.data);
-              setChatMessages((prev) => [...prev, { from: 'them', text: message.text }]);
-            };
+            dataChannelRef.current = dc;
           };
-
-          pc.onicecandidate = (event) => {
-            if (event.candidate) {
-              console.log('Sending ICE candidate');
-              sendSignal(matchedUserId, 'ice-candidate', event.candidate.toJSON());
-            } else {
-              console.log('ICE gathering complete');
-            }
-          };
-
-          // Renegotiate whenever tracks are added (e.g., if local media initialized later)
-          pc.onnegotiationneeded = async () => {
-            try {
-              if (initiator) {
-                console.log('Negotiation needed - creating/sending offer');
-                const offer = await createOffer();
-                if (offer) {
-                  sendSignal(matchedUserId, 'offer', offer);
-                }
-              } else {
-                console.log('Negotiation needed - non-initiator will wait for offer');
-              }
-            } catch (err) {
-              console.error('Negotiation error:', err);
-            }
-          };
-
-          // If already initiator and local tracks are present, send initial offer
-          if (initiator) {
-            try {
-              console.log('Creating initial offer as initiator');
-              const offer = await createOffer();
-              if (offer) {
-                console.log('Sending initial offer');
-                sendSignal(matchedUserId, 'offer', offer);
-              }
-            } catch (err) {
-              console.error('Initial offer error:', err);
-            }
-          } else {
-            console.log('Waiting for offer as receiver');
-          }
-        } catch (error) {
-          console.error('Error setting up connection:', error);
-          toast({
-            title: "Connection Failed",
-            description: "Could not establish connection. Please try again.",
-            variant: "destructive",
-          });
         }
-      };
 
-      setupConnection();
-    }
-  }, [matchedUserId, userId, createPeerConnection, createOffer, sendSignal, peerConnection, toast, localStreamReady]);
+        // Send ready signal
+        if (!hasSentReady.current) {
+          hasSentReady.current = true;
+          console.log('Sending ready signal');
+          sendSignal(matchedUserId, 'ready', {});
+        }
 
+        // If initiator and already received ready, start negotiation
+        if (isInitiator && hasReceivedReady.current) {
+          console.log('Creating offer (already received ready)');
+          const offer = await createOffer();
+          if (offer) {
+            sendSignal(matchedUserId, 'offer', offer);
+          }
+        }
+      } catch (error) {
+        console.error('Error setting up connection:', error);
+        toast({
+          title: "Connection Failed",
+          description: "Could not establish connection. Please try again.",
+          variant: "destructive",
+        });
+      }
+    };
+
+    setupConnection();
+  }, [matchedUserId, isInitiator, sendSignal, createPeerConnection, createOffer, toast]);
+
+  // Handle incoming signals
   useEffect(() => {
     onSignal(async (message) => {
-      console.log('Received signal:', message.type);
+      console.log('Handling signal:', message.type);
 
-      if (message.type === 'offer') {
+      if (message.type === 'ready') {
+        hasReceivedReady.current = true;
+        console.log('Received ready signal');
+        
+        // If initiator and connection is setup, create offer
+        if (isInitiator && hasSetupConnection.current) {
+          console.log('Creating offer after ready');
+          const offer = await createOffer();
+          if (offer) {
+            sendSignal(matchedUserId, 'offer', offer);
+          }
+        }
+      } else if (message.type === 'offer') {
+        console.log('Received offer');
         await setRemoteDescription(message.data);
         const answer = await createAnswer();
         if (answer) {
+          console.log('Sending answer');
           sendSignal(message.from, 'answer', answer);
         }
       } else if (message.type === 'answer') {
+        console.log('Received answer');
         await setRemoteDescription(message.data);
       } else if (message.type === 'ice-candidate') {
         await addIceCandidate(message.data);
       }
     });
-  }, [onSignal, setRemoteDescription, createAnswer, sendSignal, addIceCandidate]);
+  }, [onSignal, isInitiator, matchedUserId, sendSignal, createOffer, createAnswer, setRemoteDescription, addIceCandidate]);
 
   useEffect(() => {
     if (connectionState === 'connected') {

@@ -58,6 +58,7 @@ export const useWebRTC = (
       iceServers: [
         { urls: 'stun:stun.l.google.com:19302' },
         { urls: 'stun:stun1.l.google.com:19302' },
+        { urls: 'stun:stun2.l.google.com:19302' },
       ],
     });
 
@@ -121,13 +122,16 @@ export const useWebRTC = (
   const addIceCandidate = useCallback(async (candidate: RTCIceCandidateInit) => {
     if (!peerConnection.current) return;
     try {
-      if (!candidate || !candidate.candidate) return; // Ignore end-of-candidates
+      if (!candidate || !candidate.candidate) return;
       const pc = peerConnection.current;
-      // Queue candidates until remote description is set
+      
       if (!pc.remoteDescription || !pc.remoteDescription.type) {
+        console.log('Queueing ICE candidate (no remote description yet)');
         pendingIceCandidates.current.push(candidate);
         return;
       }
+      
+      console.log('Adding ICE candidate');
       await pc.addIceCandidate(new RTCIceCandidate(candidate));
     } catch (error) {
       console.error('Error adding ICE candidate:', error);
