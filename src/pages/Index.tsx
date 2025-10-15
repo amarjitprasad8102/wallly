@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { Video, Users, Shield, Zap, LogOut } from 'lucide-react';
+import { MessageCircle, Users, Shield, Zap, LogOut } from 'lucide-react';
 import VideoChat from '@/components/VideoChat';
 import WaitingScreen from '@/components/WaitingScreen';
 import { useVideoMatch } from '@/hooks/useVideoMatch';
@@ -14,7 +14,6 @@ const Index = () => {
   const [user, setUser] = useState<User | null>(null);
   const [userProfile, setUserProfile] = useState<{ unique_id: string } | null>(null);
   const [appState, setAppState] = useState<'home' | 'waiting' | 'chatting'>('home');
-  const [hasMediaAccess, setHasMediaAccess] = useState(false);
   const { isSearching, matchedUserId, joinMatchmaking, leaveMatchmaking, sendSignal, onSignal } = useVideoMatch(user?.id || '');
 
   useEffect(() => {
@@ -63,25 +62,8 @@ const Index = () => {
     }
   }, [isSearching, matchedUserId]);
 
-  const handleStartChat = async () => {
-    // Request camera/microphone permissions before starting
-    try {
-      console.log('Requesting media permissions...');
-      const stream = await navigator.mediaDevices.getUserMedia({
-        video: true,
-        audio: true,
-      });
-      
-      console.log('Media permissions granted');
-      // Stop the test stream immediately
-      stream.getTracks().forEach(track => track.stop());
-      
-      setHasMediaAccess(true);
-      joinMatchmaking();
-    } catch (error) {
-      console.error('Media access denied:', error);
-      toast.error('Please allow access to your camera and microphone to use video chat.');
-    }
+  const handleStartChat = () => {
+    joinMatchmaking();
   };
 
   const handleSignOut = async () => {
@@ -91,7 +73,6 @@ const Index = () => {
 
   const handleEndChat = () => {
     leaveMatchmaking();
-    setHasMediaAccess(false);
     setAppState('home');
   };
 
@@ -103,7 +84,7 @@ const Index = () => {
     );
   }
 
-  if (appState === 'chatting' && matchedUserId && hasMediaAccess) {
+  if (appState === 'chatting' && matchedUserId) {
     return (
       <VideoChat
         userId={user.id}
@@ -144,17 +125,17 @@ const Index = () => {
             <div className="relative">
               <div className="absolute inset-0 bg-gradient-primary rounded-full blur-xl opacity-50 animate-pulse-glow"></div>
               <div className="relative bg-gradient-primary p-6 rounded-full shadow-glow">
-                <Video className="w-16 h-16 text-white" />
+                <MessageCircle className="w-16 h-16 text-white" />
               </div>
             </div>
           </div>
 
           {/* Heading */}
           <h1 className="text-5xl md:text-7xl font-bold mb-6 bg-gradient-primary bg-clip-text text-transparent">
-            Random Video Chat
+            Random Chat
           </h1>
           <p className="text-xl md:text-2xl text-muted-foreground mb-12 max-w-2xl mx-auto">
-            Connect with strangers worldwide through instant video calls. Start conversations, make
+            Connect with strangers worldwide through instant text chat. Start conversations, make
             friends, and explore new perspectives.
           </p>
 
@@ -164,8 +145,8 @@ const Index = () => {
             size="lg"
             className="text-lg px-8 py-6 rounded-full bg-gradient-primary hover:opacity-90 transition-all hover:scale-105 shadow-glow"
           >
-            <Video className="w-6 h-6 mr-2" />
-            Start Video Chat
+            <MessageCircle className="w-6 h-6 mr-2" />
+            Start Chatting
           </Button>
 
           {/* Features */}
@@ -192,7 +173,7 @@ const Index = () => {
               </div>
               <h3 className="text-xl font-semibold mb-2">Lightning Fast</h3>
               <p className="text-muted-foreground">
-                HD video quality with minimal latency for smooth conversations
+                Instant peer-to-peer messaging with minimal latency for smooth conversations
               </p>
             </div>
 

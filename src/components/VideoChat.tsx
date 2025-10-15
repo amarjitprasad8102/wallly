@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { Mic, MicOff, Video, VideoOff, PhoneOff, SkipForward } from 'lucide-react';
+import { PhoneOff, SkipForward, Send } from 'lucide-react';
 import { useWebRTC } from '@/hooks/useWebRTC';
 import { useToast } from '@/hooks/use-toast';
 
@@ -15,12 +15,8 @@ interface VideoChatProps {
 
 const VideoChat = ({ userId, matchedUserId, sendSignal, onSignal, leaveMatchmaking, onEnd }: VideoChatProps) => {
   const { toast } = useToast();
-  const localVideoRef = useRef<HTMLVideoElement>(null);
-  const remoteVideoRef = useRef<HTMLVideoElement>(null);
-  const [isAudioEnabled, setIsAudioEnabled] = useState(true);
-  const [isVideoEnabled, setIsVideoEnabled] = useState(true);
   const [connectionState, setConnectionState] = useState<RTCPeerConnectionState>('new');
-  const [callDuration, setCallDuration] = useState(0);
+  const [chatDuration, setChatDuration] = useState(0);
   const [chatMessages, setChatMessages] = useState<Array<{ from: string; text: string }>>([]);
   const [messageText, setMessageText] = useState('');
   const dataChannelRef = useRef<RTCDataChannel | null>(null);
@@ -30,31 +26,13 @@ const VideoChat = ({ userId, matchedUserId, sendSignal, onSignal, leaveMatchmaki
   const isInitiator = userId < matchedUserId;
 
   const {
-    initializeLocalStream,
     createPeerConnection,
     createOffer,
     createAnswer,
     setRemoteDescription,
     addIceCandidate,
-    toggleAudio,
-    toggleVideo,
     cleanup,
-    peerConnection,
-  } = useWebRTC(localVideoRef, remoteVideoRef, setConnectionState);
-
-  // Initialize local media stream
-  useEffect(() => {
-    console.log('Initializing local stream...');
-    initializeLocalStream().catch((error) => {
-      console.error('Failed to initialize local stream:', error);
-      toast({
-        title: "Camera/Microphone Error",
-        description: "Could not access your camera/microphone. Please allow access and try again.",
-        variant: "destructive",
-      });
-      setTimeout(() => onEnd(), 3000);
-    });
-  }, [initializeLocalStream, toast, onEnd]);
+  } = useWebRTC(setConnectionState);
 
   // Setup WebRTC peer connection
   useEffect(() => {
@@ -163,21 +141,11 @@ const VideoChat = ({ userId, matchedUserId, sendSignal, onSignal, leaveMatchmaki
   useEffect(() => {
     if (connectionState === 'connected') {
       const interval = setInterval(() => {
-        setCallDuration((prev) => prev + 1);
+        setChatDuration((prev) => prev + 1);
       }, 1000);
       return () => clearInterval(interval);
     }
   }, [connectionState]);
-
-  const handleToggleAudio = () => {
-    const enabled = toggleAudio();
-    setIsAudioEnabled(enabled);
-  };
-
-  const handleToggleVideo = () => {
-    const enabled = toggleVideo();
-    setIsVideoEnabled(enabled);
-  };
 
   const handleSkip = () => {
     toast({
@@ -212,127 +180,100 @@ const VideoChat = ({ userId, matchedUserId, sendSignal, onSignal, leaveMatchmaki
 
   return (
     <div className="flex flex-col h-screen bg-gradient-subtle">
-      <div className="flex-1 flex gap-4 p-4">
-        {/* Video Section */}
-        <div className="flex-1 flex flex-col gap-4">
-          {/* Remote Video */}
-          <div className="flex-1 relative bg-card rounded-2xl overflow-hidden shadow-card">
-          <video
-            ref={remoteVideoRef}
-            autoPlay
-            playsInline
-            className="w-full h-full object-cover"
-          />
-          {connectionState !== 'connected' && (
-            <div className="absolute inset-0 flex items-center justify-center bg-card/80 backdrop-blur">
-              <div className="text-center">
-                <div className="animate-pulse-glow w-16 h-16 mx-auto mb-4 rounded-full bg-primary/20 flex items-center justify-center">
-                  <Video className="w-8 h-8 text-primary" />
-                </div>
-                <p className="text-muted-foreground">Connecting...</p>
-              </div>
-            </div>
-          )}
-          {connectionState === 'connected' && (
-            <div className="absolute top-4 right-4 bg-black/60 backdrop-blur px-4 py-2 rounded-lg">
-              <span className="text-white font-mono">{formatDuration(callDuration)}</span>
-            </div>
-          )}
+      {/* Header */}
+      <div className="px-6 py-4 bg-card/50 backdrop-blur border-b border-border">
+        <div className="max-w-4xl mx-auto flex justify-between items-center">
+          <div>
+            <h2 className="text-xl font-semibold">Chat Room</h2>
+            <p className="text-sm text-muted-foreground">
+              {connectionState === 'connected' ? (
+                <span className="text-green-500">● Connected - {formatDuration(chatDuration)}</span>
+              ) : (
+                'Connecting...'
+              )}
+            </p>
           </div>
-
-          {/* Local Video */}
-          <div className="w-full h-48 relative bg-card rounded-2xl overflow-hidden shadow-card">
-          <video
-            ref={localVideoRef}
-            autoPlay
-            muted
-            playsInline
-            className="w-full h-full object-cover mirror"
-          />
-          <div className="absolute bottom-4 left-4 bg-black/60 backdrop-blur px-3 py-1 rounded-lg">
-            <span className="text-white text-sm">You</span>
-          </div>
-          </div>
-        </div>
-
-        {/* Chat Panel */}
-        <div className="w-80 flex flex-col bg-card rounded-2xl shadow-card overflow-hidden">
-          <div className="p-4 border-b border-border">
-            <h3 className="font-semibold">Chat</h3>
-          </div>
-          
-          {/* Messages */}
-          <div className="flex-1 overflow-y-auto p-4 space-y-2">
-            {chatMessages.map((msg, idx) => (
-              <div key={idx} className={`flex ${msg.from === 'you' ? 'justify-end' : 'justify-start'}`}>
-                <div className={`max-w-[70%] rounded-lg px-3 py-2 ${
-                  msg.from === 'you' 
-                    ? 'bg-primary text-primary-foreground' 
-                    : 'bg-muted text-foreground'
-                }`}>
-                  <p className="text-sm">{msg.text}</p>
-                </div>
-              </div>
-            ))}
-          </div>
-
-          {/* Input */}
-          <div className="p-4 border-t border-border">
-            <div className="flex gap-2">
-              <input
-                type="text"
-                value={messageText}
-                onChange={(e) => setMessageText(e.target.value)}
-                onKeyPress={(e) => e.key === 'Enter' && handleSendMessage()}
-                placeholder="Type a message..."
-                className="flex-1 px-3 py-2 rounded-lg bg-background border border-input text-sm"
-              />
-              <Button onClick={handleSendMessage} size="sm">
-                Send
-              </Button>
-            </div>
+          <div className="flex gap-2">
+            <Button
+              onClick={handleSkip}
+              variant="outline"
+              size="sm"
+            >
+              <SkipForward className="w-4 h-4 mr-2" />
+              Next
+            </Button>
+            <Button
+              onClick={handleEndCall}
+              variant="destructive"
+              size="sm"
+            >
+              <PhoneOff className="w-4 h-4 mr-2" />
+              End Chat
+            </Button>
           </div>
         </div>
       </div>
 
-      {/* Controls */}
-      <div className="p-6 bg-card/50 backdrop-blur">
-        <div className="flex items-center justify-center gap-4 max-w-2xl mx-auto">
-          <Button
-            onClick={handleToggleAudio}
-            size="lg"
-            variant={isAudioEnabled ? 'secondary' : 'destructive'}
-            className="rounded-full w-14 h-14 p-0 transition-all hover:scale-110"
-          >
-            {isAudioEnabled ? <Mic className="w-6 h-6" /> : <MicOff className="w-6 h-6" />}
-          </Button>
+      {/* Chat Area */}
+      <div className="flex-1 overflow-hidden flex flex-col max-w-4xl mx-auto w-full p-4">
+        {/* Messages */}
+        <div className="flex-1 overflow-y-auto space-y-3 mb-4 p-4 bg-card rounded-2xl shadow-card">
+          {connectionState !== 'connected' && (
+            <div className="flex items-center justify-center h-full">
+              <div className="text-center">
+                <div className="animate-pulse-glow w-16 h-16 mx-auto mb-4 rounded-full bg-primary/20 flex items-center justify-center">
+                  <Send className="w-8 h-8 text-primary" />
+                </div>
+                <p className="text-muted-foreground">Establishing connection...</p>
+              </div>
+            </div>
+          )}
+          
+          {chatMessages.length === 0 && connectionState === 'connected' && (
+            <div className="flex items-center justify-center h-full">
+              <p className="text-muted-foreground text-center">
+                No messages yet. Say hi! 👋
+              </p>
+            </div>
+          )}
+          
+          {chatMessages.map((msg, idx) => (
+            <div key={idx} className={`flex ${msg.from === 'you' ? 'justify-end' : 'justify-start'}`}>
+              <div className={`max-w-[70%] rounded-2xl px-4 py-3 ${
+                msg.from === 'you' 
+                  ? 'bg-primary text-primary-foreground' 
+                  : 'bg-muted text-foreground'
+              }`}>
+                <p className="text-sm font-medium mb-1 opacity-70">
+                  {msg.from === 'you' ? 'You' : 'Stranger'}
+                </p>
+                <p>{msg.text}</p>
+              </div>
+            </div>
+          ))}
+        </div>
 
-          <Button
-            onClick={handleToggleVideo}
-            size="lg"
-            variant={isVideoEnabled ? 'secondary' : 'destructive'}
-            className="rounded-full w-14 h-14 p-0 transition-all hover:scale-110"
-          >
-            {isVideoEnabled ? <Video className="w-6 h-6" /> : <VideoOff className="w-6 h-6" />}
-          </Button>
-
-          <Button
-            onClick={handleEndCall}
-            size="lg"
-            variant="destructive"
-            className="rounded-full w-16 h-16 p-0 transition-all hover:scale-110 bg-destructive hover:bg-destructive/90"
-          >
-            <PhoneOff className="w-7 h-7" />
-          </Button>
-
-          <Button
-            onClick={handleSkip}
-            size="lg"
-            variant="secondary"
-            className="rounded-full w-14 h-14 p-0 transition-all hover:scale-110"
-          >
-            <SkipForward className="w-6 h-6" />
-          </Button>
+        {/* Input */}
+        <div className="bg-card rounded-2xl shadow-card p-4">
+          <div className="flex gap-3">
+            <input
+              type="text"
+              value={messageText}
+              onChange={(e) => setMessageText(e.target.value)}
+              onKeyPress={(e) => e.key === 'Enter' && handleSendMessage()}
+              placeholder="Type a message..."
+              disabled={connectionState !== 'connected'}
+              className="flex-1 px-4 py-3 rounded-xl bg-background border border-input focus:outline-none focus:ring-2 focus:ring-primary disabled:opacity-50"
+            />
+            <Button 
+              onClick={handleSendMessage} 
+              size="lg"
+              disabled={connectionState !== 'connected' || !messageText.trim()}
+              className="px-6"
+            >
+              <Send className="w-5 h-5" />
+            </Button>
+          </div>
         </div>
       </div>
     </div>
