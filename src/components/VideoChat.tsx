@@ -107,6 +107,12 @@ const VideoChat = ({ userId, matchedUserId, sendSignal, onSignal, leaveMatchmaki
   // Handle incoming signals
   useEffect(() => {
     onSignal(async (message) => {
+      // Security: Only process signals from our matched user
+      if (message.from !== matchedUserId) {
+        console.warn('Ignoring signal from unauthorized sender:', message.from);
+        return;
+      }
+
       console.log('Handling signal:', message.type);
 
       if (message.type === 'ready') {
