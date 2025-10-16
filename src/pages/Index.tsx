@@ -49,6 +49,7 @@ const Index = () => {
     if (error) {
       console.error('Error fetching profile:', error);
       toast.error('Failed to load profile');
+      navigate('/');
     } else {
       setUserProfile(data);
     }
