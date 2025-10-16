@@ -17,6 +17,8 @@ export const useVideoMatch = (userId: string) => {
   const channelRef = useRef<RealtimeChannel | null>(null);
   const onSignalRef = useRef<((message: SignalMessage) => void) | null>(null);
   const hasMatchedRef = useRef(false);
+  // Buffer signals received before a handler is registered (prevents race conditions)
+  const pendingSignalsRef = useRef<SignalMessage[]>([]);
 
   const joinMatchmaking = useCallback(() => {
     if (!userId) {
@@ -57,8 +59,14 @@ export const useVideoMatch = (userId: string) => {
       .on('broadcast', { event: 'signal' }, (payload) => {
         const message = payload.payload as SignalMessage;
         console.log('Broadcast received:', message.type, 'from:', message.from, 'to:', message.to);
-        if (message.to === userId && onSignalRef.current) {
-          onSignalRef.current(message);
+        if (message.to === userId) {
+          if (onSignalRef.current) {
+            onSignalRef.current(message);
+          } else {
+            // No handler yet: queue it so VideoChat can process later
+            console.log('Queueing signal (no handler yet):', message.type);
+            pendingSignalsRef.current.push(message);
+          }
         }
       })
       .subscribe(async (status) => {
@@ -87,6 +95,17 @@ export const useVideoMatch = (userId: string) => {
 
   const onSignal = useCallback((callback: (message: SignalMessage) => void) => {
     onSignalRef.current = callback;
+    // Flush any queued signals now that we have a handler
+    if (pendingSignalsRef.current.length) {
+      for (const msg of pendingSignalsRef.current) {
+        try {
+          callback(msg);
+        } catch (e) {
+          console.error('Error delivering queued signal:', e);
+        }
+      }
+      pendingSignalsRef.current = [];
+    }
   }, []);
 
   const leaveMatchmaking = useCallback(() => {
