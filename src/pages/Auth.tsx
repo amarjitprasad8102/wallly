@@ -11,19 +11,20 @@ const Auth = () => {
   const [isLogin, setIsLogin] = useState(true);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [age, setAge] = useState("");
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     // Check if user is already logged in
     supabase.auth.getSession().then(({ data: { session } }) => {
       if (session) {
-        navigate("/");
+        navigate("/app");
       }
     });
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       if (session) {
-        navigate("/");
+        navigate("/app");
       }
     });
 
@@ -43,15 +44,38 @@ const Auth = () => {
         if (error) throw error;
         toast.success("Welcome back!");
       } else {
-        const { error } = await supabase.auth.signUp({
+        // Validate age
+        const ageNum = parseInt(age);
+        if (isNaN(ageNum) || ageNum < 16) {
+          toast.error("You must be at least 16 years old to sign up");
+          setLoading(false);
+          return;
+        }
+
+        const { data, error } = await supabase.auth.signUp({
           email,
           password,
           options: {
-            emailRedirectTo: `${window.location.origin}/`,
+            emailRedirectTo: `${window.location.origin}/app`,
           },
         });
+        
         if (error) throw error;
-        toast.success("Account created! You can now start chatting.");
+
+        // Update profile with age
+        if (data.user) {
+          const { error: profileError } = await supabase
+            .from('profiles')
+            .update({ age: ageNum })
+            .eq('id', data.user.id);
+
+          if (profileError) {
+            console.error('Error updating age:', profileError);
+            toast.error("Account created but failed to save age. Please contact support.");
+          } else {
+            toast.success("Account created! You can now start chatting.");
+          }
+        }
       }
     } catch (error: any) {
       toast.error(error.message || "An error occurred");
@@ -98,6 +122,22 @@ const Auth = () => {
                 minLength={6}
               />
             </div>
+
+            {!isLogin && (
+              <div className="space-y-2">
+                <Label htmlFor="age">Age</Label>
+                <Input
+                  id="age"
+                  type="number"
+                  placeholder="Enter your age"
+                  value={age}
+                  onChange={(e) => setAge(e.target.value)}
+                  required
+                  min="16"
+                />
+                <p className="text-xs text-muted-foreground">You must be at least 16 years old</p>
+              </div>
+            )}
 
             <Button type="submit" className="w-full" disabled={loading}>
               {loading ? "Loading..." : isLogin ? "Sign In" : "Sign Up"}
