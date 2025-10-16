@@ -126,7 +126,7 @@ const Index = () => {
             <div className="relative">
               <div className="absolute inset-0 bg-gradient-primary rounded-full blur-xl opacity-50 animate-pulse-glow"></div>
               <div className="relative bg-gradient-primary p-6 rounded-full shadow-glow">
-                <MessageCircle className="w-16 h-16 text-white" />
+                <MessageCircle className="w-16 h-16 text-white" aria-label="Chat icon" />
               </div>
             </div>
           </div>
@@ -141,14 +141,15 @@ const Index = () => {
           </p>
 
           {/* CTA Button */}
-          <Button
-            onClick={handleStartChat}
-            size="lg"
-            className="text-lg px-8 py-6 rounded-full bg-gradient-primary hover:opacity-90 transition-all hover:scale-105 shadow-glow"
-          >
-            <MessageCircle className="w-6 h-6 mr-2" />
-            Start Chatting
-          </Button>
+            <Button
+              onClick={handleStartChat}
+              size="lg"
+              className="text-lg px-8 py-6 rounded-full bg-gradient-primary hover:opacity-90 transition-all hover:scale-105 shadow-glow"
+              aria-label="Start chatting"
+            >
+              <MessageCircle className="w-6 h-6 mr-2" aria-hidden="true" />
+              Start Chatting
+            </Button>
 
           {/* Features */}
           <div className="mt-20 grid grid-cols-1 md:grid-cols-3 gap-8 text-left">
@@ -156,8 +157,8 @@ const Index = () => {
               className="bg-card rounded-xl p-6 border border-border hover:border-primary transition-all hover:shadow-card animate-slide-up"
               style={{ animationDelay: '0.1s' }}
             >
-              <div className="bg-primary/10 w-12 h-12 rounded-lg flex items-center justify-center mb-4">
-                <Users className="w-6 h-6 text-primary" />
+              <div className="bg-primary/10 w-12 h-12 rounded-lg flex items-center justify-center mb-4" aria-hidden="true">
+                <Users className="w-6 h-6 text-primary" aria-label="Users icon" />
               </div>
               <h3 className="text-xl font-semibold mb-2">Random Matching</h3>
               <p className="text-muted-foreground">
@@ -169,8 +170,8 @@ const Index = () => {
               className="bg-card rounded-xl p-6 border border-border hover:border-primary transition-all hover:shadow-card animate-slide-up"
               style={{ animationDelay: '0.2s' }}
             >
-              <div className="bg-accent/10 w-12 h-12 rounded-lg flex items-center justify-center mb-4">
-                <Zap className="w-6 h-6 text-accent" />
+              <div className="bg-accent/10 w-12 h-12 rounded-lg flex items-center justify-center mb-4" aria-hidden="true">
+                <Zap className="w-6 h-6 text-accent" aria-label="Lightning icon" />
               </div>
               <h3 className="text-xl font-semibold mb-2">Lightning Fast</h3>
               <p className="text-muted-foreground">
@@ -182,8 +183,8 @@ const Index = () => {
               className="bg-card rounded-xl p-6 border border-border hover:border-primary transition-all hover:shadow-card animate-slide-up"
               style={{ animationDelay: '0.3s' }}
             >
-              <div className="bg-destructive/10 w-12 h-12 rounded-lg flex items-center justify-center mb-4">
-                <Shield className="w-6 h-6 text-destructive" />
+              <div className="bg-destructive/10 w-12 h-12 rounded-lg flex items-center justify-center mb-4" aria-hidden="true">
+                <Shield className="w-6 h-6 text-destructive" aria-label="Shield icon" />
               </div>
               <h3 className="text-xl font-semibold mb-2">Safe & Secure</h3>
               <p className="text-muted-foreground">

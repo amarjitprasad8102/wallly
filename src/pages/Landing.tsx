@@ -20,19 +20,19 @@ const Landing = () => {
     <div className="min-h-screen bg-gradient-subtle">
       {/* Header */}
       <header className="border-b border-border bg-background/80 backdrop-blur-sm sticky top-0 z-50">
-        <nav className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+        <nav className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4" aria-label="Main navigation">
           <div className="flex justify-between items-center">
             <div className="flex items-center space-x-2">
-              <div className="bg-gradient-primary p-2 rounded-lg">
-                <MessageCircle className="w-6 h-6 text-white" />
+              <div className="bg-gradient-primary p-2 rounded-lg" aria-hidden="true">
+                <MessageCircle className="w-6 h-6 text-white" aria-label="Wallly logo" />
               </div>
               <h2 className="text-xl font-bold">Wallly</h2>
             </div>
             <div className="space-x-4">
-              <Button variant="ghost" onClick={() => navigate('/auth')}>
+              <Button variant="ghost" onClick={() => navigate('/auth')} aria-label="Sign in to your account">
                 Sign In
               </Button>
-              <Button className="bg-gradient-primary hover:opacity-90" onClick={() => navigate('/auth')}>
+              <Button className="bg-gradient-primary hover:opacity-90" onClick={() => navigate('/auth')} aria-label="Get started with Wallly">
                 Get Started
               </Button>
             </div>
@@ -46,9 +46,9 @@ const Landing = () => {
           <div className="max-w-7xl mx-auto text-center">
             <div className="mb-8 flex justify-center">
               <div className="relative">
-                <div className="absolute inset-0 bg-gradient-primary rounded-full blur-xl opacity-50 animate-pulse-glow"></div>
+                <div className="absolute inset-0 bg-gradient-primary rounded-full blur-xl opacity-50 animate-pulse-glow" aria-hidden="true"></div>
                 <div className="relative bg-gradient-primary p-8 rounded-full shadow-glow">
-                  <Video className="w-20 h-20 text-white" />
+                  <Video className="w-20 h-20 text-white" aria-label="Video chat icon" />
                 </div>
               </div>
             </div>
@@ -65,8 +65,9 @@ const Landing = () => {
                 size="lg"
                 className="text-lg px-8 py-6 rounded-full bg-gradient-primary hover:opacity-90 transition-all hover:scale-105 shadow-glow"
                 onClick={() => navigate('/auth')}
+                aria-label="Start video chat now"
               >
-                <Video className="w-6 h-6 mr-2" />
+                <Video className="w-6 h-6 mr-2" aria-hidden="true" />
                 Start Video Chat Now
               </Button>
               <p className="text-sm text-muted-foreground">Free • No Download • Ages 16+</p>
@@ -84,8 +85,8 @@ const Landing = () => {
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
               <article className="bg-card rounded-xl p-8 border border-border hover:border-primary transition-all hover:shadow-card animate-slide-up">
-                <div className="bg-primary/10 w-16 h-16 rounded-lg flex items-center justify-center mb-6">
-                  <Users className="w-8 h-8 text-primary" />
+                <div className="bg-primary/10 w-16 h-16 rounded-lg flex items-center justify-center mb-6" aria-hidden="true">
+                  <Users className="w-8 h-8 text-primary" aria-label="Random matching icon" />
                 </div>
                 <h3 className="text-2xl font-semibold mb-4">Random Matching</h3>
                 <p className="text-muted-foreground">
@@ -94,8 +95,8 @@ const Landing = () => {
               </article>
 
               <article className="bg-card rounded-xl p-8 border border-border hover:border-primary transition-all hover:shadow-card animate-slide-up" style={{ animationDelay: '0.1s' }}>
-                <div className="bg-accent/10 w-16 h-16 rounded-lg flex items-center justify-center mb-6">
-                  <Zap className="w-8 h-8 text-accent" />
+                <div className="bg-accent/10 w-16 h-16 rounded-lg flex items-center justify-center mb-6" aria-hidden="true">
+                  <Zap className="w-8 h-8 text-accent" aria-label="Lightning fast icon" />
                 </div>
                 <h3 className="text-2xl font-semibold mb-4">Lightning Fast</h3>
                 <p className="text-muted-foreground">
@@ -104,8 +105,8 @@ const Landing = () => {
               </article>
 
               <article className="bg-card rounded-xl p-8 border border-border hover:border-primary transition-all hover:shadow-card animate-slide-up" style={{ animationDelay: '0.2s' }}>
-                <div className="bg-destructive/10 w-16 h-16 rounded-lg flex items-center justify-center mb-6">
-                  <Shield className="w-8 h-8 text-destructive" />
+                <div className="bg-destructive/10 w-16 h-16 rounded-lg flex items-center justify-center mb-6" aria-hidden="true">
+                  <Shield className="w-8 h-8 text-destructive" aria-label="Safe and secure icon" />
                 </div>
                 <h3 className="text-2xl font-semibold mb-4">Safe & Secure</h3>
                 <p className="text-muted-foreground">
@@ -114,8 +115,8 @@ const Landing = () => {
               </article>
 
               <article className="bg-card rounded-xl p-8 border border-border hover:border-primary transition-all hover:shadow-card animate-slide-up" style={{ animationDelay: '0.3s' }}>
-                <div className="bg-primary/10 w-16 h-16 rounded-lg flex items-center justify-center mb-6">
-                  <Globe className="w-8 h-8 text-primary" />
+                <div className="bg-primary/10 w-16 h-16 rounded-lg flex items-center justify-center mb-6" aria-hidden="true">
+                  <Globe className="w-8 h-8 text-primary" aria-label="Global community icon" />
                 </div>
                 <h3 className="text-2xl font-semibold mb-4">Global Community</h3>
                 <p className="text-muted-foreground">
@@ -124,8 +125,8 @@ const Landing = () => {
               </article>
 
               <article className="bg-card rounded-xl p-8 border border-border hover:border-primary transition-all hover:shadow-card animate-slide-up" style={{ animationDelay: '0.4s' }}>
-                <div className="bg-accent/10 w-16 h-16 rounded-lg flex items-center justify-center mb-6">
-                  <Lock className="w-8 h-8 text-accent" />
+                <div className="bg-accent/10 w-16 h-16 rounded-lg flex items-center justify-center mb-6" aria-hidden="true">
+                  <Lock className="w-8 h-8 text-accent" aria-label="Private and anonymous icon" />
                 </div>
                 <h3 className="text-2xl font-semibold mb-4">Private & Anonymous</h3>
                 <p className="text-muted-foreground">
@@ -134,8 +135,8 @@ const Landing = () => {
               </article>
 
               <article className="bg-card rounded-xl p-8 border border-border hover:border-primary transition-all hover:shadow-card animate-slide-up" style={{ animationDelay: '0.5s' }}>
-                <div className="bg-destructive/10 w-16 h-16 rounded-lg flex items-center justify-center mb-6">
-                  <MessageCircle className="w-8 h-8 text-destructive" />
+                <div className="bg-destructive/10 w-16 h-16 rounded-lg flex items-center justify-center mb-6" aria-hidden="true">
+                  <MessageCircle className="w-8 h-8 text-destructive" aria-label="No download required icon" />
                 </div>
                 <h3 className="text-2xl font-semibold mb-4">No Download Required</h3>
                 <p className="text-muted-foreground">
@@ -202,6 +203,7 @@ const Landing = () => {
               variant="secondary"
               className="text-lg px-8 py-6 rounded-full hover:scale-105 transition-all"
               onClick={() => navigate('/auth')}
+              aria-label="Get started free"
             >
               Get Started Free
             </Button>
