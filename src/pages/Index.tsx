@@ -68,8 +68,20 @@ const Index = () => {
   };
 
   const handleSignOut = async () => {
-    await supabase.auth.signOut();
-    navigate('/auth');
+    try {
+      // Clear local state first
+      setUser(null);
+      setUserProfile(null);
+      setAppState('home');
+      
+      // Attempt to sign out from Supabase
+      await supabase.auth.signOut();
+    } catch (error) {
+      console.error('Sign out error:', error);
+    } finally {
+      // Always navigate to auth page regardless of errors
+      navigate('/auth');
+    }
   };
 
   const handleEndChat = () => {
