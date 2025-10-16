@@ -11,7 +11,7 @@ interface SignalMessage {
   data: any;
 }
 
-export const useVideoMatch = (userId: string) => {
+export const useMatch = (userId: string) => {
   const [isSearching, setIsSearching] = useState(false);
   const [matchedUserId, setMatchedUserId] = useState<string | null>(null);
   const channelRef = useRef<RealtimeChannel | null>(null);
@@ -29,7 +29,7 @@ export const useVideoMatch = (userId: string) => {
     setMatchedUserId(null);
     hasMatchedRef.current = false;
 
-    const channel = supabase.channel('video-matchmaking', {
+    const channel = supabase.channel('matchmaking', {
       config: {
         presence: {
           key: userId,
@@ -63,7 +63,7 @@ export const useVideoMatch = (userId: string) => {
           if (onSignalRef.current) {
             onSignalRef.current(message);
           } else {
-            // No handler yet: queue it so VideoChat can process later
+            // No handler yet: queue it so Chat can process later
             console.log('Queueing signal (no handler yet):', message.type);
             pendingSignalsRef.current.push(message);
           }

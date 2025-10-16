@@ -4,7 +4,7 @@ import { PhoneOff, SkipForward, Send } from 'lucide-react';
 import { useWebRTC } from '@/hooks/useWebRTC';
 import { useToast } from '@/hooks/use-toast';
 
-interface VideoChatProps {
+interface ChatProps {
   userId: string;
   matchedUserId: string;
   sendSignal: (to: string, type: 'offer' | 'answer' | 'ice-candidate' | 'ready', data: any) => void;
@@ -13,7 +13,7 @@ interface VideoChatProps {
   onEnd: () => void;
 }
 
-const VideoChat = ({ userId, matchedUserId, sendSignal, onSignal, leaveMatchmaking, onEnd }: VideoChatProps) => {
+const Chat = ({ userId, matchedUserId, sendSignal, onSignal, leaveMatchmaking, onEnd }: ChatProps) => {
   const { toast } = useToast();
   const [connectionState, setConnectionState] = useState<RTCPeerConnectionState>('new');
   const [chatDuration, setChatDuration] = useState(0);
@@ -286,4 +286,4 @@ const VideoChat = ({ userId, matchedUserId, sendSignal, onSignal, leaveMatchmaki
   );
 };
 
-export default VideoChat;
+export default Chat;

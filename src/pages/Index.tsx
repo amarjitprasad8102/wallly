@@ -2,9 +2,9 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { MessageCircle, Users, Shield, Zap, LogOut } from 'lucide-react';
-import VideoChat from '@/components/VideoChat';
+import Chat from '@/components/Chat';
 import WaitingScreen from '@/components/WaitingScreen';
-import { useVideoMatch } from '@/hooks/useVideoMatch';
+import { useMatch } from '@/hooks/useMatch';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import type { User } from '@supabase/supabase-js';
@@ -14,7 +14,7 @@ const Index = () => {
   const [user, setUser] = useState<User | null>(null);
   const [userProfile, setUserProfile] = useState<{ unique_id: string } | null>(null);
   const [appState, setAppState] = useState<'home' | 'waiting' | 'chatting'>('home');
-  const { isSearching, matchedUserId, joinMatchmaking, leaveMatchmaking, sendSignal, onSignal } = useVideoMatch(user?.id || '');
+  const { isSearching, matchedUserId, joinMatchmaking, leaveMatchmaking, sendSignal, onSignal } = useMatch(user?.id || '');
 
   useEffect(() => {
     // Check authentication
@@ -87,7 +87,7 @@ const Index = () => {
 
   if (appState === 'chatting' && matchedUserId) {
     return (
-      <VideoChat
+      <Chat
         userId={user.id}
         matchedUserId={matchedUserId}
         sendSignal={sendSignal}
@@ -188,7 +188,7 @@ const Index = () => {
               </div>
               <h3 className="text-xl font-semibold mb-2">Safe & Secure</h3>
               <p className="text-muted-foreground">
-                Authenticated users with unique IDs. Skip or end calls anytime
+                Authenticated users with unique IDs. Skip or end chats anytime
               </p>
             </div>
           </div>
