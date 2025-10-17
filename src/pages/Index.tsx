@@ -1,7 +1,15 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { MessageCircle, Users, Shield, Zap, LogOut, UserCheck, Crown } from 'lucide-react';
+import { MessageCircle, Users, Shield, Zap, LogOut, UserCheck, Crown, Home } from 'lucide-react';
+import {
+  Breadcrumb,
+  BreadcrumbItem,
+  BreadcrumbLink,
+  BreadcrumbList,
+  BreadcrumbPage,
+  BreadcrumbSeparator,
+} from "@/components/ui/breadcrumb";
 import Chat from '@/components/ChatWithImageSupport';
 import WaitingScreen from '@/components/WaitingScreen';
 import { useMatch } from '@/hooks/useMatch';
@@ -207,7 +215,24 @@ const Index = () => {
     <div className="min-h-screen bg-gradient-subtle flex flex-col">
       {/* Header with User Info */}
       <div className="px-4 py-4 border-b border-border">
-        <div className="max-w-4xl mx-auto flex justify-between items-center">
+        <div className="max-w-4xl mx-auto space-y-3">
+          {/* Breadcrumbs */}
+          <Breadcrumb>
+            <BreadcrumbList>
+              <BreadcrumbItem>
+                <BreadcrumbLink onClick={() => navigate('/')} className="cursor-pointer flex items-center gap-1">
+                  <Home className="h-4 w-4" />
+                  Home
+                </BreadcrumbLink>
+              </BreadcrumbItem>
+              <BreadcrumbSeparator />
+              <BreadcrumbItem>
+                <BreadcrumbPage>Chat</BreadcrumbPage>
+              </BreadcrumbItem>
+            </BreadcrumbList>
+          </Breadcrumb>
+
+          <div className="flex justify-between items-center">
           <div className="flex items-center gap-4">
             <div className="text-sm">
               <p className="text-muted-foreground">Your ID</p>
@@ -229,6 +254,7 @@ const Index = () => {
               Sign Out
             </Button>
           </div>
+        </div>
         </div>
       </div>
 

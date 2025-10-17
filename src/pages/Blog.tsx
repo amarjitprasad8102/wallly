@@ -1,6 +1,14 @@
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { MessageCircle, ArrowLeft, Calendar, User } from 'lucide-react';
+import { MessageCircle, ArrowLeft, Calendar, User, Home } from 'lucide-react';
+import {
+  Breadcrumb,
+  BreadcrumbItem,
+  BreadcrumbLink,
+  BreadcrumbList,
+  BreadcrumbPage,
+  BreadcrumbSeparator,
+} from "@/components/ui/breadcrumb";
 
 const Blog = () => {
   const navigate = useNavigate();
@@ -34,16 +42,21 @@ const Blog = () => {
       </header>
 
       <main className="max-w-4xl mx-auto px-4 py-12 sm:py-16">
-        {/* Back Button */}
-        <Button
-          variant="ghost"
-          onClick={() => navigate('/')}
-          className="mb-8 -ml-2"
-          aria-label="Go back to homepage"
-        >
-          <ArrowLeft className="w-4 h-4 mr-2" aria-hidden="true" />
-          Back to Home
-        </Button>
+        {/* Breadcrumbs */}
+        <Breadcrumb className="mb-8">
+          <BreadcrumbList>
+            <BreadcrumbItem>
+              <BreadcrumbLink onClick={() => navigate('/')} className="cursor-pointer flex items-center gap-1">
+                <Home className="h-4 w-4" />
+                Home
+              </BreadcrumbLink>
+            </BreadcrumbItem>
+            <BreadcrumbSeparator />
+            <BreadcrumbItem>
+              <BreadcrumbPage>Blog</BreadcrumbPage>
+            </BreadcrumbItem>
+          </BreadcrumbList>
+        </Breadcrumb>
 
         {/* Blog Header */}
         <article className="bg-card rounded-xl border border-border p-8 md:p-12 shadow-card">

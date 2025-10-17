@@ -1,8 +1,16 @@
 import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { MessageCircle, UserPlus, Hash, Users, Shield, ArrowRight, CheckCircle } from 'lucide-react';
+import { MessageCircle, UserPlus, Hash, Users, Shield, ArrowRight, CheckCircle, Home } from 'lucide-react';
 import Lenis from '@studio-freight/lenis';
+import {
+  Breadcrumb,
+  BreadcrumbItem,
+  BreadcrumbLink,
+  BreadcrumbList,
+  BreadcrumbPage,
+  BreadcrumbSeparator,
+} from "@/components/ui/breadcrumb";
 
 const HowToUse = () => {
   const navigate = useNavigate();
@@ -50,6 +58,26 @@ const HowToUse = () => {
           </div>
         </nav>
       </header>
+
+      {/* Breadcrumbs */}
+      <div className="px-4 py-4 border-b border-border">
+        <div className="max-w-6xl mx-auto">
+          <Breadcrumb>
+            <BreadcrumbList>
+              <BreadcrumbItem>
+                <BreadcrumbLink onClick={() => navigate('/')} className="cursor-pointer flex items-center gap-1">
+                  <Home className="h-4 w-4" />
+                  Home
+                </BreadcrumbLink>
+              </BreadcrumbItem>
+              <BreadcrumbSeparator />
+              <BreadcrumbItem>
+                <BreadcrumbPage>How to Use</BreadcrumbPage>
+              </BreadcrumbItem>
+            </BreadcrumbList>
+          </Breadcrumb>
+        </div>
+      </div>
 
       <main className="py-16 sm:py-20 lg:py-24">
         {/* Hero Section */}
