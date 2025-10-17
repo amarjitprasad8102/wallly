@@ -93,7 +93,7 @@ const Auth = () => {
           </h1>
           <p className="text-center text-muted-foreground mb-6">
             {isLogin
-              ? "Sign in to start video chatting"
+              ? "Sign in to start chatting"
               : "Sign up to get your unique ID"}
           </p>
 

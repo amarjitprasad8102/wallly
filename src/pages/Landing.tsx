@@ -1,7 +1,7 @@
 import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { MessageCircle, Users, Shield, Zap, Video, Globe, Lock } from 'lucide-react';
+import { MessageCircle, Users, Shield, Zap, Globe, Lock } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 
 const Landing = () => {
@@ -48,7 +48,7 @@ const Landing = () => {
               <div className="relative">
                 <div className="absolute inset-0 bg-gradient-primary rounded-full blur-xl opacity-50 animate-pulse-glow" aria-hidden="true"></div>
                 <div className="relative bg-gradient-primary p-8 rounded-full shadow-glow">
-                  <Video className="w-20 h-20 text-white" aria-label="Video chat icon" />
+                  <MessageCircle className="w-20 h-20 text-white" aria-label="Chat icon" />
                 </div>
               </div>
             </div>
@@ -57,7 +57,7 @@ const Landing = () => {
               Connect With Strangers Worldwide
             </h1>
             <p className="text-xl sm:text-2xl text-muted-foreground mb-12 max-w-3xl mx-auto">
-              Experience free random video chat with people around the globe. Make new friends, have meaningful conversations, and discover different cultures instantly.
+              Connect with strangers worldwide through instant text chat. Make new friends, have meaningful conversations, and discover different cultures.
             </p>
             
             <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
@@ -65,10 +65,10 @@ const Landing = () => {
                 size="lg"
                 className="text-lg px-8 py-6 rounded-full bg-gradient-primary hover:opacity-90 transition-all hover:scale-105 shadow-glow"
                 onClick={() => navigate('/auth')}
-                aria-label="Start video chat now"
+                aria-label="Start chatting now"
               >
-                <Video className="w-6 h-6 mr-2" aria-hidden="true" />
-                Start Video Chat Now
+                <MessageCircle className="w-6 h-6 mr-2" aria-hidden="true" />
+                Start Chatting Now
               </Button>
               <p className="text-sm text-muted-foreground">Free • No Download • Ages 16+</p>
             </div>
@@ -80,7 +80,7 @@ const Landing = () => {
           <div className="max-w-7xl mx-auto">
             <div className="text-center mb-16">
               <h2 className="text-4xl font-bold mb-4">Why Choose Wallly?</h2>
-              <p className="text-xl text-muted-foreground">The best random video chat platform for meeting new people</p>
+              <p className="text-xl text-muted-foreground">The best random chat platform for meeting new people</p>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
@@ -100,7 +100,7 @@ const Landing = () => {
                 </div>
                 <h3 className="text-2xl font-semibold mb-4">Lightning Fast</h3>
                 <p className="text-muted-foreground">
-                  Experience instant connections with our optimized peer-to-peer video technology. No delays, just real conversations.
+                  Experience instant connections with our optimized peer-to-peer messaging technology. No delays, just real conversations.
                 </p>
               </article>
 
