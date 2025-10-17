@@ -32,6 +32,9 @@ const Landing = () => {
               <Button variant="ghost" onClick={() => navigate('/blog')} aria-label="Read our blog">
                 Blog
               </Button>
+              <Button variant="ghost" onClick={() => navigate('/privacy')} aria-label="Privacy Policy">
+                Privacy
+              </Button>
               <Button variant="ghost" onClick={() => navigate('/auth')} aria-label="Sign in to your account">
                 Sign In
               </Button>
