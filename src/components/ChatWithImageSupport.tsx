@@ -17,9 +17,6 @@ interface ChatProps {
   onEnd: () => void;
 }
 
-interface UserPremiumStatus {
-  is_premium: boolean;
-}
 
 const ChatWithImageSupport = ({ userId, matchedUserId, sendSignal, onSignal, leaveMatchmaking, onEnd }: ChatProps) => {
   const { toast } = useToast();
@@ -29,8 +26,7 @@ const ChatWithImageSupport = ({ userId, matchedUserId, sendSignal, onSignal, lea
   const [messageText, setMessageText] = useState('');
   const [selectedImage, setSelectedImage] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
-  const [partnerPremiumStatus, setPartnerPremiumStatus] = useState<boolean>(false);
-  const [canChat, setCanChat] = useState<boolean>(false);
+  const canChat = true;
   const [uploadedImages, setUploadedImages] = useState<string[]>([]);
   const dataChannelRef = useRef<RTCDataChannel | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -40,35 +36,6 @@ const ChatWithImageSupport = ({ userId, matchedUserId, sendSignal, onSignal, lea
   const isInitiator = userId < matchedUserId;
   const { isPremium, loading: premiumLoading } = usePremiumStatus(userId);
 
-  // Check partner's premium status
-  useEffect(() => {
-    const checkPartnerPremium = async () => {
-      const { data } = await supabase
-        .from('profiles')
-        .select('is_premium')
-        .eq('id', matchedUserId)
-        .single();
-      
-      const partnerIsPremium = data?.is_premium || false;
-      setPartnerPremiumStatus(partnerIsPremium);
-      
-      // At least one user must be premium to chat
-      const chatAllowed = isPremium || partnerIsPremium;
-      setCanChat(chatAllowed);
-      
-      if (!chatAllowed) {
-        toast({
-          title: "Premium Required",
-          description: "At least one user must have premium to send messages",
-          variant: "destructive",
-        });
-      }
-    };
-
-    if (matchedUserId && !premiumLoading) {
-      checkPartnerPremium();
-    }
-  }, [matchedUserId, isPremium, premiumLoading, toast]);
 
   const {
     createPeerConnection,
@@ -298,15 +265,6 @@ const ChatWithImageSupport = ({ userId, matchedUserId, sendSignal, onSignal, lea
   const handleSendMessage = async () => {
     if ((!messageText.trim() && !selectedImage) || dataChannelRef.current?.readyState !== 'open') return;
 
-    // Check if at least one user is premium
-    if (!canChat) {
-      toast({
-        title: "Premium Required",
-        description: "At least one user must have premium to send messages",
-        variant: "destructive",
-      });
-      return;
-    }
 
     // Check if trying to send image and current user is not premium
     if (selectedImage && !isPremium) {
