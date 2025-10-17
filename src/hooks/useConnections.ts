@@ -14,8 +14,21 @@ interface Connection {
   };
 }
 
+interface PendingRequest {
+  id: string;
+  to_user_id: string;
+  from_user_id: string;
+  status: string;
+  created_at: string;
+  to_profile?: {
+    unique_id: string;
+    email: string;
+  };
+}
+
 export const useConnections = (userId: string | undefined) => {
   const [connections, setConnections] = useState<Connection[]>([]);
+  const [pendingRequests, setPendingRequests] = useState<PendingRequest[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -56,6 +69,32 @@ export const useConnections = (userId: string | undefined) => {
 
     fetchConnections();
 
+    // Fetch pending sent requests
+    const fetchPendingRequests = async () => {
+      const { data, error } = await supabase
+        .from('connection_requests')
+        .select('*')
+        .eq('from_user_id', userId)
+        .eq('status', 'pending');
+
+      if (!error && data) {
+        const toUserIds = data.map(r => r.to_user_id);
+        const { data: profiles } = await supabase
+          .from('profiles')
+          .select('id, unique_id, email')
+          .in('id', toUserIds);
+
+        const enrichedRequests = data.map(request => ({
+          ...request,
+          to_profile: profiles?.find(p => p.id === request.to_user_id)
+        }));
+
+        setPendingRequests(enrichedRequests);
+      }
+    };
+
+    fetchPendingRequests();
+
     // Subscribe to changes
     const channel = supabase
       .channel('connections_changes')
@@ -94,5 +133,22 @@ export const useConnections = (userId: string | undefined) => {
     return { error: null };
   };
 
-  return { connections, loading, disconnectUser };
+  const cancelRequest = async (requestId: string) => {
+    const { error } = await supabase
+      .from('connection_requests')
+      .delete()
+      .eq('id', requestId);
+
+    if (error) {
+      console.error('Error canceling request:', error);
+      toast.error('Failed to cancel request');
+      return { error: error.message };
+    }
+
+    toast.success('Request canceled');
+    setPendingRequests(prev => prev.filter(r => r.id !== requestId));
+    return { error: null };
+  };
+
+  return { connections, pendingRequests, loading, disconnectUser, cancelRequest };
 };

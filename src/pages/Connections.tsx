@@ -2,10 +2,11 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
-import { ArrowLeft, UserMinus, Loader2 } from 'lucide-react';
+import { ArrowLeft, UserMinus, Loader2, X, Clock } from 'lucide-react';
 import { useConnections } from '@/hooks/useConnections';
 import { supabase } from '@/integrations/supabase/client';
 import type { User } from '@supabase/supabase-js';
+import { Badge } from '@/components/ui/badge';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -21,7 +22,7 @@ import {
 const Connections = () => {
   const navigate = useNavigate();
   const [user, setUser] = useState<User | null>(null);
-  const { connections, loading, disconnectUser } = useConnections(user?.id);
+  const { connections, pendingRequests, loading, disconnectUser, cancelRequest } = useConnections(user?.id);
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
@@ -45,6 +46,10 @@ const Connections = () => {
 
   const handleDisconnect = async (connectionId: string) => {
     await disconnectUser(connectionId);
+  };
+
+  const handleCancelRequest = async (requestId: string) => {
+    await cancelRequest(requestId);
   };
 
   const formatDate = (dateString: string) => {
@@ -86,7 +91,7 @@ const Connections = () => {
             <div className="flex items-center justify-center py-12">
               <Loader2 className="h-8 w-8 animate-spin text-primary" />
             </div>
-          ) : connections.length === 0 ? (
+          ) : connections.length === 0 && pendingRequests.length === 0 ? (
             <Card className="p-12 text-center">
               <p className="text-muted-foreground text-lg mb-4">No connections yet</p>
               <p className="text-sm text-muted-foreground mb-6">
@@ -97,8 +102,52 @@ const Connections = () => {
               </Button>
             </Card>
           ) : (
-            <div className="space-y-3">
-              {connections.map((connection) => (
+            <div className="space-y-6">
+              {/* Pending Requests Section */}
+              {pendingRequests.length > 0 && (
+                <div>
+                  <h2 className="text-lg font-semibold mb-3 flex items-center gap-2">
+                    <Clock className="h-5 w-5" />
+                    Pending Requests
+                  </h2>
+                  <div className="space-y-3">
+                    {pendingRequests.map((request) => (
+                      <Card key={request.id} className="p-4">
+                        <div className="flex items-center justify-between">
+                          <div className="flex-1">
+                            <div className="flex items-center gap-3 mb-1">
+                              <span className="font-mono font-bold text-primary text-lg">
+                                {request.to_profile?.unique_id || 'Unknown User'}
+                              </span>
+                              <Badge variant="secondary" className="text-xs">
+                                Pending
+                              </Badge>
+                            </div>
+                            <p className="text-sm text-muted-foreground">
+                              Sent {formatDate(request.created_at)}
+                            </p>
+                          </div>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => handleCancelRequest(request.id)}
+                          >
+                            <X className="h-4 w-4 mr-2" />
+                            Cancel
+                          </Button>
+                        </div>
+                      </Card>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Established Connections Section */}
+              {connections.length > 0 && (
+                <div>
+                  <h2 className="text-lg font-semibold mb-3">Chat History</h2>
+                  <div className="space-y-3">
+                    {connections.map((connection) => (
                 <Card key={connection.id} className="p-4">
                   <div className="flex items-center justify-between">
                     <div className="flex-1">
@@ -144,7 +193,10 @@ const Connections = () => {
                     </AlertDialog>
                   </div>
                 </Card>
-              ))}
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
           )}
         </div>
