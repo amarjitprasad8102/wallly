@@ -6,6 +6,7 @@ import { useToast } from '@/hooks/use-toast';
 import { usePremiumStatus } from '@/hooks/usePremiumStatus';
 import { supabase } from '@/integrations/supabase/client';
 import { Input } from '@/components/ui/input';
+import ReportDialog from '@/components/ReportDialog';
 
 interface ChatProps {
   userId: string;
@@ -365,6 +366,7 @@ const ChatWithImageSupport = ({ userId, matchedUserId, sendSignal, onSignal, lea
               </p>
             </div>
             <div className="flex gap-2">
+              <ReportDialog reportedUserId={matchedUserId} />
               <Button onClick={handleSkip} variant="outline" size="sm">
                 <SkipForward className="w-4 h-4 mr-2" />
                 Next

@@ -3,6 +3,7 @@ import { Button } from '@/components/ui/button';
 import { PhoneOff, SkipForward, Send } from 'lucide-react';
 import { useWebRTC } from '@/hooks/useWebRTC';
 import { useToast } from '@/hooks/use-toast';
+import ReportDialog from '@/components/ReportDialog';
 
 interface ChatProps {
   userId: string;
@@ -200,6 +201,7 @@ const Chat = ({ userId, matchedUserId, sendSignal, onSignal, leaveMatchmaking, o
             </p>
           </div>
           <div className="flex gap-2">
+            <ReportDialog reportedUserId={matchedUserId} />
             <Button
               onClick={handleSkip}
               variant="outline"
