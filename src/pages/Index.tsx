@@ -6,12 +6,15 @@ import Chat from '@/components/ChatWithImageSupport';
 import WaitingScreen from '@/components/WaitingScreen';
 import { useMatch } from '@/hooks/useMatch';
 import { usePremiumStatus } from '@/hooks/usePremiumStatus';
+import { useConnectionRequests } from '@/hooks/useConnectionRequests';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import type { User } from '@supabase/supabase-js';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Badge } from '@/components/ui/badge';
+import { Card } from '@/components/ui/card';
 
 const Index = () => {
   const navigate = useNavigate();
@@ -22,6 +25,14 @@ const Index = () => {
   const [connectId, setConnectId] = useState('');
   const { isSearching, matchedUserId, joinMatchmaking, leaveMatchmaking, sendSignal, onSignal } = useMatch(user?.id || '');
   const { isPremium, loading: premiumLoading } = usePremiumStatus(user?.id);
+  const {
+    pendingRequests,
+    acceptedRequest,
+    sendConnectionRequest,
+    acceptConnectionRequest,
+    rejectConnectionRequest,
+    clearAcceptedRequest,
+  } = useConnectionRequests(user?.id);
 
   useEffect(() => {
     // Check authentication
@@ -97,13 +108,13 @@ const Index = () => {
   };
 
   const handleConnectById = async () => {
-    if (!isPremium) {
-      toast.error('Connect by ID is only available for premium users');
+    if (!connectId.trim()) {
+      toast.error('Please enter a user ID');
       return;
     }
 
-    if (!connectId.trim()) {
-      toast.error('Please enter a user ID');
+    if (connectId.trim() === userProfile?.unique_id) {
+      toast.error('You cannot connect to yourself');
       return;
     }
 
@@ -119,12 +130,27 @@ const Index = () => {
       return;
     }
 
-    // Start matching (this would need to be updated in the matchmaking system)
-    toast.success('Connecting to user...');
-    joinMatchmaking();
+    // Send connection request
+    const { error: requestError } = await sendConnectionRequest(targetUser.id);
+    
+    if (requestError) {
+      toast.error(requestError);
+      return;
+    }
+
+    toast.success('Connection request sent!');
     setConnectDialogOpen(false);
     setConnectId('');
   };
+
+  // Handle accepted connection request
+  useEffect(() => {
+    if (acceptedRequest) {
+      // Start chat with the user who accepted
+      joinMatchmaking();
+      clearAcceptedRequest();
+    }
+  }, [acceptedRequest, joinMatchmaking, clearAcceptedRequest]);
 
   if (!user || !userProfile) {
     return (
@@ -156,9 +182,16 @@ const Index = () => {
       {/* Header with User Info */}
       <div className="px-4 py-4 border-b border-border">
         <div className="max-w-4xl mx-auto flex justify-between items-center">
-          <div className="text-sm">
-            <p className="text-muted-foreground">Your ID</p>
-            <p className="font-mono font-bold text-primary text-lg">{userProfile.unique_id}</p>
+          <div className="flex items-center gap-4">
+            <div className="text-sm">
+              <p className="text-muted-foreground">Your ID</p>
+              <p className="font-mono font-bold text-primary text-lg">{userProfile.unique_id}</p>
+            </div>
+            {pendingRequests.length > 0 && (
+              <Badge variant="destructive" className="animate-pulse">
+                {pendingRequests.length} Request{pendingRequests.length > 1 ? 's' : ''}
+              </Badge>
+            )}
           </div>
           <Button variant="outline" size="sm" onClick={handleSignOut}>
             <LogOut className="h-4 w-4 mr-2" />
@@ -166,6 +199,42 @@ const Index = () => {
           </Button>
         </div>
       </div>
+
+      {/* Connection Requests */}
+      {pendingRequests.length > 0 && (
+        <div className="px-4 py-4 bg-muted/50">
+          <div className="max-w-4xl mx-auto">
+            <h3 className="text-lg font-semibold mb-3">Connection Requests</h3>
+            <div className="space-y-2">
+              {pendingRequests.map((request) => (
+                <Card key={request.id} className="p-4 flex items-center justify-between">
+                  <div>
+                    <p className="font-medium">
+                      User <span className="font-mono text-primary">{request.from_profile?.unique_id}</span> wants
+                      to connect
+                    </p>
+                  </div>
+                  <div className="flex gap-2">
+                    <Button
+                      size="sm"
+                      onClick={() => acceptConnectionRequest(request.id)}
+                    >
+                      Accept
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => rejectConnectionRequest(request.id)}
+                    >
+                      Reject
+                    </Button>
+                  </div>
+                </Card>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Hero Section */}
       <div className="flex-1 flex items-center justify-center px-4 py-12">
@@ -209,40 +278,34 @@ const Index = () => {
                   className="text-lg px-8 py-6 rounded-full hover:scale-105 transition-all"
                   aria-label="Connect by ID"
                 >
-                  Connect by ID {!isPremium && '🔒'}
+                  Connect by ID
                 </Button>
               </DialogTrigger>
               <DialogContent>
                 <DialogHeader>
                   <DialogTitle>Connect by User ID</DialogTitle>
                   <DialogDescription>
-                    {isPremium
-                      ? 'Enter the unique ID of the user you want to connect with'
-                      : 'This is a premium feature. Contact an admin to upgrade your account.'}
+                    Enter the unique ID of the user you want to connect with. They will receive a notification.
                   </DialogDescription>
                 </DialogHeader>
-                {isPremium && (
-                  <>
-                    <div className="grid gap-4 py-4">
-                      <div className="grid gap-2">
-                        <Label htmlFor="user-id">User ID</Label>
-                        <Input
-                          id="user-id"
-                          placeholder="Enter 10-digit user ID"
-                          value={connectId}
-                          onChange={(e) => setConnectId(e.target.value)}
-                          maxLength={10}
-                        />
-                      </div>
-                      <p className="text-sm text-muted-foreground">
-                        Your ID: <span className="font-mono font-semibold">{userProfile?.unique_id}</span>
-                      </p>
-                    </div>
-                    <DialogFooter>
-                      <Button onClick={handleConnectById}>Connect</Button>
-                    </DialogFooter>
-                  </>
-                )}
+                <div className="grid gap-4 py-4">
+                  <div className="grid gap-2">
+                    <Label htmlFor="user-id">User ID</Label>
+                    <Input
+                      id="user-id"
+                      placeholder="Enter 10-digit user ID"
+                      value={connectId}
+                      onChange={(e) => setConnectId(e.target.value)}
+                      maxLength={10}
+                    />
+                  </div>
+                  <p className="text-sm text-muted-foreground">
+                    Your ID: <span className="font-mono font-semibold">{userProfile?.unique_id}</span>
+                  </p>
+                </div>
+                <DialogFooter>
+                  <Button onClick={handleConnectById}>Send Request</Button>
+                </DialogFooter>
               </DialogContent>
             </Dialog>
           </div>

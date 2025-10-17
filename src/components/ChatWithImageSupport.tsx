@@ -219,6 +219,26 @@ const ChatWithImageSupport = ({ userId, matchedUserId, sendSignal, onSignal, lea
   const handleSendMessage = async () => {
     if ((!messageText.trim() && !selectedImage) || dataChannelRef.current?.readyState !== 'open') return;
 
+    // Check if trying to send message and not premium
+    if (messageText.trim() && !isPremium) {
+      toast({
+        title: "Premium Required",
+        description: "Only premium users can send text messages",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    // Check if trying to send image and not premium
+    if (selectedImage && !isPremium) {
+      toast({
+        title: "Premium Required",
+        description: "Only premium users can send images",
+        variant: "destructive",
+      });
+      return;
+    }
+
     try {
       let imageUrl;
       if (selectedImage) {
@@ -369,8 +389,8 @@ const ChatWithImageSupport = ({ userId, matchedUserId, sendSignal, onSignal, lea
               value={messageText}
               onChange={(e) => setMessageText(e.target.value)}
               onKeyPress={(e) => e.key === 'Enter' && handleSendMessage()}
-              placeholder="Type a message..."
-              disabled={connectionState !== 'connected'}
+              placeholder={isPremium ? "Type a message..." : "Premium users only"}
+              disabled={connectionState !== 'connected' || !isPremium}
               className="flex-1 px-4 py-3 rounded-xl bg-background border border-input focus:outline-none focus:ring-2 focus:ring-primary disabled:opacity-50"
             />
             <Button 
