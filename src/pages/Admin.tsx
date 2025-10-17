@@ -6,7 +6,9 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, AlertTriangle } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 interface User {
   id: string;
@@ -20,9 +22,22 @@ interface UserRole {
   role: string;
 }
 
+interface Report {
+  id: string;
+  reporter_id: string;
+  reported_user_id: string;
+  reason: string;
+  details: string | null;
+  status: string;
+  created_at: string;
+  reporter_email?: string;
+  reported_email?: string;
+}
+
 export default function Admin() {
   const [users, setUsers] = useState<User[]>([]);
   const [userRoles, setUserRoles] = useState<Record<string, string>>({});
+  const [reports, setReports] = useState<Report[]>([]);
   const [loading, setLoading] = useState(true);
   const [isAdmin, setIsAdmin] = useState(false);
   const navigate = useNavigate();
@@ -59,6 +74,7 @@ export default function Admin() {
 
     setIsAdmin(true);
     fetchUsers();
+    fetchReports();
   };
 
   const fetchUsers = async () => {
@@ -121,6 +137,53 @@ export default function Admin() {
     fetchUsers();
   };
 
+  const fetchReports = async () => {
+    const { data: reportsData, error } = await supabase
+      .from("reports")
+      .select(`
+        *,
+        reporter:reporter_id(email),
+        reported:reported_user_id(email)
+      `)
+      .order("created_at", { ascending: false });
+
+    if (error) {
+      console.error("Error fetching reports:", error);
+      return;
+    }
+
+    const formattedReports = reportsData?.map((report: any) => ({
+      ...report,
+      reporter_email: report.reporter?.email || "Unknown",
+      reported_email: report.reported?.email || "Unknown",
+    })) || [];
+
+    setReports(formattedReports);
+  };
+
+  const updateReportStatus = async (reportId: string, newStatus: string) => {
+    const { error } = await supabase
+      .from("reports")
+      .update({ status: newStatus })
+      .eq("id", reportId);
+
+    if (error) {
+      toast({
+        title: "Error",
+        description: "Failed to update report status",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    toast({
+      title: "Success",
+      description: "Report status updated",
+    });
+
+    fetchReports();
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
@@ -138,10 +201,24 @@ export default function Admin() {
             Back to Home
           </Button>
           <h1 className="text-4xl font-bold text-foreground">Admin Panel</h1>
-          <p className="text-muted-foreground mt-2">Manage user subscriptions and roles</p>
+          <p className="text-muted-foreground mt-2">Manage users, reports, and roles</p>
         </div>
 
-        <Card>
+        <Tabs defaultValue="users" className="w-full">
+          <TabsList className="grid w-full grid-cols-2 max-w-md">
+            <TabsTrigger value="users">Users</TabsTrigger>
+            <TabsTrigger value="reports">
+              Reports
+              {reports.filter(r => r.status === 'pending').length > 0 && (
+                <Badge variant="destructive" className="ml-2">
+                  {reports.filter(r => r.status === 'pending').length}
+                </Badge>
+              )}
+            </TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="users">
+            <Card>
           <CardHeader>
             <CardTitle>User Management</CardTitle>
             <CardDescription>Update user roles and subscription status</CardDescription>
@@ -193,6 +270,87 @@ export default function Admin() {
             </Table>
           </CardContent>
         </Card>
+          </TabsContent>
+
+          <TabsContent value="reports">
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <AlertTriangle className="w-5 h-5" />
+                  User Reports
+                </CardTitle>
+                <CardDescription>Review and manage user reports</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Reporter</TableHead>
+                      <TableHead>Reported User</TableHead>
+                      <TableHead>Reason</TableHead>
+                      <TableHead>Details</TableHead>
+                      <TableHead>Status</TableHead>
+                      <TableHead>Date</TableHead>
+                      <TableHead>Action</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {reports.length === 0 ? (
+                      <TableRow>
+                        <TableCell colSpan={7} className="text-center text-muted-foreground">
+                          No reports found
+                        </TableCell>
+                      </TableRow>
+                    ) : (
+                      reports.map((report) => (
+                        <TableRow key={report.id}>
+                          <TableCell className="font-mono text-sm">{report.reporter_email}</TableCell>
+                          <TableCell className="font-mono text-sm">{report.reported_email}</TableCell>
+                          <TableCell>
+                            <span className="capitalize">{report.reason.replace(/_/g, ' ')}</span>
+                          </TableCell>
+                          <TableCell className="max-w-xs truncate">
+                            {report.details || "No additional details"}
+                          </TableCell>
+                          <TableCell>
+                            <Badge 
+                              variant={
+                                report.status === 'pending' ? 'destructive' : 
+                                report.status === 'resolved' ? 'default' : 
+                                'secondary'
+                              }
+                            >
+                              {report.status}
+                            </Badge>
+                          </TableCell>
+                          <TableCell>
+                            {new Date(report.created_at).toLocaleDateString()}
+                          </TableCell>
+                          <TableCell>
+                            <Select
+                              value={report.status}
+                              onValueChange={(value) => updateReportStatus(report.id, value)}
+                            >
+                              <SelectTrigger className="w-[140px]">
+                                <SelectValue />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="pending">Pending</SelectItem>
+                                <SelectItem value="reviewing">Reviewing</SelectItem>
+                                <SelectItem value="resolved">Resolved</SelectItem>
+                                <SelectItem value="dismissed">Dismissed</SelectItem>
+                              </SelectContent>
+                            </Select>
+                          </TableCell>
+                        </TableRow>
+                      ))
+                    )}
+                  </TableBody>
+                </Table>
+              </CardContent>
+            </Card>
+          </TabsContent>
+        </Tabs>
       </div>
     </div>
   );
