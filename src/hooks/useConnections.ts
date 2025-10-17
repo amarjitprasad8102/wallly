@@ -118,10 +118,18 @@ export const useConnections = (userId: string | undefined) => {
   }, [userId]);
 
   const disconnectUser = async (connectionId: string) => {
+    // Find the connection to get both user IDs
+    const connection = connections.find(c => c.id === connectionId);
+    if (!connection) {
+      toast.error('Connection not found');
+      return { error: 'Connection not found' };
+    }
+
+    // Delete both sides of the connection
     const { error } = await supabase
       .from('connections')
       .delete()
-      .eq('id', connectionId);
+      .or(`and(user_id.eq.${userId},connected_user_id.eq.${connection.connected_user_id}),and(user_id.eq.${connection.connected_user_id},connected_user_id.eq.${userId})`);
 
     if (error) {
       console.error('Error disconnecting:', error);

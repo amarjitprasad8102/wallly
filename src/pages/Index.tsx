@@ -143,11 +143,14 @@ const Index = () => {
     setConnectId('');
   };
 
-  // Handle accepted connection request
+  // Handle accepted connection request (when OUR sent request is accepted)
   useEffect(() => {
     if (acceptedRequest) {
-      // Connect directly to the user who accepted
+      console.log('Our request was accepted by:', acceptedRequest.to_user_id);
+      // When our request is accepted, we are from_user_id, they are to_user_id
+      // We should connect to them (to_user_id)
       connectDirectly(acceptedRequest.to_user_id);
+      setAppState('chatting');
       clearAcceptedRequest();
     }
   }, [acceptedRequest, connectDirectly, clearAcceptedRequest]);
@@ -155,8 +158,10 @@ const Index = () => {
   const handleAcceptRequest = async (requestId: string, fromUserId: string) => {
     const { error, fromUserId: connectedUserId } = await acceptConnectionRequest(requestId, fromUserId);
     if (!error && connectedUserId) {
+      console.log('We accepted request from:', connectedUserId);
       // Connect directly to the user who sent the request
       connectDirectly(connectedUserId);
+      setAppState('chatting');
     }
   };
 
@@ -373,6 +378,13 @@ const Index = () => {
         <p>
           By using this service, you agree to be respectful and follow community guidelines.
         </p>
+        <Button
+          variant="link"
+          onClick={() => navigate('/privacy')}
+          className="text-xs text-muted-foreground hover:text-foreground"
+        >
+          Privacy Policy
+        </Button>
       </footer>
     </div>
   );

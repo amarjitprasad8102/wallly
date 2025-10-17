@@ -9,6 +9,7 @@ import Auth from "./pages/Auth";
 import Blog from "./pages/Blog";
 import Admin from "./pages/Admin";
 import Connections from "./pages/Connections";
+import Privacy from "./pages/Privacy";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -26,6 +27,7 @@ const App = () => (
           <Route path="/blog" element={<Blog />} />
           <Route path="/admin" element={<Admin />} />
           <Route path="/connections" element={<Connections />} />
+          <Route path="/privacy" element={<Privacy />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>
