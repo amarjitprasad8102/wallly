@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { MessageCircle, Users, Shield, Zap, LogOut } from 'lucide-react';
+import { MessageCircle, Users, Shield, Zap, LogOut, UserCheck } from 'lucide-react';
 import Chat from '@/components/ChatWithImageSupport';
 import WaitingScreen from '@/components/WaitingScreen';
 import { useMatch } from '@/hooks/useMatch';
@@ -201,10 +201,16 @@ const Index = () => {
               </Badge>
             )}
           </div>
-          <Button variant="outline" size="sm" onClick={handleSignOut}>
-            <LogOut className="h-4 w-4 mr-2" />
-            Sign Out
-          </Button>
+          <div className="flex gap-2">
+            <Button variant="outline" size="sm" onClick={() => navigate('/connections')}>
+              <UserCheck className="h-4 w-4 mr-2" />
+              Connections
+            </Button>
+            <Button variant="outline" size="sm" onClick={handleSignOut}>
+              <LogOut className="h-4 w-4 mr-2" />
+              Sign Out
+            </Button>
+          </div>
         </div>
       </div>
 

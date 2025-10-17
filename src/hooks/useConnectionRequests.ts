@@ -148,6 +148,14 @@ export const useConnectionRequests = (userId: string | undefined) => {
       return { error: error.message, fromUserId: null };
     }
 
+    // Create connection records for both users
+    if (userId) {
+      await supabase.from('connections').insert([
+        { user_id: userId, connected_user_id: fromUserId },
+        { user_id: fromUserId, connected_user_id: userId }
+      ]);
+    }
+
     const acceptedRequest = pendingRequests.find(req => req.id === requestId);
     setPendingRequests((prev) => prev.filter((req) => req.id !== requestId));
     toast.success('Connection request accepted! Connecting...');

@@ -195,6 +195,32 @@ const ChatWithImageSupport = ({ userId, matchedUserId, sendSignal, onSignal, lea
     }
   }, [connectionState]);
 
+  // Save connection to database when connected
+  useEffect(() => {
+    const saveConnection = async () => {
+      if (connectionState === 'connected') {
+        // Save connection for both users
+        await supabase.from('connections').upsert([
+          { 
+            user_id: userId, 
+            connected_user_id: matchedUserId,
+            last_message_at: new Date().toISOString()
+          },
+          { 
+            user_id: matchedUserId, 
+            connected_user_id: userId,
+            last_message_at: new Date().toISOString()
+          }
+        ], {
+          onConflict: 'user_id,connected_user_id',
+          ignoreDuplicates: false
+        });
+      }
+    };
+
+    saveConnection();
+  }, [connectionState, userId, matchedUserId]);
+
   const handleImageSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (!isPremium) {
       toast({
