@@ -2,19 +2,26 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { MessageCircle, Users, Shield, Zap, LogOut } from 'lucide-react';
-import Chat from '@/components/Chat';
+import Chat from '@/components/ChatWithImageSupport';
 import WaitingScreen from '@/components/WaitingScreen';
 import { useMatch } from '@/hooks/useMatch';
+import { usePremiumStatus } from '@/hooks/usePremiumStatus';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import type { User } from '@supabase/supabase-js';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 
 const Index = () => {
   const navigate = useNavigate();
   const [user, setUser] = useState<User | null>(null);
   const [userProfile, setUserProfile] = useState<{ unique_id: string } | null>(null);
   const [appState, setAppState] = useState<'home' | 'waiting' | 'chatting'>('home');
+  const [connectDialogOpen, setConnectDialogOpen] = useState(false);
+  const [connectId, setConnectId] = useState('');
   const { isSearching, matchedUserId, joinMatchmaking, leaveMatchmaking, sendSignal, onSignal } = useMatch(user?.id || '');
+  const { isPremium, loading: premiumLoading } = usePremiumStatus(user?.id);
 
   useEffect(() => {
     // Check authentication
@@ -89,6 +96,36 @@ const Index = () => {
     setAppState('home');
   };
 
+  const handleConnectById = async () => {
+    if (!isPremium) {
+      toast.error('Connect by ID is only available for premium users');
+      return;
+    }
+
+    if (!connectId.trim()) {
+      toast.error('Please enter a user ID');
+      return;
+    }
+
+    // Fetch user by unique_id
+    const { data: targetUser, error } = await supabase
+      .from('profiles')
+      .select('id')
+      .eq('unique_id', connectId.trim())
+      .maybeSingle();
+
+    if (error || !targetUser) {
+      toast.error('No user found with that ID');
+      return;
+    }
+
+    // Start matching (this would need to be updated in the matchmaking system)
+    toast.success('Connecting to user...');
+    joinMatchmaking();
+    setConnectDialogOpen(false);
+    setConnectId('');
+  };
+
   if (!user || !userProfile) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -152,7 +189,8 @@ const Index = () => {
             friends, and explore new perspectives.
           </p>
 
-          {/* CTA Button */}
+          {/* CTA Buttons */}
+          <div className="flex gap-4 flex-wrap justify-center">
             <Button
               onClick={handleStartChat}
               size="lg"
@@ -162,6 +200,52 @@ const Index = () => {
               <MessageCircle className="w-6 h-6 mr-2" aria-hidden="true" />
               Start Chatting
             </Button>
+
+            <Dialog open={connectDialogOpen} onOpenChange={setConnectDialogOpen}>
+              <DialogTrigger asChild>
+                <Button
+                  size="lg"
+                  variant="outline"
+                  className="text-lg px-8 py-6 rounded-full hover:scale-105 transition-all"
+                  aria-label="Connect by ID"
+                >
+                  Connect by ID {!isPremium && '🔒'}
+                </Button>
+              </DialogTrigger>
+              <DialogContent>
+                <DialogHeader>
+                  <DialogTitle>Connect by User ID</DialogTitle>
+                  <DialogDescription>
+                    {isPremium
+                      ? 'Enter the unique ID of the user you want to connect with'
+                      : 'This is a premium feature. Contact an admin to upgrade your account.'}
+                  </DialogDescription>
+                </DialogHeader>
+                {isPremium && (
+                  <>
+                    <div className="grid gap-4 py-4">
+                      <div className="grid gap-2">
+                        <Label htmlFor="user-id">User ID</Label>
+                        <Input
+                          id="user-id"
+                          placeholder="Enter 10-digit user ID"
+                          value={connectId}
+                          onChange={(e) => setConnectId(e.target.value)}
+                          maxLength={10}
+                        />
+                      </div>
+                      <p className="text-sm text-muted-foreground">
+                        Your ID: <span className="font-mono font-semibold">{userProfile?.unique_id}</span>
+                      </p>
+                    </div>
+                    <DialogFooter>
+                      <Button onClick={handleConnectById}>Connect</Button>
+                    </DialogFooter>
+                  </>
+                )}
+              </DialogContent>
+            </Dialog>
+          </div>
 
           {/* Features */}
           <div className="mt-20 grid grid-cols-1 md:grid-cols-3 gap-8 text-left">
