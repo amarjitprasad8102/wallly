@@ -1,7 +1,6 @@
 import type { Config } from "tailwindcss";
 
 export default {
-  darkMode: ["class"],
   content: ["./pages/**/*.{ts,tsx}", "./components/**/*.{ts,tsx}", "./app/**/*.{ts,tsx}", "./src/**/*.{ts,tsx}"],
   prefix: "",
   theme: {
@@ -73,8 +72,8 @@ export default {
           to: { height: "0" },
         },
         "pulse-glow": {
-          "0%, 100%": { boxShadow: "0 0 20px hsla(263 70% 60% / 0.4)" },
-          "50%": { boxShadow: "0 0 40px hsla(263 70% 60% / 0.8)" },
+          "0%, 100%": { boxShadow: "0 0 20px hsla(263 70% 50% / 0.4)" },
+          "50%": { boxShadow: "0 0 40px hsla(263 70% 50% / 0.8)" },
         },
         "fade-in": {
           "0%": { opacity: "0", transform: "translateY(10px)" },
