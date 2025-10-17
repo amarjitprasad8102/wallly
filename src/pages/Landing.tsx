@@ -24,9 +24,9 @@ const Landing = () => {
           <div className="flex justify-between items-center">
             <div className="flex items-center space-x-2">
               <div className="bg-gradient-primary p-2 rounded-lg" aria-hidden="true">
-                <MessageCircle className="w-6 h-6 text-white" aria-label="Wallly logo" />
+                <MessageCircle className="w-6 h-6 text-white" aria-label="Kindred logo" />
               </div>
-              <h2 className="text-xl font-bold">Wallly</h2>
+              <h2 className="text-xl font-bold">Kindred</h2>
             </div>
             <div className="flex items-center space-x-4">
               <Button variant="ghost" onClick={() => navigate('/blog')} aria-label="Read our blog">
@@ -35,7 +35,7 @@ const Landing = () => {
               <Button variant="ghost" onClick={() => navigate('/auth')} aria-label="Sign in to your account">
                 Sign In
               </Button>
-              <Button className="bg-gradient-primary hover:opacity-90" onClick={() => navigate('/auth')} aria-label="Get started with Wallly">
+              <Button className="bg-gradient-primary hover:opacity-90" onClick={() => navigate('/auth')} aria-label="Get started with Kindred">
                 Get Started
               </Button>
             </div>
@@ -82,7 +82,7 @@ const Landing = () => {
         <section className="px-4 py-20 bg-card/50">
           <div className="max-w-7xl mx-auto">
             <div className="text-center mb-16">
-              <h2 className="text-4xl font-bold mb-4">Why Choose Wallly?</h2>
+              <h2 className="text-4xl font-bold mb-4">Why Choose Kindred?</h2>
               <p className="text-xl text-muted-foreground">The best random chat platform for meeting new people</p>
             </div>
 
@@ -199,7 +199,7 @@ const Landing = () => {
               Ready to Meet Someone New?
             </h2>
             <p className="text-xl mb-8 opacity-90">
-              Join thousands of people already chatting on Wallly. Your next conversation could change everything.
+              Join thousands of people already chatting on Kindred. Your next conversation could change everything.
             </p>
             <Button
               size="lg"
@@ -218,9 +218,9 @@ const Landing = () => {
       <footer className="border-t border-border py-8 px-4">
         <div className="max-w-7xl mx-auto text-center text-sm text-muted-foreground">
           <p className="mb-4">
-            By using Wallly, you agree to be respectful and follow our community guidelines. Users must be 16 years or older.
+            By using Kindred, you agree to be respectful and follow our community guidelines. Users must be 16 years or older.
           </p>
-          <p>&copy; 2025 Wallly. All rights reserved.</p>
+          <p>&copy; 2025 Kindred. All rights reserved.</p>
         </div>
       </footer>
     </div>

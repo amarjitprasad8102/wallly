@@ -17,15 +17,15 @@ const Blog = () => {
               aria-label="Return to homepage"
             >
               <div className="bg-gradient-primary p-2 rounded-lg" aria-hidden="true">
-                <MessageCircle className="w-6 h-6 text-white" aria-label="Wallly logo" />
+                <MessageCircle className="w-6 h-6 text-white" aria-label="Kindred logo" />
               </div>
-              <h2 className="text-xl font-bold">Wallly</h2>
+              <h2 className="text-xl font-bold">Kindred</h2>
             </button>
             <div className="space-x-4">
               <Button variant="ghost" onClick={() => navigate('/auth')} aria-label="Sign in to your account">
                 Sign In
               </Button>
-              <Button className="bg-gradient-primary hover:opacity-90" onClick={() => navigate('/auth')} aria-label="Get started with Wallly">
+              <Button className="bg-gradient-primary hover:opacity-90" onClick={() => navigate('/auth')} aria-label="Get started with Kindred">
                 Get Started
               </Button>
             </div>
@@ -59,7 +59,7 @@ const Blog = () => {
               </div>
               <div className="flex items-center gap-2">
                 <User className="w-4 h-4" aria-hidden="true" />
-                <span>Wallly Team</span>
+                <span>Kindred Team</span>
               </div>
             </div>
           </header>
@@ -72,7 +72,7 @@ const Blog = () => {
                 In an increasingly connected yet paradoxically isolated world, the way we interact online continues to evolve. While social media platforms have dominated the digital landscape for over a decade, emphasizing curated identities and existing social connections, a different kind of social interaction has been quietly thriving: random chat platforms. These services, which connect strangers from around the globe for spontaneous conversations, represent a fundamentally different approach to online communication—one that prioritizes authenticity, serendipity, and the human need for genuine connection over perfectly crafted personal brands.
               </p>
               <p className="text-muted-foreground leading-relaxed">
-                Random chat platforms like Wallly offer something that traditional social media cannot: the opportunity to step outside your social bubble and engage with perspectives, cultures, and experiences vastly different from your own. In this comprehensive exploration, we'll examine why anonymous random chat has become increasingly popular, how it's changing the way we think about online interaction, and what makes platforms like Wallly essential tools for modern digital communication.
+                Random chat platforms like Kindred offer something that traditional social media cannot: the opportunity to step outside your social bubble and engage with perspectives, cultures, and experiences vastly different from your own. In this comprehensive exploration, we'll examine why anonymous random chat has become increasingly popular, how it's changing the way we think about online interaction, and what makes platforms like Kindred essential tools for modern digital communication.
               </p>
             </section>
 
@@ -82,7 +82,7 @@ const Blog = () => {
                 The concept of connecting with random strangers online isn't new. Early internet chat rooms in the 1990s laid the groundwork for anonymous online interaction, creating spaces where people could discuss topics ranging from hobbies to philosophy without revealing their real identities. These primitive systems, while limited by technology, demonstrated a fundamental human desire: the need to connect with others beyond our immediate social circles.
               </p>
               <p className="text-muted-foreground leading-relaxed mb-4">
-                As internet technology advanced, so did the sophistication of random chat platforms. The introduction of instant matching algorithms, better moderation systems, and enhanced user safety features transformed these services from niche curiosities into mainstream communication tools. Today's platforms like Wallly represent the culmination of decades of technological evolution, combining the spontaneity of early chat rooms with modern security features, intuitive interfaces, and lightning-fast connections.
+                As internet technology advanced, so did the sophistication of random chat platforms. The introduction of instant matching algorithms, better moderation systems, and enhanced user safety features transformed these services from niche curiosities into mainstream communication tools. Today's platforms like Kindred represent the culmination of decades of technological evolution, combining the spontaneity of early chat rooms with modern security features, intuitive interfaces, and lightning-fast connections.
               </p>
               <p className="text-muted-foreground leading-relaxed">
                 What sets contemporary random chat apart is its accessibility. Unlike the early days when users needed technical knowledge to navigate complex interfaces, modern platforms are designed with simplicity in mind. With just a single click, users can be connected to someone on the other side of the world, ready to share stories, exchange ideas, or simply enjoy a casual conversation. This ease of use has democratized access to global communication, making cross-cultural exchange available to anyone with an internet connection.
@@ -108,7 +108,7 @@ const Blog = () => {
                 One of the most powerful aspects of random chat platforms is their ability to facilitate cross-cultural communication at an unprecedented scale. In our globalized world, understanding different cultures, perspectives, and ways of life is more important than ever, yet many people have limited opportunities for meaningful interaction with individuals from different backgrounds.
               </p>
               <p className="text-muted-foreground leading-relaxed mb-4">
-                Wallly and similar platforms act as virtual bridges, connecting people across geographical, cultural, and linguistic boundaries. These connections can be transformative. A student in Tokyo might chat with a teacher in Brazil, sharing insights about their respective education systems. A retiree in London could swap stories with a young entrepreneur in Nigeria, learning about the challenges and opportunities of doing business in different economic contexts. These exchanges don't just broaden individual perspectives—they contribute to a more interconnected, empathetic global community.
+                Kindred and similar platforms act as virtual bridges, connecting people across geographical, cultural, and linguistic boundaries. These connections can be transformative. A student in Tokyo might chat with a teacher in Brazil, sharing insights about their respective education systems. A retiree in London could swap stories with a young entrepreneur in Nigeria, learning about the challenges and opportunities of doing business in different economic contexts. These exchanges don't just broaden individual perspectives—they contribute to a more interconnected, empathetic global community.
               </p>
               <p className="text-muted-foreground leading-relaxed">
                 The educational value of these interactions shouldn't be underestimated. While formal education can teach us about different cultures, there's no substitute for direct conversation with someone who lives that culture daily. Random chat platforms provide an informal yet powerful form of cultural education, helping users develop the kind of global awareness and cultural sensitivity that's increasingly valuable in our interconnected world.
@@ -131,20 +131,20 @@ const Blog = () => {
             <section className="mb-8">
               <h2 className="text-3xl font-bold mb-4 text-foreground">Safety and Security: The Foundation of Trust</h2>
               <p className="text-muted-foreground leading-relaxed mb-4">
-                Of course, connecting with strangers online requires robust safety measures. The best random chat platforms, including Wallly, take user safety seriously, implementing multiple layers of protection to ensure that conversations remain respectful and secure. Authentication systems ensure that users are real people, not bots or scammers. Unique user IDs provide a degree of accountability while maintaining anonymity. And the ability to skip or end conversations at any time puts control firmly in users' hands.
+                Of course, connecting with strangers online requires robust safety measures. The best random chat platforms, including Kindred, take user safety seriously, implementing multiple layers of protection to ensure that conversations remain respectful and secure. Authentication systems ensure that users are real people, not bots or scammers. Unique user IDs provide a degree of accountability while maintaining anonymity. And the ability to skip or end conversations at any time puts control firmly in users' hands.
               </p>
               <p className="text-muted-foreground leading-relaxed mb-4">
                 Modern platforms also employ sophisticated moderation systems to identify and remove users who violate community guidelines. This combination of user empowerment and platform-level protection creates an environment where people can engage in spontaneous conversation while feeling safe and respected. It's a delicate balance, but one that's essential for maintaining the trust that makes these platforms work.
               </p>
               <p className="text-muted-foreground leading-relaxed">
-                Additionally, the text-based nature of platforms like Wallly adds an extra layer of safety compared to video chat services. Users can take their time composing responses, think before they speak, and maintain a level of privacy that video chat cannot provide. This makes the platform more accessible to those who might feel uncomfortable with face-to-face interaction, whether due to social anxiety, privacy concerns, or personal preference.
+                Additionally, the text-based nature of platforms like Kindred adds an extra layer of safety compared to video chat services. Users can take their time composing responses, think before they speak, and maintain a level of privacy that video chat cannot provide. This makes the platform more accessible to those who might feel uncomfortable with face-to-face interaction, whether due to social anxiety, privacy concerns, or personal preference.
               </p>
             </section>
 
             <section className="mb-8">
               <h2 className="text-3xl font-bold mb-4 text-foreground">The Technology Behind Instant Connections</h2>
               <p className="text-muted-foreground leading-relaxed mb-4">
-                Behind the simple interface of random chat platforms lies sophisticated technology designed to create seamless, instant connections. Modern platforms like Wallly use WebRTC (Web Real-Time Communication) technology to establish peer-to-peer connections, ensuring that messages are delivered with minimal latency. This means conversations flow naturally, without the awkward delays that can make online chat feel stilted and artificial.
+                Behind the simple interface of random chat platforms lies sophisticated technology designed to create seamless, instant connections. Modern platforms like Kindred use WebRTC (Web Real-Time Communication) technology to establish peer-to-peer connections, ensuring that messages are delivered with minimal latency. This means conversations flow naturally, without the awkward delays that can make online chat feel stilted and artificial.
               </p>
               <p className="text-muted-foreground leading-relaxed mb-4">
                 The matching algorithms that pair users are also more sophisticated than they might appear. While the matching is random, the system works to ensure fair distribution, preventing any single user from being overwhelmed with connections or left waiting indefinitely. These algorithms operate in real-time, constantly adjusting to the number of active users and their connection quality to provide the best possible experience.
@@ -183,7 +183,7 @@ const Blog = () => {
             <section className="mb-8">
               <h2 className="text-3xl font-bold mb-4 text-foreground">Conclusion: Embracing the Unknown</h2>
               <p className="text-muted-foreground leading-relaxed mb-4">
-                Random chat platforms like Wallly represent more than just a way to pass time or meet new people. They embody a philosophy of openness, curiosity, and human connection that stands in stark contrast to the carefully curated, algorithm-driven experience of mainstream social media. By facilitating spontaneous conversations between strangers, these platforms help combat isolation, broaden perspectives, and remind us of our shared humanity.
+                Random chat platforms like Kindred represent more than just a way to pass time or meet new people. They embody a philosophy of openness, curiosity, and human connection that stands in stark contrast to the carefully curated, algorithm-driven experience of mainstream social media. By facilitating spontaneous conversations between strangers, these platforms help combat isolation, broaden perspectives, and remind us of our shared humanity.
               </p>
               <p className="text-muted-foreground leading-relaxed mb-4">
                 In a world that often feels divided, random chat platforms create spaces where differences can be explored, commonalities discovered, and genuine connections formed. They remind us that behind every screen is a real person with their own story, struggles, and dreams. This simple realization—that we're all just people trying to connect—is perhaps the most powerful feature of all.
@@ -205,7 +205,7 @@ const Blog = () => {
                 size="lg"
                 className="bg-gradient-primary hover:opacity-90 text-lg px-8"
                 onClick={() => navigate('/auth')}
-                aria-label="Get started with Wallly"
+                aria-label="Get started with Kindred"
               >
                 <MessageCircle className="w-5 h-5 mr-2" aria-hidden="true" />
                 Get Started Now
@@ -216,7 +216,7 @@ const Blog = () => {
 
         {/* Related Content */}
         <aside className="mt-12">
-          <h2 className="text-2xl font-bold mb-6">More About Wallly</h2>
+          <h2 className="text-2xl font-bold mb-6">More About Kindred</h2>
           <div className="grid md:grid-cols-2 gap-6">
             <div className="bg-card rounded-lg border border-border p-6 hover:border-primary transition-colors">
               <h3 className="text-xl font-semibold mb-2">Safety First</h3>
@@ -246,9 +246,9 @@ const Blog = () => {
           <div className="text-center">
             <div className="flex items-center justify-center space-x-2 mb-4">
               <div className="bg-gradient-primary p-2 rounded-lg" aria-hidden="true">
-                <MessageCircle className="w-6 h-6 text-white" aria-label="Wallly logo" />
+                <MessageCircle className="w-6 h-6 text-white" aria-label="Kindred logo" />
               </div>
-              <h2 className="text-xl font-bold">Wallly</h2>
+              <h2 className="text-xl font-bold">Kindred</h2>
             </div>
             <p className="text-muted-foreground mb-6">
               Connect with strangers worldwide through instant text chat
@@ -259,7 +259,7 @@ const Blog = () => {
               <Button variant="ghost" onClick={() => navigate('/auth')} aria-label="Sign In">Sign In</Button>
             </div>
             <p className="text-sm text-muted-foreground mt-8">
-              © 2025 Wallly. All rights reserved. By using this service, you agree to be respectful and follow community guidelines.
+              © 2025 Kindred. All rights reserved. By using this service, you agree to be respectful and follow community guidelines.
             </p>
           </div>
         </div>
