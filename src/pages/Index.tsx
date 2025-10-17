@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { MessageCircle, Users, Shield, Zap, LogOut, UserCheck } from 'lucide-react';
+import { MessageCircle, Users, Shield, Zap, LogOut, UserCheck, Crown } from 'lucide-react';
 import Chat from '@/components/ChatWithImageSupport';
 import WaitingScreen from '@/components/WaitingScreen';
 import { useMatch } from '@/hooks/useMatch';
@@ -108,6 +108,11 @@ const Index = () => {
   };
 
   const handleConnectById = async () => {
+    if (!isPremium) {
+      toast.error('Premium subscription required to connect by ID');
+      return;
+    }
+
     if (!connectId.trim()) {
       toast.error('Please enter a user ID');
       return;
@@ -141,6 +146,14 @@ const Index = () => {
     toast.success('Connection request sent!');
     setConnectDialogOpen(false);
     setConnectId('');
+  };
+
+  const handleConnectDialogOpen = () => {
+    if (!isPremium) {
+      toast.error('Premium subscription required to connect by ID');
+      return;
+    }
+    setConnectDialogOpen(true);
   };
 
   // Handle accepted connection request (when OUR sent request is accepted)
@@ -294,9 +307,16 @@ const Index = () => {
                 <Button
                   size="lg"
                   variant="outline"
-                  className="text-lg px-8 py-6 rounded-full hover:scale-105 transition-all"
+                  className="text-lg px-8 py-6 rounded-full hover:scale-105 transition-all relative"
                   aria-label="Connect by ID"
+                  onClick={(e) => {
+                    if (!isPremium) {
+                      e.preventDefault();
+                      handleConnectDialogOpen();
+                    }
+                  }}
                 >
+                  <Crown className="w-5 h-5 mr-2 text-yellow-500" />
                   Connect by ID
                 </Button>
               </DialogTrigger>
