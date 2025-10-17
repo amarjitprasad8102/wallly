@@ -28,7 +28,10 @@ const Landing = () => {
               </div>
               <h2 className="text-xl font-bold">Wallly</h2>
             </div>
-            <div className="space-x-4">
+            <div className="flex items-center space-x-4">
+              <Button variant="ghost" onClick={() => navigate('/blog')} aria-label="Read our blog">
+                Blog
+              </Button>
               <Button variant="ghost" onClick={() => navigate('/auth')} aria-label="Sign in to your account">
                 Sign In
               </Button>
