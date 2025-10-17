@@ -148,12 +148,16 @@ export const useConnectionRequests = (userId: string | undefined) => {
       return { error: error.message, fromUserId: null };
     }
 
-    // Create connection records for both users
+    // Create bidirectional connections using the secure function
     if (userId) {
-      await supabase.from('connections').insert([
-        { user_id: userId, connected_user_id: fromUserId },
-        { user_id: fromUserId, connected_user_id: userId }
-      ]);
+      const { error: connError } = await supabase.rpc('create_bidirectional_connection', {
+        user_a_id: userId,
+        user_b_id: fromUserId
+      });
+
+      if (connError) {
+        console.error('Error creating connections:', connError);
+      }
     }
 
     const acceptedRequest = pendingRequests.find(req => req.id === requestId);

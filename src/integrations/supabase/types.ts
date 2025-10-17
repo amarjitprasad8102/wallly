@@ -145,6 +145,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      create_bidirectional_connection: {
+        Args: { user_a_id: string; user_b_id: string }
+        Returns: undefined
+      }
       generate_unique_id: {
         Args: Record<PropertyKey, never>
         Returns: string

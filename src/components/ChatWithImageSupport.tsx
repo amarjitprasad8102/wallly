@@ -199,22 +199,15 @@ const ChatWithImageSupport = ({ userId, matchedUserId, sendSignal, onSignal, lea
   useEffect(() => {
     const saveConnection = async () => {
       if (connectionState === 'connected') {
-        // Save connection for both users
-        await supabase.from('connections').upsert([
-          { 
-            user_id: userId, 
-            connected_user_id: matchedUserId,
-            last_message_at: new Date().toISOString()
-          },
-          { 
-            user_id: matchedUserId, 
-            connected_user_id: userId,
-            last_message_at: new Date().toISOString()
-          }
-        ], {
-          onConflict: 'user_id,connected_user_id',
-          ignoreDuplicates: false
+        // Create bidirectional connections using the secure function
+        const { error } = await supabase.rpc('create_bidirectional_connection', {
+          user_a_id: userId,
+          user_b_id: matchedUserId
         });
+
+        if (error) {
+          console.error('Error creating connections:', error);
+        }
       }
     };
 
