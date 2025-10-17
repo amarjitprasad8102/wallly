@@ -1,9 +1,15 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { MessageCircle, Users, Shield, Zap, Globe, Lock, ArrowRight } from 'lucide-react';
+import { MessageCircle, Users, Shield, Zap, Globe, Lock, ArrowRight, Hash, ChevronDown } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import Lenis from '@studio-freight/lenis';
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion";
 
 const Landing = () => {
   const navigate = useNavigate();
@@ -48,6 +54,9 @@ const Landing = () => {
               <h2 className="text-lg sm:text-xl font-bold">Kindred</h2>
             </div>
             <div className="flex items-center gap-2 sm:gap-4">
+              <Button variant="ghost" size="sm" className="hidden md:inline-flex" onClick={() => navigate('/howtouse')} aria-label="How to use Kindred">
+                How to Use
+              </Button>
               <Button variant="ghost" size="sm" className="hidden sm:inline-flex" onClick={() => navigate('/blog')} aria-label="Read our blog">
                 Blog
               </Button>
@@ -151,11 +160,11 @@ const Landing = () => {
 
               <article className="bg-card rounded-2xl p-6 sm:p-8 border border-border/50 hover:border-primary/50 transition-all hover:shadow-lg group">
                 <div className="bg-accent/10 w-12 h-12 sm:w-14 sm:h-14 rounded-xl flex items-center justify-center mb-4 sm:mb-6 group-hover:scale-110 transition-transform" aria-hidden="true">
-                  <Lock className="w-6 h-6 sm:w-7 sm:h-7 text-accent" aria-label="Private and anonymous icon" />
+                  <Hash className="w-6 h-6 sm:w-7 sm:h-7 text-accent" aria-label="Connect with ID icon" />
                 </div>
-                <h3 className="text-xl sm:text-2xl font-semibold mb-3 sm:mb-4">Private & Anonymous</h3>
+                <h3 className="text-xl sm:text-2xl font-semibold mb-3 sm:mb-4">Connect with ID</h3>
                 <p className="text-sm sm:text-base text-muted-foreground leading-relaxed">
-                  Chat anonymously with your unique ID. No personal information required. Privacy protected.
+                  Found someone interesting? Save their unique ID and reconnect anytime to continue your conversation.
                 </p>
               </article>
 
@@ -211,6 +220,72 @@ const Landing = () => {
                 </p>
               </div>
             </div>
+          </div>
+        </section>
+
+        {/* FAQs Section */}
+        <section className="px-4 py-16 sm:py-20 lg:py-24">
+          <div className="max-w-3xl mx-auto">
+            <div className="text-center mb-12 sm:mb-16">
+              <h2 className="text-3xl sm:text-4xl font-bold mb-3 sm:mb-4">Frequently Asked Questions</h2>
+              <p className="text-base sm:text-lg text-muted-foreground">Everything you need to know about Kindred</p>
+            </div>
+
+            <Accordion type="single" collapsible className="w-full space-y-4">
+              <AccordionItem value="item-1" className="border border-border/50 rounded-2xl px-6 bg-card">
+                <AccordionTrigger className="text-left hover:no-underline">
+                  <span className="text-base sm:text-lg font-semibold">How does random matching work?</span>
+                </AccordionTrigger>
+                <AccordionContent className="text-sm sm:text-base text-muted-foreground leading-relaxed">
+                  When you click "Start Chat", our system instantly pairs you with another available user from anywhere in the world. The matching is completely random to ensure diverse and interesting conversations.
+                </AccordionContent>
+              </AccordionItem>
+
+              <AccordionItem value="item-2" className="border border-border/50 rounded-2xl px-6 bg-card">
+                <AccordionTrigger className="text-left hover:no-underline">
+                  <span className="text-base sm:text-lg font-semibold">Is Kindred really free?</span>
+                </AccordionTrigger>
+                <AccordionContent className="text-sm sm:text-base text-muted-foreground leading-relaxed">
+                  Yes! Kindred is completely free to use. You can chat with unlimited people without any cost. We believe in connecting people without barriers.
+                </AccordionContent>
+              </AccordionItem>
+
+              <AccordionItem value="item-3" className="border border-border/50 rounded-2xl px-6 bg-card">
+                <AccordionTrigger className="text-left hover:no-underline">
+                  <span className="text-base sm:text-lg font-semibold">How do I reconnect with someone using their ID?</span>
+                </AccordionTrigger>
+                <AccordionContent className="text-sm sm:text-base text-muted-foreground leading-relaxed">
+                  Every user has a unique ID. If you had a great conversation, save their ID! You can use the "Connect with ID" feature to send them a connection request and chat again anytime.
+                </AccordionContent>
+              </AccordionItem>
+
+              <AccordionItem value="item-4" className="border border-border/50 rounded-2xl px-6 bg-card">
+                <AccordionTrigger className="text-left hover:no-underline">
+                  <span className="text-base sm:text-lg font-semibold">Is my chat private and secure?</span>
+                </AccordionTrigger>
+                <AccordionContent className="text-sm sm:text-base text-muted-foreground leading-relaxed">
+                  Absolutely! All chats are encrypted and anonymous. We don't store your personal information, and you can end any conversation at any time. Your safety and privacy are our top priorities.
+                </AccordionContent>
+              </AccordionItem>
+
+              <AccordionItem value="item-5" className="border border-border/50 rounded-2xl px-6 bg-card">
+                <AccordionTrigger className="text-left hover:no-underline">
+                  <span className="text-base sm:text-lg font-semibold">What if I encounter inappropriate behavior?</span>
+                </AccordionTrigger>
+                <AccordionContent className="text-sm sm:text-base text-muted-foreground leading-relaxed">
+                  You can skip any chat instantly and report users who violate our community guidelines. We have age verification and moderation in place to keep the platform safe for everyone.
+                </AccordionContent>
+              </AccordionItem>
+
+              <AccordionItem value="item-6" className="border border-border/50 rounded-2xl px-6 bg-card">
+                <AccordionTrigger className="text-left hover:no-underline">
+                  <span className="text-base sm:text-lg font-semibold">Do I need to download an app?</span>
+                </AccordionTrigger>
+                <AccordionContent className="text-sm sm:text-base text-muted-foreground leading-relaxed">
+                  No! Kindred works directly in your web browser on any device. No downloads, no installations, no hassle. Just visit our website and start chatting.
+                </AccordionContent>
+              </AccordionItem>
+            </Accordion>
           </div>
         </section>
 
