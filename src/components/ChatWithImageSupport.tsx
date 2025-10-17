@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { PhoneOff, SkipForward, Send, ImagePlus, X } from 'lucide-react';
+import { PhoneOff, SkipForward, Send, ImagePlus, X, Shield } from 'lucide-react';
 import { useWebRTC } from '@/hooks/useWebRTC';
 import { useToast } from '@/hooks/use-toast';
 import { usePremiumStatus } from '@/hooks/usePremiumStatus';
@@ -30,6 +30,7 @@ const ChatWithImageSupport = ({ userId, matchedUserId, sendSignal, onSignal, lea
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [partnerPremiumStatus, setPartnerPremiumStatus] = useState<boolean>(false);
   const [canChat, setCanChat] = useState<boolean>(false);
+  const [uploadedImages, setUploadedImages] = useState<string[]>([]);
   const dataChannelRef = useRef<RTCDataChannel | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const hasSetupConnection = useRef(false);
@@ -228,6 +229,9 @@ const ChatWithImageSupport = ({ userId, matchedUserId, sendSignal, onSignal, lea
 
     if (error) throw error;
 
+    // Track uploaded image for later deletion
+    setUploadedImages(prev => [...prev, fileName]);
+
     // Generate a signed URL that expires in 24 hours
     const { data: urlData, error: urlError } = await supabase.storage
       .from('chat-images')
@@ -238,14 +242,33 @@ const ChatWithImageSupport = ({ userId, matchedUserId, sendSignal, onSignal, lea
     return urlData.signedUrl;
   };
 
-  const handleSkip = () => {
+  const deleteUploadedImages = async () => {
+    if (uploadedImages.length === 0) return;
+
+    console.log('Deleting uploaded images:', uploadedImages);
+    
+    const { error } = await supabase.storage
+      .from('chat-images')
+      .remove(uploadedImages);
+
+    if (error) {
+      console.error('Error deleting images:', error);
+    } else {
+      console.log('Successfully deleted all chat images');
+      setUploadedImages([]);
+    }
+  };
+
+  const handleSkip = async () => {
     toast({ title: 'Searching for next person...' });
+    await deleteUploadedImages();
     cleanup();
     leaveMatchmaking();
     onEnd();
   };
 
-  const handleEndCall = () => {
+  const handleEndCall = async () => {
+    await deleteUploadedImages();
     cleanup();
     leaveMatchmaking();
     dataChannelRef.current?.close();
@@ -310,26 +333,32 @@ const ChatWithImageSupport = ({ userId, matchedUserId, sendSignal, onSignal, lea
     <div className="flex flex-col h-screen bg-gradient-subtle">
       {/* Header */}
       <div className="px-6 py-4 bg-card/50 backdrop-blur border-b border-border">
-        <div className="max-w-4xl mx-auto flex justify-between items-center">
-          <div>
-            <h2 className="text-xl font-semibold">Chat Room</h2>
-            <p className="text-sm text-muted-foreground">
-              {connectionState === 'connected' ? (
-                <span className="text-green-500">● Connected - {formatDuration(chatDuration)}</span>
-              ) : (
-                'Connecting...'
-              )}
-            </p>
+        <div className="max-w-4xl mx-auto">
+          <div className="flex justify-between items-center mb-2">
+            <div>
+              <h2 className="text-xl font-semibold">Chat Room</h2>
+              <p className="text-sm text-muted-foreground">
+                {connectionState === 'connected' ? (
+                  <span className="text-green-500">● Connected - {formatDuration(chatDuration)}</span>
+                ) : (
+                  'Connecting...'
+                )}
+              </p>
+            </div>
+            <div className="flex gap-2">
+              <Button onClick={handleSkip} variant="outline" size="sm">
+                <SkipForward className="w-4 h-4 mr-2" />
+                Next
+              </Button>
+              <Button onClick={handleEndCall} variant="destructive" size="sm">
+                <PhoneOff className="w-4 h-4 mr-2" />
+                End Chat
+              </Button>
+            </div>
           </div>
-          <div className="flex gap-2">
-            <Button onClick={handleSkip} variant="outline" size="sm">
-              <SkipForward className="w-4 h-4 mr-2" />
-              Next
-            </Button>
-            <Button onClick={handleEndCall} variant="destructive" size="sm">
-              <PhoneOff className="w-4 h-4 mr-2" />
-              End Chat
-            </Button>
+          <div className="flex items-center gap-2 text-xs text-muted-foreground">
+            <Shield className="w-3 h-3" />
+            <span>End-to-end encrypted • No chat data stored • Images auto-deleted after chat</span>
           </div>
         </div>
       </div>

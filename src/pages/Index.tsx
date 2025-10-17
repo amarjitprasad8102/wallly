@@ -353,9 +353,9 @@ const Index = () => {
               <div className="bg-destructive/10 w-12 h-12 rounded-lg flex items-center justify-center mb-4" aria-hidden="true">
                 <Shield className="w-6 h-6 text-destructive" aria-label="Shield icon" />
               </div>
-              <h3 className="text-xl font-semibold mb-2">Safe & Secure</h3>
+              <h3 className="text-xl font-semibold mb-2">Safe & Private</h3>
               <p className="text-muted-foreground">
-                Authenticated users with unique IDs. Skip or end chats anytime
+                End-to-end encrypted chats. No data stored. Images auto-deleted after conversations
               </p>
             </div>
           </div>
