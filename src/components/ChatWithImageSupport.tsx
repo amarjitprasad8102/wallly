@@ -16,6 +16,10 @@ interface ChatProps {
   onEnd: () => void;
 }
 
+interface UserPremiumStatus {
+  is_premium: boolean;
+}
+
 const ChatWithImageSupport = ({ userId, matchedUserId, sendSignal, onSignal, leaveMatchmaking, onEnd }: ChatProps) => {
   const { toast } = useToast();
   const [connectionState, setConnectionState] = useState<RTCPeerConnectionState>('new');
@@ -24,6 +28,8 @@ const ChatWithImageSupport = ({ userId, matchedUserId, sendSignal, onSignal, lea
   const [messageText, setMessageText] = useState('');
   const [selectedImage, setSelectedImage] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const [partnerPremiumStatus, setPartnerPremiumStatus] = useState<boolean>(false);
+  const [canChat, setCanChat] = useState<boolean>(false);
   const dataChannelRef = useRef<RTCDataChannel | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const hasSetupConnection = useRef(false);
@@ -31,6 +37,36 @@ const ChatWithImageSupport = ({ userId, matchedUserId, sendSignal, onSignal, lea
   const hasSentReady = useRef(false);
   const isInitiator = userId < matchedUserId;
   const { isPremium, loading: premiumLoading } = usePremiumStatus(userId);
+
+  // Check partner's premium status
+  useEffect(() => {
+    const checkPartnerPremium = async () => {
+      const { data } = await supabase
+        .from('profiles')
+        .select('is_premium')
+        .eq('id', matchedUserId)
+        .single();
+      
+      const partnerIsPremium = data?.is_premium || false;
+      setPartnerPremiumStatus(partnerIsPremium);
+      
+      // At least one user must be premium to chat
+      const chatAllowed = isPremium || partnerIsPremium;
+      setCanChat(chatAllowed);
+      
+      if (!chatAllowed) {
+        toast({
+          title: "Premium Required",
+          description: "At least one user must have premium to send messages",
+          variant: "destructive",
+        });
+      }
+    };
+
+    if (matchedUserId && !premiumLoading) {
+      checkPartnerPremium();
+    }
+  }, [matchedUserId, isPremium, premiumLoading, toast]);
 
   const {
     createPeerConnection,
@@ -219,17 +255,17 @@ const ChatWithImageSupport = ({ userId, matchedUserId, sendSignal, onSignal, lea
   const handleSendMessage = async () => {
     if ((!messageText.trim() && !selectedImage) || dataChannelRef.current?.readyState !== 'open') return;
 
-    // Check if trying to send message and not premium
-    if (messageText.trim() && !isPremium) {
+    // Check if at least one user is premium
+    if (!canChat) {
       toast({
         title: "Premium Required",
-        description: "Only premium users can send text messages",
+        description: "At least one user must have premium to send messages",
         variant: "destructive",
       });
       return;
     }
 
-    // Check if trying to send image and not premium
+    // Check if trying to send image and current user is not premium
     if (selectedImage && !isPremium) {
       toast({
         title: "Premium Required",
@@ -389,14 +425,14 @@ const ChatWithImageSupport = ({ userId, matchedUserId, sendSignal, onSignal, lea
               value={messageText}
               onChange={(e) => setMessageText(e.target.value)}
               onKeyPress={(e) => e.key === 'Enter' && handleSendMessage()}
-              placeholder={isPremium ? "Type a message..." : "Premium users only"}
-              disabled={connectionState !== 'connected' || !isPremium}
+              placeholder={canChat ? "Type a message..." : "Premium required to chat"}
+              disabled={connectionState !== 'connected' || !canChat}
               className="flex-1 px-4 py-3 rounded-xl bg-background border border-input focus:outline-none focus:ring-2 focus:ring-primary disabled:opacity-50"
             />
             <Button 
               onClick={handleSendMessage} 
               size="lg"
-              disabled={connectionState !== 'connected' || (!messageText.trim() && !selectedImage)}
+              disabled={connectionState !== 'connected' || (!messageText.trim() && !selectedImage) || !canChat}
               className="px-6"
             >
               <Send className="w-5 h-5" />

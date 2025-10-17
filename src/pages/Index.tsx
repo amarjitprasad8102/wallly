@@ -23,7 +23,7 @@ const Index = () => {
   const [appState, setAppState] = useState<'home' | 'waiting' | 'chatting'>('home');
   const [connectDialogOpen, setConnectDialogOpen] = useState(false);
   const [connectId, setConnectId] = useState('');
-  const { isSearching, matchedUserId, joinMatchmaking, leaveMatchmaking, sendSignal, onSignal } = useMatch(user?.id || '');
+  const { isSearching, matchedUserId, joinMatchmaking, connectDirectly, leaveMatchmaking, sendSignal, onSignal } = useMatch(user?.id || '');
   const { isPremium, loading: premiumLoading } = usePremiumStatus(user?.id);
   const {
     pendingRequests,
@@ -146,11 +146,19 @@ const Index = () => {
   // Handle accepted connection request
   useEffect(() => {
     if (acceptedRequest) {
-      // Start chat with the user who accepted
-      joinMatchmaking();
+      // Connect directly to the user who accepted
+      connectDirectly(acceptedRequest.to_user_id);
       clearAcceptedRequest();
     }
-  }, [acceptedRequest, joinMatchmaking, clearAcceptedRequest]);
+  }, [acceptedRequest, connectDirectly, clearAcceptedRequest]);
+
+  const handleAcceptRequest = async (requestId: string, fromUserId: string) => {
+    const { error, fromUserId: connectedUserId } = await acceptConnectionRequest(requestId, fromUserId);
+    if (!error && connectedUserId) {
+      // Connect directly to the user who sent the request
+      connectDirectly(connectedUserId);
+    }
+  };
 
   if (!user || !userProfile) {
     return (
@@ -217,7 +225,7 @@ const Index = () => {
                   <div className="flex gap-2">
                     <Button
                       size="sm"
-                      onClick={() => acceptConnectionRequest(request.id)}
+                      onClick={() => handleAcceptRequest(request.id, request.from_user_id)}
                     >
                       Accept
                     </Button>

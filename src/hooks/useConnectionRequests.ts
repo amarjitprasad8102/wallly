@@ -137,7 +137,7 @@ export const useConnectionRequests = (userId: string | undefined) => {
     return { error: null };
   };
 
-  const acceptConnectionRequest = async (requestId: string) => {
+  const acceptConnectionRequest = async (requestId: string, fromUserId: string) => {
     const { error } = await supabase
       .from('connection_requests')
       .update({ status: 'accepted' })
@@ -145,12 +145,13 @@ export const useConnectionRequests = (userId: string | undefined) => {
 
     if (error) {
       toast.error('Failed to accept connection request');
-      return { error: error.message };
+      return { error: error.message, fromUserId: null };
     }
 
+    const acceptedRequest = pendingRequests.find(req => req.id === requestId);
     setPendingRequests((prev) => prev.filter((req) => req.id !== requestId));
-    toast.success('Connection request accepted!');
-    return { error: null };
+    toast.success('Connection request accepted! Connecting...');
+    return { error: null, fromUserId: acceptedRequest?.from_user_id || fromUserId };
   };
 
   const rejectConnectionRequest = async (requestId: string) => {
