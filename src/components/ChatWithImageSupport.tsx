@@ -185,15 +185,21 @@ const ChatWithImageSupport = ({ userId, matchedUserId, sendSignal, onSignal, lea
 
     const { data, error } = await supabase.storage
       .from('chat-images')
-      .upload(fileName, file);
+      .upload(fileName, file, {
+        cacheControl: '3600',
+        upsert: false
+      });
 
     if (error) throw error;
 
-    const { data: urlData } = supabase.storage
+    // Generate a signed URL that expires in 24 hours
+    const { data: urlData, error: urlError } = await supabase.storage
       .from('chat-images')
-      .getPublicUrl(fileName);
+      .createSignedUrl(fileName, 86400);
 
-    return urlData.publicUrl;
+    if (urlError) throw urlError;
+
+    return urlData.signedUrl;
   };
 
   const handleSkip = () => {
