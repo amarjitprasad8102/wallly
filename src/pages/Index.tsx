@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { MessageCircle, Users, Shield, Zap, LogOut, UserCheck, Crown, Home } from 'lucide-react';
+import { MessageCircle, Users, Shield, Zap, LogOut, UserCheck, Home } from 'lucide-react';
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -13,7 +13,6 @@ import {
 import Chat from '@/components/ChatWithImageSupport';
 import WaitingScreen from '@/components/WaitingScreen';
 import { useMatch } from '@/hooks/useMatch';
-import { usePremiumStatus } from '@/hooks/usePremiumStatus';
 import { useConnectionRequests } from '@/hooks/useConnectionRequests';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
@@ -32,7 +31,6 @@ const Index = () => {
   const [connectDialogOpen, setConnectDialogOpen] = useState(false);
   const [connectId, setConnectId] = useState('');
   const { isSearching, matchedUserId, joinMatchmaking, connectDirectly, leaveMatchmaking, sendSignal, onSignal } = useMatch(user?.id || '');
-  const { isPremium, loading: premiumLoading } = usePremiumStatus(user?.id);
   const {
     pendingRequests,
     acceptedRequest,
@@ -116,11 +114,6 @@ const Index = () => {
   };
 
   const handleConnectById = async () => {
-    if (!isPremium) {
-      toast.error('Premium subscription required to connect by ID');
-      return;
-    }
-
     if (!connectId.trim()) {
       toast.error('Please enter a user ID');
       return;
@@ -157,10 +150,6 @@ const Index = () => {
   };
 
   const handleConnectDialogOpen = () => {
-    if (!isPremium) {
-      toast.error('Premium subscription required to connect by ID');
-      return;
-    }
     setConnectDialogOpen(true);
   };
 
@@ -335,14 +324,9 @@ const Index = () => {
                   variant="outline"
                   className="text-lg px-8 py-6 rounded-full hover:scale-105 transition-all relative"
                   aria-label="Connect by ID"
-                  onClick={(e) => {
-                    if (!isPremium) {
-                      e.preventDefault();
-                      handleConnectDialogOpen();
-                    }
-                  }}
+                  onClick={handleConnectDialogOpen}
                 >
-                  <Crown className="w-5 h-5 mr-2 text-yellow-500" />
+                  <UserCheck className="w-5 h-5 mr-2" />
                   Connect by ID
                 </Button>
               </DialogTrigger>

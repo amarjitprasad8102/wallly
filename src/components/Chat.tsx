@@ -3,6 +3,7 @@ import { Button } from '@/components/ui/button';
 import { PhoneOff, SkipForward, Send } from 'lucide-react';
 import { useWebRTC } from '@/hooks/useWebRTC';
 import { useToast } from '@/hooks/use-toast';
+import { supabase } from '@/integrations/supabase/client';
 import ReportDialog from '@/components/ReportDialog';
 
 interface ChatProps {
@@ -170,12 +171,51 @@ const Chat = ({ userId, matchedUserId, sendSignal, onSignal, leaveMatchmaking, o
     onEnd();
   };
 
-  const handleSendMessage = () => {
-    if (messageText.trim() && dataChannelRef.current?.readyState === 'open') {
-      const message = { text: messageText };
+  const handleSendMessage = async () => {
+    if (!messageText.trim() || dataChannelRef.current?.readyState !== 'open') return;
+
+    try {
+      // Moderate content
+      const moderationResponse = await supabase.functions.invoke('moderate-content', {
+        body: { text: messageText }
+      });
+
+      if (moderationResponse.error) {
+        toast({
+          title: "Error",
+          description: "Failed to send message",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      const { moderated, moderatedText, reason } = moderationResponse.data;
+      if (reason === 'phone_number') {
+        toast({
+          title: "Phone Number Blocked",
+          description: "Sharing phone numbers is not allowed",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      if (moderated && reason === 'adult_content') {
+        toast({
+          title: "Content Filtered",
+          description: "Adult content has been censored",
+        });
+      }
+
+      const message = { text: moderatedText };
       dataChannelRef.current.send(JSON.stringify(message));
-      setChatMessages((prev) => [...prev, { from: 'you', text: messageText }]);
+      setChatMessages((prev) => [...prev, { from: 'you', text: moderatedText }]);
       setMessageText('');
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to send message",
+        variant: "destructive",
+      });
     }
   };
 

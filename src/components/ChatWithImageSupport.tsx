@@ -3,7 +3,6 @@ import { Button } from '@/components/ui/button';
 import { PhoneOff, SkipForward, Send, ImagePlus, X, Shield } from 'lucide-react';
 import { useWebRTC } from '@/hooks/useWebRTC';
 import { useToast } from '@/hooks/use-toast';
-import { usePremiumStatus } from '@/hooks/usePremiumStatus';
 import { supabase } from '@/integrations/supabase/client';
 import { Input } from '@/components/ui/input';
 import ReportDialog from '@/components/ReportDialog';
@@ -34,7 +33,6 @@ const ChatWithImageSupport = ({ userId, matchedUserId, sendSignal, onSignal, lea
   const hasReceivedReady = useRef(false);
   const hasSentReady = useRef(false);
   const isInitiator = userId < matchedUserId;
-  const { isPremium, loading: premiumLoading } = usePremiumStatus(userId);
 
 
   const {
@@ -183,15 +181,6 @@ const ChatWithImageSupport = ({ userId, matchedUserId, sendSignal, onSignal, lea
   }, [connectionState, userId, matchedUserId]);
 
   const handleImageSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (!isPremium) {
-      toast({
-        title: "Premium Feature",
-        description: "Image sharing is only available for premium users",
-        variant: "destructive",
-      });
-      return;
-    }
-
     const file = e.target.files?.[0];
     if (file) {
       setSelectedImage(file);
@@ -265,25 +254,49 @@ const ChatWithImageSupport = ({ userId, matchedUserId, sendSignal, onSignal, lea
   const handleSendMessage = async () => {
     if ((!messageText.trim() && !selectedImage) || dataChannelRef.current?.readyState !== 'open') return;
 
-
-    // Check if trying to send image and current user is not premium
-    if (selectedImage && !isPremium) {
-      toast({
-        title: "Premium Required",
-        description: "Only premium users can send images",
-        variant: "destructive",
-      });
-      return;
-    }
-
     try {
+      // Moderate text content if present
+      let moderatedText = messageText;
+      if (messageText.trim()) {
+        const moderationResponse = await supabase.functions.invoke('moderate-content', {
+          body: { text: messageText }
+        });
+
+        if (moderationResponse.error) {
+          toast({
+            title: "Error",
+            description: "Failed to send message",
+            variant: "destructive",
+          });
+          return;
+        }
+
+        const { moderated, moderatedText: newText, reason } = moderationResponse.data;
+        if (moderated) {
+          moderatedText = newText;
+          if (reason === 'phone_number') {
+            toast({
+              title: "Phone Number Blocked",
+              description: "Sharing phone numbers is not allowed",
+              variant: "destructive",
+            });
+            return;
+          }
+          if (reason === 'adult_content') {
+            toast({
+              title: "Content Filtered",
+              description: "Adult content has been censored",
+            });
+          }
+        }
+      }
       let imageUrl;
       if (selectedImage) {
         imageUrl = await uploadImage(selectedImage);
       }
 
       const message: { text?: string; imageUrl?: string } = {};
-      if (messageText.trim()) message.text = messageText;
+      if (moderatedText.trim()) message.text = moderatedText;
       if (imageUrl) message.imageUrl = imageUrl;
 
       dataChannelRef.current.send(JSON.stringify(message));
@@ -413,18 +426,8 @@ const ChatWithImageSupport = ({ userId, matchedUserId, sendSignal, onSignal, lea
             <Button
               variant="outline"
               size="icon"
-              onClick={() => {
-                if (!isPremium) {
-                  toast({
-                    title: "Premium Feature",
-                    description: "Image sharing is only available for premium users",
-                    variant: "destructive",
-                  });
-                  return;
-                }
-                fileInputRef.current?.click();
-              }}
-              disabled={premiumLoading || connectionState !== 'connected'}
+              onClick={() => fileInputRef.current?.click()}
+              disabled={connectionState !== 'connected'}
             >
               <ImagePlus className="h-4 w-4" />
             </Button>
