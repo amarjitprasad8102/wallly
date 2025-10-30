@@ -79,11 +79,12 @@ const Blog = () => {
 
           {/* Blog Content */}
           <div className="prose prose-lg max-w-none">
+            <p className="text-lg text-primary mb-6 font-semibold">From India to World - Connecting Hearts and Minds</p>
+            
             <section className="mb-8">
               <h2 className="text-3xl font-bold mb-4 text-foreground">Introduction: The Power of Stranger Conversations</h2>
               <p className="text-muted-foreground leading-relaxed mb-4">
-                In an increasingly connected yet paradoxically isolated world, the way we interact online continues to evolve. While social media platforms have dominated the digital landscape for over a decade, emphasizing curated identities and existing social connections, a different kind of social interaction has been quietly thriving: random chat platforms. These services, which connect strangers from around the globe for spontaneous conversations, represent a fundamentally different approach to online communication—one that prioritizes authenticity, serendipity, and the human need for genuine connection over perfectly crafted personal brands.
-              </p>
+                In an increasingly connected yet paradoxically isolated world, platforms like Kindred are bridging the gap from India to the world. We're not just a chat platform—we're building communities (Bharatiya Samudaay) that connect people across cultures, breaking barriers and fostering understanding.</p>
               <p className="text-muted-foreground leading-relaxed">
                 Random chat platforms like Kindred offer something that traditional social media cannot: the opportunity to step outside your social bubble and engage with perspectives, cultures, and experiences vastly different from your own. In this comprehensive exploration, we'll examine why anonymous random chat has become increasingly popular, how it's changing the way we think about online interaction, and what makes platforms like Kindred essential tools for modern digital communication.
               </p>
@@ -164,6 +165,16 @@ const Blog = () => {
               </p>
               <p className="text-muted-foreground leading-relaxed">
                 Furthermore, modern platforms are designed to work across devices and network conditions. Whether you're on a high-speed fiber connection or using mobile data, the platform adapts to ensure consistent performance. This reliability is crucial for maintaining the spontaneous, flowing nature of conversation that makes random chat so appealing.
+              </p>
+            </section>
+
+            <section className="mb-8">
+              <h2 className="text-3xl font-bold mb-4 text-foreground">Bharatiya Samudaay: Communities from India to World</h2>
+              <p className="text-muted-foreground leading-relaxed mb-4">
+                Beyond random chat, Kindred now offers Bharatiya Samudaay—vibrant communities where you can join interest-based groups, share knowledge, and build lasting connections. Whether you're passionate about technology, culture, arts, or just want to connect with like-minded individuals from India and across the world, our communities provide the perfect space.
+              </p>
+              <p className="text-muted-foreground leading-relaxed mb-4">
+                Create your own community, moderate discussions, and watch as people from India connect with the world. Every community is a bridge between cultures, a space for learning, and a testament to the power of human connection.
               </p>
             </section>
 

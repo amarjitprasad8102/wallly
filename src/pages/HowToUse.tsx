@@ -278,30 +278,30 @@ const HowToUse = () => {
             </div>
           </div>
 
-          {/* Step 5: Stay Safe */}
+          {/* Step 5: Join Communities */}
           <div className="grid md:grid-cols-2 gap-8 lg:gap-12 items-center">
             <div className="order-2 md:order-1 space-y-6">
               <div className="inline-flex items-center gap-3">
                 <div className="bg-gradient-primary text-white w-12 h-12 rounded-2xl flex items-center justify-center text-xl font-bold shadow-lg">
                   5
                 </div>
-                <h2 className="text-3xl sm:text-4xl font-bold">Stay Safe & Report</h2>
+                <h2 className="text-3xl sm:text-4xl font-bold">Join Bharatiya Samudaay</h2>
               </div>
               <p className="text-base sm:text-lg text-muted-foreground leading-relaxed">
-                Your safety is our priority. Use our built-in tools to report inappropriate behavior and stay protected.
+                Explore our vibrant communities connecting India to the world. Join interest-based groups and grow together!
               </p>
               <ul className="space-y-3">
                 <li className="flex items-start gap-3">
                   <CheckCircle className="w-5 h-5 text-accent mt-0.5 flex-shrink-0" />
-                  <span className="text-muted-foreground">Report users who violate guidelines</span>
+                  <span className="text-muted-foreground">Browse communities by interest</span>
                 </li>
                 <li className="flex items-start gap-3">
                   <CheckCircle className="w-5 h-5 text-accent mt-0.5 flex-shrink-0" />
-                  <span className="text-muted-foreground">Skip chats instantly anytime</span>
+                  <span className="text-muted-foreground">Create your own community</span>
                 </li>
                 <li className="flex items-start gap-3">
                   <CheckCircle className="w-5 h-5 text-accent mt-0.5 flex-shrink-0" />
-                  <span className="text-muted-foreground">Age verification and moderation in place</span>
+                  <span className="text-muted-foreground">Connect India to the world</span>
                 </li>
               </ul>
             </div>
@@ -309,11 +309,11 @@ const HowToUse = () => {
               <div className="relative group">
                 <div className="absolute inset-0 bg-gradient-primary rounded-3xl blur-2xl opacity-20 group-hover:opacity-30 transition-opacity"></div>
                 <div className="relative bg-card border border-border/50 rounded-3xl p-8 sm:p-12 shadow-xl hover:shadow-2xl transition-all">
-                  <Shield className="w-20 h-20 sm:w-24 sm:h-24 text-accent mx-auto mb-6" />
+                  <Users className="w-20 h-20 sm:w-24 sm:h-24 text-accent mx-auto mb-6" />
                   <div className="text-center space-y-4">
                     <div className="inline-flex items-center gap-2 bg-accent/10 text-accent px-6 py-3 rounded-full font-semibold">
-                      <Shield className="w-5 h-5" />
-                      Protected & Secure
+                      <Users className="w-5 h-5" />
+                      Bharatiya Samudaay
                     </div>
                   </div>
                 </div>

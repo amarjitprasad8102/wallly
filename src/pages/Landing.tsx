@@ -54,10 +54,13 @@ const Landing = () => {
               <h2 className="text-lg sm:text-xl font-bold">Kindred</h2>
             </div>
             <div className="flex items-center gap-2 sm:gap-4">
-              <Button variant="ghost" size="sm" className="hidden md:inline-flex" onClick={() => navigate('/howtouse')} aria-label="How to use Kindred">
+              <Button variant="ghost" size="sm" className="hidden md:inline-flex" onClick={() => navigate('/howtouse')}>
                 How to Use
               </Button>
-              <Button variant="ghost" size="sm" className="hidden sm:inline-flex" onClick={() => navigate('/blog')} aria-label="Read our blog">
+              <Button variant="ghost" size="sm" className="hidden md:inline-flex" onClick={() => navigate('/c')}>
+                Communities
+              </Button>
+              <Button variant="ghost" size="sm" className="hidden sm:inline-flex" onClick={() => navigate('/blog')}>
                 Blog
               </Button>
               <Button variant="ghost" size="sm" className="hidden sm:inline-flex" onClick={() => navigate('/privacy')} aria-label="Privacy Policy">
@@ -90,8 +93,11 @@ const Landing = () => {
             <h1 className="text-4xl sm:text-5xl lg:text-7xl font-bold mb-4 sm:mb-6 bg-gradient-primary bg-clip-text text-transparent leading-tight">
               Connect With Strangers Worldwide
             </h1>
+            <p className="text-base sm:text-lg lg:text-xl text-muted-foreground mb-2 max-w-2xl mx-auto px-4">
+              From India to World - Connect instantly with people across the globe
+            </p>
             <p className="text-base sm:text-lg lg:text-xl text-muted-foreground mb-8 sm:mb-12 max-w-2xl mx-auto px-4">
-              Connect with strangers worldwide through instant text chat. Make new friends and discover different cultures.
+              Join communities, make new friends, and discover different cultures through text chat.
             </p>
             
             <div className="flex flex-col sm:flex-row gap-4 justify-center items-center px-4">
@@ -114,7 +120,7 @@ const Landing = () => {
           <div className="max-w-6xl mx-auto">
             <div className="text-center mb-12 sm:mb-16">
               <h2 className="text-3xl sm:text-4xl font-bold mb-3 sm:mb-4">Why Choose Kindred?</h2>
-              <p className="text-base sm:text-lg lg:text-xl text-muted-foreground">The best random chat platform for meeting new people</p>
+              <p className="text-base sm:text-lg lg:text-xl text-muted-foreground">Connecting India to the world, one chat at a time</p>
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
@@ -159,12 +165,12 @@ const Landing = () => {
               </article>
 
               <article className="bg-card rounded-2xl p-6 sm:p-8 border border-border/50 hover:border-primary/50 transition-all hover:shadow-lg group">
-                <div className="bg-accent/10 w-12 h-12 sm:w-14 sm:h-14 rounded-xl flex items-center justify-center mb-4 sm:mb-6 group-hover:scale-110 transition-transform" aria-hidden="true">
-                  <Hash className="w-6 h-6 sm:w-7 sm:h-7 text-accent" aria-label="Connect with ID icon" />
+                <div className="bg-accent/10 w-12 h-12 sm:w-14 sm:h-14 rounded-xl flex items-center justify-center mb-4 sm:mb-6 group-hover:scale-110 transition-transform">
+                  <Users className="w-6 h-6 sm:w-7 sm:h-7 text-accent" />
                 </div>
-                <h3 className="text-xl sm:text-2xl font-semibold mb-3 sm:mb-4">Connect with ID</h3>
+                <h3 className="text-xl sm:text-2xl font-semibold mb-3 sm:mb-4">Bharatiya Communities</h3>
                 <p className="text-sm sm:text-base text-muted-foreground leading-relaxed">
-                  Found someone interesting? Save their unique ID and reconnect anytime to continue your conversation.
+                  Join vibrant communities connecting India to the world. Share ideas, culture, and grow together.
                 </p>
               </article>
 

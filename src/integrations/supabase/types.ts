@@ -14,6 +14,174 @@ export type Database = {
   }
   public: {
     Tables: {
+      communities: {
+        Row: {
+          banner_url: string | null
+          created_at: string
+          creator_id: string
+          description: string | null
+          display_name: string
+          icon_url: string | null
+          id: string
+          member_count: number
+          name: string
+          post_count: number
+          tagline: string | null
+          updated_at: string
+        }
+        Insert: {
+          banner_url?: string | null
+          created_at?: string
+          creator_id: string
+          description?: string | null
+          display_name: string
+          icon_url?: string | null
+          id?: string
+          member_count?: number
+          name: string
+          post_count?: number
+          tagline?: string | null
+          updated_at?: string
+        }
+        Update: {
+          banner_url?: string | null
+          created_at?: string
+          creator_id?: string
+          description?: string | null
+          display_name?: string
+          icon_url?: string | null
+          id?: string
+          member_count?: number
+          name?: string
+          post_count?: number
+          tagline?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      community_comments: {
+        Row: {
+          author_id: string
+          content: string
+          created_at: string
+          downvotes: number
+          id: string
+          post_id: string
+          updated_at: string
+          upvotes: number
+        }
+        Insert: {
+          author_id: string
+          content: string
+          created_at?: string
+          downvotes?: number
+          id?: string
+          post_id: string
+          updated_at?: string
+          upvotes?: number
+        }
+        Update: {
+          author_id?: string
+          content?: string
+          created_at?: string
+          downvotes?: number
+          id?: string
+          post_id?: string
+          updated_at?: string
+          upvotes?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "community_comments_post_id_fkey"
+            columns: ["post_id"]
+            isOneToOne: false
+            referencedRelation: "community_posts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      community_members: {
+        Row: {
+          community_id: string
+          id: string
+          joined_at: string
+          role: string
+          user_id: string
+        }
+        Insert: {
+          community_id: string
+          id?: string
+          joined_at?: string
+          role?: string
+          user_id: string
+        }
+        Update: {
+          community_id?: string
+          id?: string
+          joined_at?: string
+          role?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "community_members_community_id_fkey"
+            columns: ["community_id"]
+            isOneToOne: false
+            referencedRelation: "communities"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      community_posts: {
+        Row: {
+          author_id: string
+          comment_count: number
+          community_id: string
+          content: string | null
+          created_at: string
+          downvotes: number
+          id: string
+          image_url: string | null
+          title: string
+          updated_at: string
+          upvotes: number
+        }
+        Insert: {
+          author_id: string
+          comment_count?: number
+          community_id: string
+          content?: string | null
+          created_at?: string
+          downvotes?: number
+          id?: string
+          image_url?: string | null
+          title: string
+          updated_at?: string
+          upvotes?: number
+        }
+        Update: {
+          author_id?: string
+          comment_count?: number
+          community_id?: string
+          content?: string | null
+          created_at?: string
+          downvotes?: number
+          id?: string
+          image_url?: string | null
+          title?: string
+          updated_at?: string
+          upvotes?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "community_posts_community_id_fkey"
+            columns: ["community_id"]
+            isOneToOne: false
+            referencedRelation: "communities"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       connection_requests: {
         Row: {
           created_at: string | null
@@ -179,10 +347,7 @@ export type Database = {
         Args: { user_a_id: string; user_b_id: string }
         Returns: undefined
       }
-      generate_unique_id: {
-        Args: Record<PropertyKey, never>
-        Returns: string
-      }
+      generate_unique_id: { Args: never; Returns: string }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
