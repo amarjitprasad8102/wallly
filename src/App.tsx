@@ -7,6 +7,7 @@ import Landing from "./pages/Landing";
 import Index from "./pages/Index";
 import Auth from "./pages/Auth";
 import Blog from "./pages/Blog";
+import BlogDetail from "./pages/BlogDetail";
 import Admin from "./pages/Admin";
 import Connections from "./pages/Connections";
 import Privacy from "./pages/Privacy";
@@ -27,7 +28,8 @@ const App = () => (
           <Route path="/" element={<Landing />} />
           <Route path="/app" element={<Index />} />
           <Route path="/auth" element={<Auth />} />
-          <Route path="/blog" element={<Blog />} />
+        <Route path="/blog" element={<Blog />} />
+        <Route path="/b/:slug" element={<BlogDetail />} />
           <Route path="/admin" element={<Admin />} />
           <Route path="/connections" element={<Connections />} />
           <Route path="/privacy" element={<Privacy />} />
