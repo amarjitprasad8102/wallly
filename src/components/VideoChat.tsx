@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Video, VideoOff, Mic, MicOff, PhoneOff, Send, MessageSquare } from 'lucide-react';
+import { Video, VideoOff, Mic, MicOff, PhoneOff, Send } from 'lucide-react';
 import { useWebRTC } from '@/hooks/useWebRTC';
 import { supabase } from '@/integrations/supabase/client';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -31,7 +31,6 @@ const VideoChat = ({
   const [duration, setDuration] = useState(0);
   const [messages, setMessages] = useState<Array<{ text: string; sender: 'me' | 'them'; timestamp: Date }>>([]);
   const [newMessage, setNewMessage] = useState('');
-  const [showChat, setShowChat] = useState(false);
   const hasInitiatedOffer = useRef(false);
   const dataChannel = useRef<RTCDataChannel | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -261,14 +260,6 @@ const VideoChat = ({
           </span>
         </div>
         <div className="flex gap-1 sm:gap-2">
-          <Button 
-            variant="outline" 
-            size="sm" 
-            onClick={() => setShowChat(!showChat)} 
-            className="h-8 px-2 sm:px-3 text-xs sm:text-sm"
-          >
-            <MessageSquare className="w-4 h-4" />
-          </Button>
           <Button variant="outline" size="sm" onClick={handleSkip} className="h-8 px-2 sm:px-3 text-xs sm:text-sm">
             Next
           </Button>
@@ -281,7 +272,7 @@ const VideoChat = ({
       {/* Main Content Area */}
       <div className="flex-1 flex overflow-hidden">
         {/* Video Grid */}
-        <div className={`flex-1 flex flex-col md:grid md:grid-cols-2 md:grid-rows-2 gap-2 p-2 transition-all ${showChat ? 'md:mr-80' : ''}`}>
+        <div className="flex-1 flex flex-col md:grid md:grid-cols-2 md:grid-rows-2 gap-2 p-2 transition-all md:mr-80">
           {/* Remote Video */}
           <div className="relative flex-1 md:col-span-1 md:row-span-2 bg-black rounded-lg overflow-hidden">
             <video
@@ -313,8 +304,7 @@ const VideoChat = ({
         </div>
 
         {/* Chat Panel */}
-        {showChat && (
-          <div className="absolute md:relative right-0 top-16 bottom-20 md:top-0 md:bottom-0 w-full md:w-80 bg-card border-l flex flex-col z-10">
+        <div className="absolute md:relative right-0 top-16 bottom-20 md:top-0 md:bottom-0 w-full md:w-80 bg-card border-l flex flex-col z-10">
             <div className="p-3 border-b">
               <h3 className="font-semibold text-sm">Chat</h3>
             </div>
@@ -360,8 +350,7 @@ const VideoChat = ({
                 </Button>
               </form>
             </div>
-          </div>
-        )}
+        </div>
       </div>
 
       {/* Controls */}
