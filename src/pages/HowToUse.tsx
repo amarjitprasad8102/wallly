@@ -87,7 +87,7 @@ const HowToUse = () => {
               <CheckCircle className="w-4 h-4" />
               Complete Guide
             </div>
-            <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold mb-6 bg-gradient-primary bg-clip-text text-transparent">
+            <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold mb-6 gradient-text">
               How to Use Kindred
             </h1>
             <p className="text-base sm:text-lg lg:text-xl text-muted-foreground max-w-2xl mx-auto">
