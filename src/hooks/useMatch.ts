@@ -14,6 +14,7 @@ interface SignalMessage {
 export const useMatch = (userId: string) => {
   const [isSearching, setIsSearching] = useState(false);
   const [matchedUserId, setMatchedUserId] = useState<string | null>(null);
+  const [searchingUsersCount, setSearchingUsersCount] = useState(0);
   const channelRef = useRef<RealtimeChannel | null>(null);
   const onSignalRef = useRef<((message: SignalMessage) => void) | null>(null);
   const hasMatchedRef = useRef(false);
@@ -26,11 +27,21 @@ export const useMatch = (userId: string) => {
       console.warn('connectDirectly called without userId; aborting.');
       return;
     }
-    console.log('Connecting directly to:', targetUserId);
+    console.log('[MATCH] Connecting directly to:', targetUserId);
+    
+    // Reset all state before connecting
     setIsSearching(false);
-    setMatchedUserId(targetUserId);
+    setSearchingUsersCount(0);
     hasMatchedRef.current = true;
     isDirectConnectionRef.current = true;
+    
+    // Clear any existing channel
+    if (channelRef.current) {
+      channelRef.current.untrack();
+      supabase.removeChannel(channelRef.current);
+    }
+    
+    setMatchedUserId(targetUserId);
 
     const channel = supabase.channel('matchmaking', {
       config: {
@@ -46,17 +57,18 @@ export const useMatch = (userId: string) => {
     channel
       .on('broadcast', { event: 'signal' }, (payload) => {
         const message = payload.payload as SignalMessage;
-        console.log('Broadcast received:', message.type, 'from:', message.from, 'to:', message.to);
+        console.log('[MATCH] Broadcast received:', message.type, 'from:', message.from, 'to:', message.to);
         if (message.to === userId) {
           if (onSignalRef.current) {
             onSignalRef.current(message);
           } else {
-            console.log('Queueing signal (no handler yet):', message.type);
+            console.log('[MATCH] Queueing signal (no handler yet):', message.type);
             pendingSignalsRef.current.push(message);
           }
         }
       })
       .subscribe(async (status) => {
+        console.log('[MATCH] Direct connection channel status:', status);
         if (status === 'SUBSCRIBED') {
           await channel.track({ user_id: userId, timestamp: Date.now() });
         }
@@ -71,10 +83,20 @@ export const useMatch = (userId: string) => {
       return;
     }
     console.log('[MATCH] Starting matchmaking for user:', userId);
-    setIsSearching(true);
+    
+    // Reset state before starting
     setMatchedUserId(null);
+    setSearchingUsersCount(0);
     hasMatchedRef.current = false;
     isDirectConnectionRef.current = false;
+    
+    // Clear any existing channel
+    if (channelRef.current) {
+      channelRef.current.untrack();
+      supabase.removeChannel(channelRef.current);
+    }
+    
+    setIsSearching(true);
 
     const channel = supabase.channel('matchmaking', {
       config: {
@@ -89,11 +111,14 @@ export const useMatch = (userId: string) => {
 
     channel
       .on('presence', { event: 'sync' }, () => {
-        if (hasMatchedRef.current) return;
-        
         const presenceState = channel.presenceState();
         const users = Object.keys(presenceState).filter(id => id !== userId);
         console.log('[MATCH] Available users:', users);
+        
+        // Update the count of searching users
+        setSearchingUsersCount(users.length);
+        
+        if (hasMatchedRef.current) return;
 
         if (users.length > 0) {
           // Sort users to ensure deterministic matching
@@ -119,6 +144,8 @@ export const useMatch = (userId: string) => {
           } else {
             console.log('[MATCH] Waiting for a partner... (odd number of users)');
           }
+        } else {
+          setSearchingUsersCount(0);
         }
       })
       .on('broadcast', { event: 'signal' }, (payload) => {
@@ -183,6 +210,7 @@ export const useMatch = (userId: string) => {
     }
     setIsSearching(false);
     setMatchedUserId(null);
+    setSearchingUsersCount(0);
     hasMatchedRef.current = false;
     isDirectConnectionRef.current = false;
   }, []);
@@ -196,6 +224,7 @@ export const useMatch = (userId: string) => {
   return {
     isSearching,
     matchedUserId,
+    searchingUsersCount,
     joinMatchmaking,
     connectDirectly,
     leaveMatchmaking,

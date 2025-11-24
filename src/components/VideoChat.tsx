@@ -193,12 +193,21 @@ const VideoChat = ({
   };
 
   const handleSkip = async () => {
+    console.log('[VIDEO] Skipping to next user, cleaning up...');
+    if (dataChannel.current) {
+      dataChannel.current.close();
+      dataChannel.current = null;
+    }
     cleanup();
     onLeave();
   };
 
   const handleEndCall = async () => {
-    dataChannel.current?.close();
+    console.log('[VIDEO] Ending call, cleaning up...');
+    if (dataChannel.current) {
+      dataChannel.current.close();
+      dataChannel.current = null;
+    }
     cleanup();
     onEndCall();
   };

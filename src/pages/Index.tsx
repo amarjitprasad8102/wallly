@@ -31,7 +31,7 @@ const Index = () => {
   const [connectDialogOpen, setConnectDialogOpen] = useState(false);
   const [connectId, setConnectId] = useState('');
   const [isSigningOut, setIsSigningOut] = useState(false);
-  const { isSearching, matchedUserId, joinMatchmaking, connectDirectly, leaveMatchmaking, sendSignal, onSignal } = useMatch(user?.id || '');
+  const { isSearching, matchedUserId, searchingUsersCount, joinMatchmaking, connectDirectly, leaveMatchmaking, sendSignal, onSignal } = useMatch(user?.id || '');
   const {
     pendingRequests,
     acceptedRequest,
@@ -126,6 +126,7 @@ const Index = () => {
   };
 
   const handleEndChat = () => {
+    console.log('[INDEX] Ending chat, cleaning up state');
     leaveMatchmaking();
     setAppState('home');
   };
@@ -173,19 +174,25 @@ const Index = () => {
   // Handle accepted connection request (when OUR sent request is accepted)
   useEffect(() => {
     if (acceptedRequest) {
-      console.log('Our request was accepted by:', acceptedRequest.to_user_id);
+      console.log('[INDEX] Our request was accepted by:', acceptedRequest.to_user_id);
+      // Clean up any existing matchmaking state first
+      leaveMatchmaking();
       // When our request is accepted, we are from_user_id, they are to_user_id
       // We should connect to them (to_user_id)
       connectDirectly(acceptedRequest.to_user_id);
       setAppState('chatting');
       clearAcceptedRequest();
     }
-  }, [acceptedRequest, connectDirectly, clearAcceptedRequest]);
+  }, [acceptedRequest, connectDirectly, clearAcceptedRequest, leaveMatchmaking]);
 
   const handleAcceptRequest = async (requestId: string, fromUserId: string) => {
+    console.log('[INDEX] Accepting request from:', fromUserId);
+    // Clean up any existing matchmaking state first
+    leaveMatchmaking();
+    
     const { error, fromUserId: connectedUserId } = await acceptConnectionRequest(requestId, fromUserId);
     if (!error && connectedUserId) {
-      console.log('We accepted request from:', connectedUserId);
+      console.log('[INDEX] We accepted request from:', connectedUserId);
       // Connect directly to the user who sent the request
       connectDirectly(connectedUserId);
       setAppState('chatting');
@@ -214,7 +221,7 @@ const Index = () => {
   }
 
   if (appState === 'waiting') {
-    return <WaitingScreen />;
+    return <WaitingScreen searchingUsersCount={searchingUsersCount} />;
   }
 
   return (
