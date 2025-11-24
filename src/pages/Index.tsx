@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { MessageCircle, Users, Shield, Zap, LogOut, UserCheck, Home } from 'lucide-react';
+import { MessageCircle, Users, Shield, Zap, LogOut, UserCheck, Home, Heart } from 'lucide-react';
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -12,6 +12,7 @@ import {
 } from "@/components/ui/breadcrumb";
 import VideoChat from '@/components/VideoChat';
 import WaitingScreen from '@/components/WaitingScreen';
+import { InterestsSelector } from '@/components/InterestsSelector';
 import { useMatch } from '@/hooks/useMatch';
 import { useConnectionRequests } from '@/hooks/useConnectionRequests';
 import { supabase } from '@/integrations/supabase/client';
@@ -31,6 +32,7 @@ const Index = () => {
   const [userProfile, setUserProfile] = useState<{ unique_id: string } | null>(null);
   const [appState, setAppState] = useState<'home' | 'waiting' | 'chatting'>('home');
   const [connectDialogOpen, setConnectDialogOpen] = useState(false);
+  const [interestsDialogOpen, setInterestsDialogOpen] = useState(false);
   const [connectId, setConnectId] = useState('');
   const [isSigningOut, setIsSigningOut] = useState(false);
   const [disconnectMessage, setDisconnectMessage] = useState<string | null>(null);
@@ -404,6 +406,34 @@ const Index = () => {
               <MessageCircle className="w-5 h-5 sm:w-6 sm:h-6 mr-2" aria-hidden="true" />
               Start Video Chat
             </Button>
+
+            <Dialog open={interestsDialogOpen} onOpenChange={setInterestsDialogOpen}>
+              <DialogTrigger asChild>
+                <Button
+                  size="lg"
+                  variant="secondary"
+                  className="text-base sm:text-lg px-6 sm:px-8 py-5 sm:py-6 rounded-full hover:scale-105 transition-all w-full sm:w-auto touch-manipulation"
+                  aria-label="Set interests"
+                >
+                  <Heart className="w-5 h-5 mr-2" />
+                  My Interests
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="max-w-[90vw] sm:max-w-2xl max-h-[90vh] overflow-y-auto">
+                <DialogHeader>
+                  <DialogTitle>Your Interests</DialogTitle>
+                  <DialogDescription>
+                    Select your interests to match with people who share similar passions
+                  </DialogDescription>
+                </DialogHeader>
+                {user && (
+                  <InterestsSelector 
+                    userId={user.id} 
+                    onClose={() => setInterestsDialogOpen(false)}
+                  />
+                )}
+              </DialogContent>
+            </Dialog>
 
             <Dialog open={connectDialogOpen} onOpenChange={setConnectDialogOpen}>
               <DialogTrigger asChild>
