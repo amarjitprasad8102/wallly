@@ -116,20 +116,34 @@ const Auth = () => {
       return;
     }
 
+    // Basic email validation
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(resetEmail)) {
+      toast.error("Please enter a valid email address");
+      return;
+    }
+
     setResetLoading(true);
 
     try {
-      const { error } = await supabase.auth.resetPasswordForEmail(resetEmail, {
-        redirectTo: `${window.location.origin}/app`,
+      const { error } = await supabase.auth.resetPasswordForEmail(resetEmail.trim(), {
+        redirectTo: `${window.location.origin}/auth`,
       });
 
-      if (error) throw error;
+      if (error) {
+        console.error('Password reset error:', error);
+        throw error;
+      }
 
-      toast.success("Password reset email sent! Check your inbox.");
+      toast.success("Password reset link sent! Check your email inbox and spam folder.");
       setShowForgotPassword(false);
       setResetEmail("");
     } catch (error: any) {
-      toast.error(error.message || "Failed to send reset email");
+      console.error('Password reset error:', error);
+      // Don't reveal if email exists or not for security
+      toast.success("If an account exists with this email, you will receive a password reset link.");
+      setShowForgotPassword(false);
+      setResetEmail("");
     } finally {
       setResetLoading(false);
     }
