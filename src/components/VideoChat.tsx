@@ -194,6 +194,7 @@ const VideoChat = ({
           autoPlay
           playsInline
           className="w-full h-full object-cover bg-black"
+          style={{ transform: 'translateZ(0)' }}
         />
         
         <video
@@ -202,6 +203,7 @@ const VideoChat = ({
           playsInline
           muted
           className="absolute bottom-4 right-4 w-48 h-36 object-cover rounded-lg border-2 border-white shadow-lg"
+          style={{ transform: 'translateZ(0)' }}
         />
       </div>
 
