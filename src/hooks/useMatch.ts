@@ -19,9 +19,8 @@ export const useMatch = (userId: string) => {
   const onSignalRef = useRef<((message: SignalMessage) => void) | null>(null);
   const hasMatchedRef = useRef(false);
   const isDirectConnectionRef = useRef(false);
+  // Buffer signals received before a handler is registered (prevents race conditions)
   const pendingSignalsRef = useRef<SignalMessage[]>([]);
-  const matchCheckIntervalRef = useRef<NodeJS.Timeout | null>(null);
-  const queueCountIntervalRef = useRef<NodeJS.Timeout | null>(null);
 
   const connectDirectly = useCallback((targetUserId: string) => {
     if (!userId) {
@@ -78,12 +77,12 @@ export const useMatch = (userId: string) => {
     channelRef.current = channel;
   }, [userId]);
 
-  const joinMatchmaking = useCallback(async () => {
+  const joinMatchmaking = useCallback(() => {
     if (!userId) {
       console.warn('joinMatchmaking called without userId; aborting.');
       return;
     }
-    console.log('[MATCH] Starting database-based matchmaking for user:', userId);
+    console.log('[MATCH] Starting matchmaking for user:', userId);
     
     // Reset state before starting
     setMatchedUserId(null);
@@ -91,36 +90,19 @@ export const useMatch = (userId: string) => {
     hasMatchedRef.current = false;
     isDirectConnectionRef.current = false;
     
-    // Clear any existing channel and intervals
+    // Clear any existing channel
     if (channelRef.current) {
       channelRef.current.untrack();
       supabase.removeChannel(channelRef.current);
     }
-    if (matchCheckIntervalRef.current) {
-      clearInterval(matchCheckIntervalRef.current);
-    }
-    if (queueCountIntervalRef.current) {
-      clearInterval(queueCountIntervalRef.current);
-    }
     
     setIsSearching(true);
 
-    // Get user's unique_id from profiles
-    const { data: profile } = await supabase
-      .from('profiles')
-      .select('unique_id')
-      .eq('id', userId)
-      .single();
-
-    if (!profile?.unique_id) {
-      console.error('[MATCH] Could not find user profile');
-      setIsSearching(false);
-      return;
-    }
-
-    // Setup broadcast channel for WebRTC signaling
     const channel = supabase.channel('matchmaking', {
       config: {
+        presence: {
+          key: userId,
+        },
         broadcast: {
           self: false,
         },
@@ -128,91 +110,67 @@ export const useMatch = (userId: string) => {
     });
 
     channel
+      .on('presence', { event: 'sync' }, () => {
+        const presenceState = channel.presenceState();
+        const users = Object.keys(presenceState).filter(id => id !== userId);
+        console.log('[MATCH] Available users:', users);
+        
+        // Update the count of searching users
+        setSearchingUsersCount(users.length);
+        
+        if (hasMatchedRef.current) return;
+
+        if (users.length > 0) {
+          // Sort users to ensure deterministic matching
+          const sortedUsers = [...users, userId].sort();
+          const myIndex = sortedUsers.indexOf(userId);
+          
+          // Only match if we're at an even index (0, 2, 4...)
+          // and there's a user right after us
+          if (myIndex % 2 === 0 && myIndex + 1 < sortedUsers.length) {
+            const partner = sortedUsers[myIndex + 1];
+            hasMatchedRef.current = true;
+            console.log('[MATCH] Matched with:', partner, 'as initiator');
+            setMatchedUserId(partner);
+            setIsSearching(false);
+          } 
+          // If we're at odd index (1, 3, 5...), match with user before us
+          else if (myIndex % 2 === 1) {
+            const partner = sortedUsers[myIndex - 1];
+            hasMatchedRef.current = true;
+            console.log('[MATCH] Matched with:', partner, 'as receiver');
+            setMatchedUserId(partner);
+            setIsSearching(false);
+          } else {
+            console.log('[MATCH] Waiting for a partner... (odd number of users)');
+          }
+        } else {
+          setSearchingUsersCount(0);
+        }
+      })
       .on('broadcast', { event: 'signal' }, (payload) => {
         const message = payload.payload as SignalMessage;
-        console.log('[MATCH] Signal received:', message.type, 'from:', message.from, 'to:', message.to);
+        console.log('Broadcast received:', message.type, 'from:', message.from, 'to:', message.to);
         if (message.to === userId) {
           if (onSignalRef.current) {
             onSignalRef.current(message);
           } else {
-            console.log('[MATCH] Queueing signal (no handler yet):', message.type);
+            // No handler yet: queue it so Chat can process later
+            console.log('Queueing signal (no handler yet):', message.type);
             pendingSignalsRef.current.push(message);
           }
         }
       })
-      .subscribe((status) => {
-        console.log('[MATCH] Channel status:', status);
+      .subscribe(async (status) => {
+        console.log('[MATCH] Channel subscription status:', status);
+        if (status === 'SUBSCRIBED') {
+          console.log('[MATCH] Tracking presence for user:', userId);
+          await channel.track({ user_id: userId, timestamp: Date.now() });
+        }
       });
 
     channelRef.current = channel;
-
-    // Try to find a match immediately
-    try {
-      const { data: matchData } = await supabase.rpc('find_match', {
-        p_user_id: userId,
-        p_unique_id: profile.unique_id
-      });
-
-      if (matchData && matchData.length > 0 && matchData[0].matched_user_id) {
-        hasMatchedRef.current = true;
-        console.log('[MATCH] Immediately matched with:', matchData[0].matched_user_id);
-        setMatchedUserId(matchData[0].matched_user_id);
-        setIsSearching(false);
-        return;
-      }
-    } catch (error) {
-      console.error('[MATCH] Error finding match:', error);
-    }
-
-    // Poll for matches every 2 seconds
-    matchCheckIntervalRef.current = setInterval(async () => {
-      if (hasMatchedRef.current) {
-        if (matchCheckIntervalRef.current) {
-          clearInterval(matchCheckIntervalRef.current);
-        }
-        return;
-      }
-
-      try {
-        const { data: queueData } = await supabase
-          .from('matchmaking_queue')
-          .select('matched_with_user_id, matched_with_unique_id')
-          .eq('user_id', userId)
-          .eq('status', 'matched')
-          .single();
-
-        if (queueData?.matched_with_user_id) {
-          hasMatchedRef.current = true;
-          console.log('[MATCH] Found match from queue:', queueData.matched_with_user_id);
-          setMatchedUserId(queueData.matched_with_user_id);
-          setIsSearching(false);
-          if (matchCheckIntervalRef.current) {
-            clearInterval(matchCheckIntervalRef.current);
-          }
-        }
-      } catch (error) {
-        // User not matched yet, continue polling
-      }
-    }, 2000);
-
-    // Update queue count every 3 seconds
-    queueCountIntervalRef.current = setInterval(async () => {
-      try {
-        const { data: count } = await supabase.rpc('get_queue_count');
-        setSearchingUsersCount(count || 0);
-      } catch (error) {
-        console.error('[MATCH] Error getting queue count:', error);
-      }
-    }, 3000);
-
-    // Get initial count
-    try {
-      const { data: count } = await supabase.rpc('get_queue_count');
-      setSearchingUsersCount(count || 0);
-    } catch (error) {
-      console.error('[MATCH] Error getting initial queue count:', error);
-    }
-  }, [userId]);
+  }, [userId, matchedUserId]);
 
   const sendSignal = useCallback(
     (to: string, type: SignalType, data: any) => {
@@ -244,69 +202,24 @@ export const useMatch = (userId: string) => {
     }
   }, []);
 
-  const leaveMatchmaking = useCallback(async () => {
-    // Clear intervals
-    if (matchCheckIntervalRef.current) {
-      clearInterval(matchCheckIntervalRef.current);
-      matchCheckIntervalRef.current = null;
-    }
-    if (queueCountIntervalRef.current) {
-      clearInterval(queueCountIntervalRef.current);
-      queueCountIntervalRef.current = null;
-    }
-
-    // Remove from queue
-    try {
-      await supabase
-        .from('matchmaking_queue')
-        .delete()
-        .eq('user_id', userId);
-    } catch (error) {
-      console.error('[MATCH] Error leaving queue:', error);
-    }
-
-    // Clean up channel
+  const leaveMatchmaking = useCallback(() => {
     if (channelRef.current) {
       channelRef.current.untrack();
       supabase.removeChannel(channelRef.current);
       channelRef.current = null;
     }
-
     setIsSearching(false);
     setMatchedUserId(null);
     setSearchingUsersCount(0);
     hasMatchedRef.current = false;
     isDirectConnectionRef.current = false;
-  }, [userId]);
+  }, []);
 
   useEffect(() => {
-    // Cleanup on unmount
     return () => {
-      if (matchCheckIntervalRef.current) {
-        clearInterval(matchCheckIntervalRef.current);
-      }
-      if (queueCountIntervalRef.current) {
-        clearInterval(queueCountIntervalRef.current);
-      }
-      
-      // Remove from queue when component unmounts
-      if (userId) {
-        (async () => {
-          try {
-            await supabase
-              .from('matchmaking_queue')
-              .delete()
-              .eq('user_id', userId);
-            console.log('[MATCH] Cleaned up queue on unmount');
-          } catch (err) {
-            console.error('[MATCH] Error cleaning queue:', err);
-          }
-        })();
-      }
-      
       leaveMatchmaking();
     };
-  }, [leaveMatchmaking, userId]);
+  }, [leaveMatchmaking]);
 
   return {
     isSearching,
