@@ -1,7 +1,6 @@
 import { useEffect, useRef, useState, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { RealtimeChannel } from '@supabase/supabase-js';
-import { toast } from 'sonner';
 
 type SignalType = 'offer' | 'answer' | 'ice-candidate' | 'ready';
 
@@ -147,43 +146,22 @@ export const useMatch = (userId: string) => {
 
     channelRef.current = channel;
 
-    // Try to find a match with interests immediately
+    // Try to find a match immediately
     try {
-      const { data: matchData } = await supabase.rpc('find_match_with_interests', {
+      const { data: matchData } = await supabase.rpc('find_match', {
         p_user_id: userId,
         p_unique_id: profile.unique_id
       });
 
       if (matchData && matchData.length > 0 && matchData[0].matched_user_id) {
         hasMatchedRef.current = true;
-        const sharedCount = matchData[0].shared_interests || 0;
-        console.log('[MATCH] Immediately matched with:', matchData[0].matched_user_id, 'Shared interests:', sharedCount);
-        if (sharedCount > 0) {
-          toast.success(`Matched! You share ${sharedCount} interest${sharedCount > 1 ? 's' : ''}!`);
-        }
+        console.log('[MATCH] Immediately matched with:', matchData[0].matched_user_id);
         setMatchedUserId(matchData[0].matched_user_id);
         setIsSearching(false);
         return;
       }
     } catch (error) {
       console.error('[MATCH] Error finding match:', error);
-      // Fallback to old method if new one fails
-      try {
-        const { data: fallbackData } = await supabase.rpc('find_match', {
-          p_user_id: userId,
-          p_unique_id: profile.unique_id
-        });
-
-        if (fallbackData && fallbackData.length > 0 && fallbackData[0].matched_user_id) {
-          hasMatchedRef.current = true;
-          console.log('[MATCH] Fallback match found:', fallbackData[0].matched_user_id);
-          setMatchedUserId(fallbackData[0].matched_user_id);
-          setIsSearching(false);
-          return;
-        }
-      } catch (fallbackError) {
-        console.error('[MATCH] Fallback match error:', fallbackError);
-      }
     }
 
     // Poll for matches every 2 seconds
@@ -267,8 +245,6 @@ export const useMatch = (userId: string) => {
   }, []);
 
   const leaveMatchmaking = useCallback(async () => {
-    console.log('[MATCH] Leaving matchmaking and cleaning up...');
-    
     // Clear intervals
     if (matchCheckIntervalRef.current) {
       clearInterval(matchCheckIntervalRef.current);
@@ -279,45 +255,28 @@ export const useMatch = (userId: string) => {
       queueCountIntervalRef.current = null;
     }
 
-    // Remove from queue - this is critical for proper cleanup
-    if (userId) {
-      try {
-        const { error } = await supabase
-          .from('matchmaking_queue')
-          .delete()
-          .eq('user_id', userId);
-        
-        if (error) {
-          console.error('[MATCH] Error removing from queue:', error);
-        } else {
-          console.log('[MATCH] Successfully removed from queue');
-        }
-      } catch (error) {
-        console.error('[MATCH] Exception removing from queue:', error);
-      }
+    // Remove from queue
+    try {
+      await supabase
+        .from('matchmaking_queue')
+        .delete()
+        .eq('user_id', userId);
+    } catch (error) {
+      console.error('[MATCH] Error leaving queue:', error);
     }
 
     // Clean up channel
     if (channelRef.current) {
-      try {
-        channelRef.current.untrack();
-        await supabase.removeChannel(channelRef.current);
-        channelRef.current = null;
-        console.log('[MATCH] Channel cleaned up');
-      } catch (error) {
-        console.error('[MATCH] Error cleaning up channel:', error);
-      }
+      channelRef.current.untrack();
+      supabase.removeChannel(channelRef.current);
+      channelRef.current = null;
     }
 
-    // Reset all state
     setIsSearching(false);
     setMatchedUserId(null);
     setSearchingUsersCount(0);
     hasMatchedRef.current = false;
     isDirectConnectionRef.current = false;
-    pendingSignalsRef.current = [];
-    
-    console.log('[MATCH] Cleanup complete');
   }, [userId]);
 
   useEffect(() => {
