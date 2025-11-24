@@ -70,6 +70,7 @@ export const useMatch = (userId: string) => {
       console.warn('joinMatchmaking called without userId; aborting.');
       return;
     }
+    console.log('[MATCH] Starting matchmaking for user:', userId);
     setIsSearching(true);
     setMatchedUserId(null);
     hasMatchedRef.current = false;
@@ -116,7 +117,9 @@ export const useMatch = (userId: string) => {
         }
       })
       .subscribe(async (status) => {
+        console.log('[MATCH] Channel subscription status:', status);
         if (status === 'SUBSCRIBED') {
+          console.log('[MATCH] Tracking presence for user:', userId);
           await channel.track({ user_id: userId, timestamp: Date.now() });
         }
       });
