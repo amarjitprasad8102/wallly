@@ -93,14 +93,32 @@ export const useMatch = (userId: string) => {
         
         const presenceState = channel.presenceState();
         const users = Object.keys(presenceState).filter(id => id !== userId);
-        console.log('Available users:', users);
+        console.log('[MATCH] Available users:', users);
 
         if (users.length > 0) {
-          const partner = users[0];
-          hasMatchedRef.current = true;
-          console.log('Matched with:', partner);
-          setMatchedUserId(partner);
-          setIsSearching(false);
+          // Sort users to ensure deterministic matching
+          const sortedUsers = [...users, userId].sort();
+          const myIndex = sortedUsers.indexOf(userId);
+          
+          // Only match if we're at an even index (0, 2, 4...)
+          // and there's a user right after us
+          if (myIndex % 2 === 0 && myIndex + 1 < sortedUsers.length) {
+            const partner = sortedUsers[myIndex + 1];
+            hasMatchedRef.current = true;
+            console.log('[MATCH] Matched with:', partner, 'as initiator');
+            setMatchedUserId(partner);
+            setIsSearching(false);
+          } 
+          // If we're at odd index (1, 3, 5...), match with user before us
+          else if (myIndex % 2 === 1) {
+            const partner = sortedUsers[myIndex - 1];
+            hasMatchedRef.current = true;
+            console.log('[MATCH] Matched with:', partner, 'as receiver');
+            setMatchedUserId(partner);
+            setIsSearching(false);
+          } else {
+            console.log('[MATCH] Waiting for a partner... (odd number of users)');
+          }
         }
       })
       .on('broadcast', { event: 'signal' }, (payload) => {
