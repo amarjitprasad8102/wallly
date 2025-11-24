@@ -90,7 +90,7 @@ const Landing = () => {
               </div>
             </div>
             
-            <h1 className="text-4xl sm:text-5xl lg:text-7xl font-bold mb-4 sm:mb-6 bg-gradient-primary bg-clip-text text-transparent leading-tight">
+            <h1 className="text-4xl sm:text-5xl lg:text-7xl font-bold mb-4 sm:mb-6 gradient-text leading-tight">
               Connect With Strangers Worldwide
             </h1>
             <p className="text-base sm:text-lg lg:text-xl text-muted-foreground mb-2 max-w-2xl mx-auto px-4">
