@@ -15,8 +15,10 @@ export const useWebRTC = (
       iceServers: [
         { urls: 'stun:stun.l.google.com:19302' },
         { urls: 'stun:stun1.l.google.com:19302' },
-        { urls: 'stun:stun2.l.google.com:19302' },
       ],
+      iceCandidatePoolSize: 10,
+      bundlePolicy: 'max-bundle',
+      rtcpMuxPolicy: 'require',
     });
 
     pc.oniceconnectionstatechange = () => {
@@ -39,7 +41,10 @@ export const useWebRTC = (
 
   const createOffer = useCallback(async () => {
     if (!peerConnection.current) return null;
-    const offer = await peerConnection.current.createOffer();
+    const offer = await peerConnection.current.createOffer({
+      offerToReceiveAudio: true,
+      offerToReceiveVideo: true
+    });
     await peerConnection.current.setLocalDescription(offer);
     return offer;
   }, []);
@@ -91,14 +96,35 @@ export const useWebRTC = (
   const addLocalStream = useCallback(async () => {
     try {
       const stream = await navigator.mediaDevices.getUserMedia({
-        video: true,
-        audio: true
+        video: {
+          width: { ideal: 640, max: 1280 },
+          height: { ideal: 480, max: 720 },
+          frameRate: { ideal: 24, max: 30 }
+        },
+        audio: {
+          echoCancellation: true,
+          noiseSuppression: true,
+          autoGainControl: true
+        }
       });
       localStream.current = stream;
       
       if (peerConnection.current) {
         stream.getTracks().forEach(track => {
-          peerConnection.current?.addTrack(track, stream);
+          const sender = peerConnection.current?.addTrack(track, stream);
+          
+          // Optimize video encoding parameters
+          if (track.kind === 'video' && sender) {
+            const params = sender.getParameters();
+            if (!params.encodings) {
+              params.encodings = [{}];
+            }
+            params.encodings[0].maxBitrate = 500000; // 500 kbps
+            params.encodings[0].scaleResolutionDownBy = 1;
+            sender.setParameters(params).catch(err => 
+              console.error('Error setting encoding params:', err)
+            );
+          }
         });
       }
       
