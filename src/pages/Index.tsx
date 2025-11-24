@@ -10,7 +10,7 @@ import {
   BreadcrumbPage,
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
-import Chat from '@/components/ChatWithImageSupport';
+import VideoChat from '@/components/VideoChat';
 import WaitingScreen from '@/components/WaitingScreen';
 import { useMatch } from '@/hooks/useMatch';
 import { useConnectionRequests } from '@/hooks/useConnectionRequests';
@@ -185,13 +185,13 @@ const Index = () => {
 
   if (appState === 'chatting' && matchedUserId) {
     return (
-      <Chat
-        userId={user.id}
+      <VideoChat
+        currentUserId={user.id}
         matchedUserId={matchedUserId}
         sendSignal={sendSignal}
         onSignal={onSignal}
-        leaveMatchmaking={leaveMatchmaking}
-        onEnd={handleEndChat}
+        onLeave={handleEndChat}
+        onEndCall={handleEndChat}
       />
     );
   }
@@ -298,10 +298,10 @@ const Index = () => {
 
           {/* Heading */}
           <h1 className="text-5xl md:text-7xl font-bold mb-6 bg-gradient-primary bg-clip-text text-transparent">
-            Random Chat
+            Random Video Chat
           </h1>
           <p className="text-xl md:text-2xl text-muted-foreground mb-12 max-w-2xl mx-auto">
-            Connect with strangers worldwide through instant text chat. Start conversations, make
+            Connect face-to-face with strangers worldwide through instant video chat. Start conversations, make
             friends, and explore new perspectives.
           </p>
 
@@ -311,10 +311,10 @@ const Index = () => {
               onClick={handleStartChat}
               size="lg"
               className="text-lg px-8 py-6 rounded-full bg-gradient-primary hover:opacity-90 transition-all hover:scale-105 shadow-glow"
-              aria-label="Start chatting"
+              aria-label="Start video chat"
             >
               <MessageCircle className="w-6 h-6 mr-2" aria-hidden="true" />
-              Start Chatting
+              Start Video Chat
             </Button>
 
             <Dialog open={connectDialogOpen} onOpenChange={setConnectDialogOpen}>
