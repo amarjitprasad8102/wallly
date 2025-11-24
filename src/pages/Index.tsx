@@ -30,6 +30,7 @@ const Index = () => {
   const [appState, setAppState] = useState<'home' | 'waiting' | 'chatting'>('home');
   const [connectDialogOpen, setConnectDialogOpen] = useState(false);
   const [connectId, setConnectId] = useState('');
+  const [isSigningOut, setIsSigningOut] = useState(false);
   const { isSearching, matchedUserId, joinMatchmaking, connectDirectly, leaveMatchmaking, sendSignal, onSignal } = useMatch(user?.id || '');
   const {
     pendingRequests,
@@ -92,6 +93,7 @@ const Index = () => {
   };
 
   const handleSignOut = async () => {
+    setIsSigningOut(true);
     try {
       // Sign out from Supabase
       const { error } = await supabase.auth.signOut();
@@ -99,6 +101,7 @@ const Index = () => {
       if (error) {
         console.error('Sign out error:', error);
         toast.error('Failed to sign out');
+        setIsSigningOut(false);
         return;
       }
 
@@ -113,6 +116,7 @@ const Index = () => {
     } catch (error) {
       console.error('Unexpected sign out error:', error);
       toast.error('An error occurred during sign out');
+      setIsSigningOut(false);
     }
   };
 
@@ -246,9 +250,15 @@ const Index = () => {
               <UserCheck className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
               Connections
             </Button>
-            <Button variant="outline" size="sm" onClick={handleSignOut} className="flex-1 sm:flex-none text-xs sm:text-sm h-8 sm:h-9">
-              <LogOut className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
-              Sign Out
+            <Button 
+              variant="outline" 
+              size="sm" 
+              onClick={handleSignOut} 
+              disabled={isSigningOut}
+              className="flex-1 sm:flex-none text-xs sm:text-sm h-8 sm:h-9"
+            >
+              <LogOut className={`h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2 ${isSigningOut ? 'animate-spin' : ''}`} />
+              {isSigningOut ? 'Signing Out...' : 'Sign Out'}
             </Button>
           </div>
         </div>
