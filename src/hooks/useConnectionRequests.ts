@@ -15,17 +15,30 @@ interface ConnectionRequest {
 export const useConnectionRequests = (userId: string | undefined) => {
   const [pendingRequests, setPendingRequests] = useState<ConnectionRequest[]>([]);
   const [acceptedRequest, setAcceptedRequest] = useState<ConnectionRequest | null>(null);
+  const [sentRequests, setSentRequests] = useState<Set<string>>(new Set());
 
   useEffect(() => {
     if (!userId) return;
 
-    // Fetch pending requests
+    // Fetch pending requests and sent requests
     const fetchRequests = async () => {
+      // Fetch received pending requests
       const { data, error } = await supabase
         .from('connection_requests')
         .select('*')
         .eq('to_user_id', userId)
         .eq('status', 'pending');
+
+      // Fetch sent requests to track duplicates
+      const { data: sentData } = await supabase
+        .from('connection_requests')
+        .select('to_user_id')
+        .eq('from_user_id', userId)
+        .in('status', ['pending', 'accepted']);
+      
+      if (sentData) {
+        setSentRequests(new Set(sentData.map(r => r.to_user_id)));
+      }
 
       if (error) {
         console.error('Error fetching connection requests:', error);
@@ -119,6 +132,11 @@ export const useConnectionRequests = (userId: string | undefined) => {
   const sendConnectionRequest = async (toUserId: string) => {
     if (!userId) return { error: 'Not authenticated' };
 
+    // Check if request already sent
+    if (sentRequests.has(toUserId)) {
+      return { error: 'Connection request already sent' };
+    }
+
     const { error } = await supabase
       .from('connection_requests')
       .insert({
@@ -134,6 +152,9 @@ export const useConnectionRequests = (userId: string | undefined) => {
       return { error: error.message };
     }
 
+    // Add to sent requests set
+    setSentRequests(prev => new Set([...prev, toUserId]));
+    toast.success('Connection request sent!');
     return { error: null };
   };
 
@@ -188,5 +209,6 @@ export const useConnectionRequests = (userId: string | undefined) => {
     acceptConnectionRequest,
     rejectConnectionRequest,
     clearAcceptedRequest: () => setAcceptedRequest(null),
+    hasRequestSent: (toUserId: string) => sentRequests.has(toUserId),
   };
 };
