@@ -99,19 +99,23 @@ const Index = () => {
   const handleSignOut = async () => {
     setIsSigningOut(true);
     try {
-      // Sign out from Supabase with global scope to clear all sessions
+      // Sign out from Supabase with global scope
       await supabase.auth.signOut({ scope: 'global' });
       
-      // The onAuthStateChange listener will handle the navigation
-      // But we'll add a fallback timeout just in case
-      setTimeout(() => {
-        if (window.location.pathname !== '/auth') {
-          navigate('/auth', { replace: true });
-        }
-      }, 1000);
+      // Clear local storage to ensure no session persists
+      localStorage.removeItem('supabase.auth.token');
+      
+      // Clear local state
+      setUser(null);
+      setUserProfile(null);
+      setAppState('home');
+      
+      // Navigate to auth page
+      navigate('/auth', { replace: true });
     } catch (error) {
       console.error('Sign out error:', error);
-      // Force navigation on error
+      // Force clear on error
+      localStorage.clear();
       setUser(null);
       setUserProfile(null);
       setAppState('home');

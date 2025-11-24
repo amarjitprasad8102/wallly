@@ -35,15 +35,19 @@ const Auth = () => {
   const [resetLoading, setResetLoading] = useState(false);
 
   useEffect(() => {
-    // Check if user is already logged in
-    supabase.auth.getSession().then(({ data: { session } }) => {
+    // Only check for existing session after a small delay to ensure sign-out is complete
+    const checkSession = async () => {
+      await new Promise(resolve => setTimeout(resolve, 100));
+      const { data: { session } } = await supabase.auth.getSession();
       if (session) {
         navigate("/app");
       }
-    });
+    };
+    
+    checkSession();
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-      if (session) {
+      if (event === 'SIGNED_IN' && session) {
         navigate("/app");
       }
     });
