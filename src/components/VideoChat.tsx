@@ -40,10 +40,15 @@ const VideoChat = ({
     addLocalStream,
     cleanup
   } = useWebRTC(
-    (state) => setConnectionStatus(state),
+    (state) => {
+      console.log('Connection state changed:', state);
+      setConnectionStatus(state);
+    },
     (stream) => {
+      console.log('Remote stream received:', stream);
       if (remoteVideoRef.current) {
         remoteVideoRef.current.srcObject = stream;
+        console.log('Remote video srcObject set');
       }
     }
   );
@@ -51,25 +56,33 @@ const VideoChat = ({
   useEffect(() => {
     const initializeCall = async () => {
       try {
+        console.log('Initializing call...');
         const pc = createPeerConnection();
-        const stream = await addLocalStream();
+        console.log('Peer connection created');
         
-        if (localVideoRef.current) {
+        const stream = await addLocalStream();
+        console.log('Local stream obtained:', stream);
+        
+        if (localVideoRef.current && stream) {
           localVideoRef.current.srcObject = stream;
+          console.log('Local video srcObject set');
         }
 
         pc.onicecandidate = (event) => {
           if (event.candidate) {
+            console.log('Sending ICE candidate');
             sendSignal(matchedUserId, 'ice-candidate', event.candidate);
           }
         };
 
         const isInitiator = currentUserId < matchedUserId;
+        console.log('Is initiator:', isInitiator);
         
         if (isInitiator && !hasInitiatedOffer.current) {
           hasInitiatedOffer.current = true;
           sendSignal(matchedUserId, 'ready', {});
           setTimeout(async () => {
+            console.log('Creating and sending offer');
             const offer = await createOffer();
             sendSignal(matchedUserId, 'offer', offer);
           }, 1000);
@@ -84,12 +97,14 @@ const VideoChat = ({
     initializeCall();
 
     return () => {
+      console.log('Cleaning up video chat');
       cleanup();
     };
   }, [currentUserId, matchedUserId]);
 
   useEffect(() => {
     onSignal(async (message) => {
+      console.log('Received signal:', message.type, 'from:', message.from);
       if (message.from !== matchedUserId) return;
 
       try {
@@ -99,16 +114,20 @@ const VideoChat = ({
             break;
 
           case 'offer':
+            console.log('Received offer, creating answer');
             await setRemoteDescription(message.data);
             const answer = await createAnswer();
             sendSignal(matchedUserId, 'answer', answer);
+            console.log('Answer sent');
             break;
 
           case 'answer':
+            console.log('Received answer');
             await setRemoteDescription(message.data);
             break;
 
           case 'ice-candidate':
+            console.log('Received ICE candidate');
             await addIceCandidate(message.data);
             break;
         }
@@ -128,21 +147,23 @@ const VideoChat = ({
   }, [connectionStatus]);
 
   const toggleVideo = () => {
-    if (localStream) {
-      const videoTrack = localStream.getVideoTracks()[0];
+    if (localStream?.current) {
+      const videoTrack = localStream.current.getVideoTracks()[0];
       if (videoTrack) {
         videoTrack.enabled = !videoTrack.enabled;
         setIsVideoEnabled(videoTrack.enabled);
+        console.log('Video toggled:', videoTrack.enabled);
       }
     }
   };
 
   const toggleAudio = () => {
-    if (localStream) {
-      const audioTrack = localStream.getAudioTracks()[0];
+    if (localStream?.current) {
+      const audioTrack = localStream.current.getAudioTracks()[0];
       if (audioTrack) {
         audioTrack.enabled = !audioTrack.enabled;
         setIsAudioEnabled(audioTrack.enabled);
+        console.log('Audio toggled:', audioTrack.enabled);
       }
     }
   };
