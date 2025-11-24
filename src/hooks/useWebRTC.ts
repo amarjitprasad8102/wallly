@@ -121,9 +121,10 @@ export const useWebRTC = (
           autoGainControl: true
         }
       });
-      console.log('Media devices accessed successfully:', {
+      console.log('[WebRTC] Media devices accessed successfully:', {
         videoTracks: stream.getVideoTracks().length,
-        audioTracks: stream.getAudioTracks().length
+        audioTracks: stream.getAudioTracks().length,
+        videoSettings: stream.getVideoTracks()[0]?.getSettings()
       });
       
       localStream.current = stream;
@@ -141,7 +142,7 @@ export const useWebRTC = (
               params.encodings = [{}];
             }
             // Lower bitrate for mobile devices
-            params.encodings[0].maxBitrate = isMobile ? 300000 : 600000; // 300 kbps for mobile, 600 kbps for desktop
+            params.encodings[0].maxBitrate = isMobile ? 500000 : 800000; // 500 kbps for mobile, 800 kbps for desktop
             params.encodings[0].scaleResolutionDownBy = 1;
             sender.setParameters(params).catch(err => 
               console.error('Error setting encoding params:', err)
