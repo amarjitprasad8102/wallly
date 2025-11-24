@@ -7,6 +7,8 @@ import { supabase } from '@/integrations/supabase/client';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Drawer, DrawerContent, DrawerTrigger } from '@/components/ui/drawer';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { soundEffects } from '@/utils/sounds';
+import { haptics } from '@/utils/haptics';
 
 interface VideoChatProps {
   currentUserId: string;
@@ -15,6 +17,7 @@ interface VideoChatProps {
   sendSignal: (to: string, type: string, data: any) => void;
   onLeave: () => void;
   onEndCall: () => void;
+  onOtherUserDisconnected: () => void;
 }
 
 const VideoChat = ({
@@ -23,7 +26,8 @@ const VideoChat = ({
   onSignal,
   sendSignal,
   onLeave,
-  onEndCall
+  onEndCall,
+  onOtherUserDisconnected,
 }: VideoChatProps) => {
   const localVideoRef = useRef<HTMLVideoElement>(null);
   const remoteVideoRef = useRef<HTMLVideoElement>(null);
@@ -51,14 +55,20 @@ const VideoChat = ({
     cleanup
   } = useWebRTC(
     (state) => {
-      console.log('Connection state changed:', state);
+      console.log('[VIDEO] Connection state changed:', state);
       setConnectionStatus(state);
+      
+      // Detect disconnection
+      if (state === 'disconnected' || state === 'failed' || state === 'closed') {
+        console.log('[VIDEO] Connection lost, notifying parent');
+        onOtherUserDisconnected();
+      }
     },
     (stream) => {
-      console.log('Remote stream received:', stream);
+      console.log('[VIDEO] Remote stream received:', stream);
       if (remoteVideoRef.current) {
         remoteVideoRef.current.srcObject = stream;
-        console.log('Remote video srcObject set');
+        console.log('[VIDEO] Remote video srcObject set');
       }
     }
   );
@@ -194,6 +204,8 @@ const VideoChat = ({
 
   const handleSkip = async () => {
     console.log('[VIDEO] Skipping to next user, cleaning up...');
+    soundEffects.playClick();
+    haptics.light();
     if (dataChannel.current) {
       dataChannel.current.close();
       dataChannel.current = null;
@@ -204,6 +216,8 @@ const VideoChat = ({
 
   const handleEndCall = async () => {
     console.log('[VIDEO] Ending call, cleaning up...');
+    soundEffects.playDisconnect();
+    haptics.medium();
     if (dataChannel.current) {
       dataChannel.current.close();
       dataChannel.current = null;
@@ -222,6 +236,9 @@ const VideoChat = ({
       const data = JSON.parse(event.data);
       if (data.type === 'text') {
         setMessages(prev => [...prev, { text: data.text, sender: 'them', timestamp: new Date() }]);
+        // Play notification sound and haptic for incoming messages
+        soundEffects.playNotification();
+        haptics.light();
       }
     };
 
@@ -239,6 +256,9 @@ const VideoChat = ({
       });
       return;
     }
+
+    soundEffects.playClick();
+    haptics.light();
 
     const message = { type: 'text', text: newMessage };
     dataChannel.current.send(JSON.stringify(message));
