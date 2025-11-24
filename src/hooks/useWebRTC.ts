@@ -95,6 +95,7 @@ export const useWebRTC = (
 
   const addLocalStream = useCallback(async () => {
     try {
+      console.log('Requesting media devices...');
       const stream = await navigator.mediaDevices.getUserMedia({
         video: {
           width: { ideal: 640, max: 640 },
@@ -107,10 +108,16 @@ export const useWebRTC = (
           autoGainControl: true
         }
       });
+      console.log('Media devices accessed successfully:', {
+        videoTracks: stream.getVideoTracks().length,
+        audioTracks: stream.getAudioTracks().length
+      });
+      
       localStream.current = stream;
       
       if (peerConnection.current) {
         stream.getTracks().forEach(track => {
+          console.log('Adding track to peer connection:', track.kind);
           const sender = peerConnection.current?.addTrack(track, stream);
           
           // Optimize video encoding parameters
@@ -133,7 +140,7 @@ export const useWebRTC = (
       console.error('Error accessing media devices:', error);
       toast({
         title: "Camera/Microphone Error",
-        description: "Could not access camera or microphone",
+        description: "Could not access camera or microphone. Please allow permissions.",
         variant: "destructive"
       });
       throw error;
@@ -158,8 +165,8 @@ export const useWebRTC = (
   }, [cleanup]);
 
   return {
-    peerConnection: peerConnection.current,
-    localStream: localStream.current,
+    peerConnection,
+    localStream,
     createPeerConnection,
     createOffer,
     createAnswer,
