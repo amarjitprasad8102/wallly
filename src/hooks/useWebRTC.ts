@@ -96,12 +96,25 @@ export const useWebRTC = (
   const addLocalStream = useCallback(async () => {
     try {
       console.log('Requesting media devices...');
+      
+      // Detect mobile device
+      const isMobile = window.innerWidth < 768;
+      
+      // Set video constraints based on device
+      const videoConstraints = isMobile 
+        ? {
+            width: { ideal: 640, max: 640 },
+            height: { ideal: 480, max: 480 },
+            frameRate: { ideal: 20, max: 25 }
+          }
+        : {
+            width: { ideal: 1280, max: 1280 },
+            height: { ideal: 720, max: 720 },
+            frameRate: { ideal: 25, max: 30 }
+          };
+      
       const stream = await navigator.mediaDevices.getUserMedia({
-        video: {
-          width: { ideal: 640, max: 640 },
-          height: { ideal: 480, max: 480 },
-          frameRate: { ideal: 25, max: 30 }
-        },
+        video: videoConstraints,
         audio: {
           echoCancellation: true,
           noiseSuppression: true,
@@ -122,11 +135,13 @@ export const useWebRTC = (
           
           // Optimize video encoding parameters
           if (track.kind === 'video' && sender) {
+            const isMobile = window.innerWidth < 768;
             const params = sender.getParameters();
             if (!params.encodings) {
               params.encodings = [{}];
             }
-            params.encodings[0].maxBitrate = 400000; // 400 kbps
+            // Lower bitrate for mobile devices
+            params.encodings[0].maxBitrate = isMobile ? 300000 : 600000; // 300 kbps for mobile, 600 kbps for desktop
             params.encodings[0].scaleResolutionDownBy = 1;
             sender.setParameters(params).catch(err => 
               console.error('Error setting encoding params:', err)
