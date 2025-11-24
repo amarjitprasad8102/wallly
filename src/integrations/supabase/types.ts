@@ -230,6 +230,60 @@ export type Database = {
         }
         Relationships: []
       }
+      interests: {
+        Row: {
+          created_at: string | null
+          icon: string | null
+          id: string
+          name: string
+        }
+        Insert: {
+          created_at?: string | null
+          icon?: string | null
+          id?: string
+          name: string
+        }
+        Update: {
+          created_at?: string | null
+          icon?: string | null
+          id?: string
+          name?: string
+        }
+        Relationships: []
+      }
+      matchmaking_queue: {
+        Row: {
+          created_at: string | null
+          id: string
+          matched_at: string | null
+          matched_with_unique_id: string | null
+          matched_with_user_id: string | null
+          status: string
+          unique_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          matched_at?: string | null
+          matched_with_unique_id?: string | null
+          matched_with_user_id?: string | null
+          status?: string
+          unique_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          matched_at?: string | null
+          matched_with_unique_id?: string | null
+          matched_with_user_id?: string | null
+          status?: string
+          unique_id?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       messages: {
         Row: {
           content: string | null
@@ -317,6 +371,35 @@ export type Database = {
         }
         Relationships: []
       }
+      user_interests: {
+        Row: {
+          created_at: string | null
+          id: string
+          interest_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          interest_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          interest_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_interests_interest_id_fkey"
+            columns: ["interest_id"]
+            isOneToOne: false
+            referencedRelation: "interests"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       user_roles: {
         Row: {
           created_at: string | null
@@ -343,11 +426,28 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      cleanup_stale_queue_entries: { Args: never; Returns: number }
       create_bidirectional_connection: {
         Args: { user_a_id: string; user_b_id: string }
         Returns: undefined
       }
+      find_match: {
+        Args: { p_unique_id: string; p_user_id: string }
+        Returns: {
+          matched_unique_id: string
+          matched_user_id: string
+        }[]
+      }
+      find_match_with_interests: {
+        Args: { p_unique_id: string; p_user_id: string }
+        Returns: {
+          matched_unique_id: string
+          matched_user_id: string
+          shared_interests: number
+        }[]
+      }
       generate_unique_id: { Args: never; Returns: string }
+      get_queue_count: { Args: never; Returns: number }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
