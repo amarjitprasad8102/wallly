@@ -97,9 +97,9 @@ export const useWebRTC = (
     try {
       const stream = await navigator.mediaDevices.getUserMedia({
         video: {
-          width: { ideal: 640, max: 1280 },
-          height: { ideal: 480, max: 720 },
-          frameRate: { ideal: 24, max: 30 }
+          width: { ideal: 640, max: 640 },
+          height: { ideal: 480, max: 480 },
+          frameRate: { ideal: 25, max: 30 }
         },
         audio: {
           echoCancellation: true,
@@ -119,7 +119,7 @@ export const useWebRTC = (
             if (!params.encodings) {
               params.encodings = [{}];
             }
-            params.encodings[0].maxBitrate = 500000; // 500 kbps
+            params.encodings[0].maxBitrate = 400000; // 400 kbps
             params.encodings[0].scaleResolutionDownBy = 1;
             sender.setParameters(params).catch(err => 
               console.error('Error setting encoding params:', err)

@@ -165,8 +165,8 @@ const VideoChat = ({
 
   return (
     <div className="flex flex-col h-screen bg-background">
-      {/* Header - Mobile Optimized */}
-      <div className="flex items-center justify-between p-3 sm:p-4 border-b">
+      {/* Header */}
+      <div className="flex items-center justify-between p-3 sm:p-4 border-b bg-card">
         <div className="flex items-center gap-2">
           <div className={`w-2 h-2 sm:w-3 sm:h-3 rounded-full ${
             connectionStatus === 'connected' ? 'bg-green-500' : 
@@ -189,29 +189,40 @@ const VideoChat = ({
         </div>
       </div>
 
-      {/* Video Area - Responsive */}
-      <div className="flex-1 relative overflow-hidden">
-        <video
-          ref={remoteVideoRef}
-          autoPlay
-          playsInline
-          className="w-full h-full object-cover bg-black"
-          style={{ transform: 'translateZ(0)' }}
-        />
+      {/* Video Grid - Responsive Layout */}
+      <div className="flex-1 flex flex-col md:grid md:grid-cols-2 md:grid-rows-2 gap-2 p-2 overflow-hidden">
+        {/* Remote Video */}
+        <div className="relative flex-1 md:col-span-1 md:row-span-2 bg-black rounded-lg overflow-hidden">
+          <video
+            ref={remoteVideoRef}
+            autoPlay
+            playsInline
+            className="w-full h-full object-cover"
+            style={{ transform: 'translateZ(0)' }}
+          />
+          <div className="absolute bottom-2 left-2 bg-black/60 px-2 py-1 rounded text-xs text-white">
+            User 2
+          </div>
+        </div>
         
-        {/* Local Video - Responsive positioning */}
-        <video
-          ref={localVideoRef}
-          autoPlay
-          playsInline
-          muted
-          className="absolute bottom-2 right-2 w-24 h-20 sm:w-32 sm:h-24 md:w-48 md:h-36 object-cover rounded-lg border-2 border-white shadow-lg"
-          style={{ transform: 'translateZ(0)' }}
-        />
+        {/* Local Video */}
+        <div className="relative flex-1 md:col-span-1 md:row-span-2 bg-black rounded-lg overflow-hidden">
+          <video
+            ref={localVideoRef}
+            autoPlay
+            playsInline
+            muted
+            className="w-full h-full object-cover"
+            style={{ transform: 'translateZ(0) scaleX(-1)' }}
+          />
+          <div className="absolute bottom-2 left-2 bg-black/60 px-2 py-1 rounded text-xs text-white">
+            You
+          </div>
+        </div>
       </div>
 
-      {/* Controls - Touch-friendly */}
-      <div className="flex items-center justify-center gap-3 sm:gap-4 p-4 sm:p-6 border-t bg-card safe-bottom">
+      {/* Controls */}
+      <div className="flex items-center justify-center gap-3 sm:gap-4 p-4 border-t bg-card safe-bottom">
         <Button
           variant={isVideoEnabled ? "default" : "destructive"}
           size="lg"
