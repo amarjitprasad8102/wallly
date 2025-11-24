@@ -22,6 +22,8 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { Card } from '@/components/ui/card';
+import { soundEffects } from '@/utils/sounds';
+import { haptics } from '@/utils/haptics';
 
 const Index = () => {
   const navigate = useNavigate();
@@ -31,6 +33,7 @@ const Index = () => {
   const [connectDialogOpen, setConnectDialogOpen] = useState(false);
   const [connectId, setConnectId] = useState('');
   const [isSigningOut, setIsSigningOut] = useState(false);
+  const [disconnectMessage, setDisconnectMessage] = useState<string | null>(null);
   const { isSearching, matchedUserId, searchingUsersCount, joinMatchmaking, connectDirectly, leaveMatchmaking, sendSignal, onSignal } = useMatch(user?.id || '');
   const {
     pendingRequests,
@@ -87,12 +90,19 @@ const Index = () => {
   useEffect(() => {
     if (isSearching && !matchedUserId) {
       setAppState('waiting');
+      setDisconnectMessage(null);
     } else if (matchedUserId) {
       setAppState('chatting');
+      setDisconnectMessage(null);
+      // Play match found sound and haptic
+      soundEffects.playMatchFound();
+      haptics.success();
     }
   }, [isSearching, matchedUserId]);
 
   const handleStartChat = () => {
+    soundEffects.playClick();
+    haptics.light();
     joinMatchmaking();
   };
 
@@ -127,8 +137,37 @@ const Index = () => {
 
   const handleEndChat = () => {
     console.log('[INDEX] Ending chat, cleaning up state');
+    soundEffects.playDisconnect();
+    haptics.medium();
     leaveMatchmaking();
     setAppState('home');
+    setDisconnectMessage(null);
+  };
+
+  const handleSkipToNext = () => {
+    console.log('[INDEX] Skipping to next user');
+    soundEffects.playClick();
+    haptics.light();
+    setDisconnectMessage(null);
+    // Don't go home, immediately start searching for next user
+    leaveMatchmaking();
+    // Small delay to ensure cleanup completes
+    setTimeout(() => {
+      joinMatchmaking();
+    }, 100);
+  };
+
+  const handleOtherUserDisconnected = () => {
+    console.log('[INDEX] Other user disconnected');
+    soundEffects.playDisconnect();
+    haptics.warning();
+    setDisconnectMessage('Other user disconnected');
+    leaveMatchmaking();
+    // Automatically search for new user after short delay
+    setTimeout(() => {
+      setDisconnectMessage(null);
+      joinMatchmaking();
+    }, 2000);
   };
 
   const handleConnectById = async () => {
@@ -142,6 +181,9 @@ const Index = () => {
       return;
     }
 
+    soundEffects.playClick();
+    haptics.light();
+
     // Fetch user by unique_id
     const { data: targetUser, error } = await supabase
       .from('profiles')
@@ -151,6 +193,7 @@ const Index = () => {
 
     if (error || !targetUser) {
       toast.error('No user found with that ID');
+      haptics.error();
       return;
     }
 
@@ -159,10 +202,12 @@ const Index = () => {
     
     if (requestError) {
       toast.error(requestError);
+      haptics.error();
       return;
     }
 
     toast.success('Connection request sent!');
+    haptics.success();
     setConnectDialogOpen(false);
     setConnectId('');
   };
@@ -187,6 +232,9 @@ const Index = () => {
 
   const handleAcceptRequest = async (requestId: string, fromUserId: string) => {
     console.log('[INDEX] Accepting request from:', fromUserId);
+    soundEffects.playMatchFound();
+    haptics.success();
+    
     // Clean up any existing matchmaking state first
     leaveMatchmaking();
     
@@ -209,14 +257,22 @@ const Index = () => {
 
   if (appState === 'chatting' && matchedUserId) {
     return (
-      <VideoChat
-        currentUserId={user.id}
-        matchedUserId={matchedUserId}
-        sendSignal={sendSignal}
-        onSignal={onSignal}
-        onLeave={handleEndChat}
-        onEndCall={handleEndChat}
-      />
+      <>
+        {disconnectMessage && (
+          <div className="fixed top-4 left-1/2 -translate-x-1/2 z-50 bg-card border border-border rounded-lg px-6 py-3 shadow-lg animate-fade-in">
+            <p className="text-sm font-medium text-muted-foreground">{disconnectMessage}</p>
+          </div>
+        )}
+        <VideoChat
+          currentUserId={user.id}
+          matchedUserId={matchedUserId}
+          sendSignal={sendSignal}
+          onSignal={onSignal}
+          onLeave={handleSkipToNext}
+          onEndCall={handleEndChat}
+          onOtherUserDisconnected={handleOtherUserDisconnected}
+        />
+      </>
     );
   }
 
