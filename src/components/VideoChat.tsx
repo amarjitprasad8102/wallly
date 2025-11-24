@@ -1,10 +1,12 @@
 import { useEffect, useRef, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Video, VideoOff, Mic, MicOff, PhoneOff, Send } from 'lucide-react';
+import { Video, VideoOff, Mic, MicOff, PhoneOff, Send, MessageCircle } from 'lucide-react';
 import { useWebRTC } from '@/hooks/useWebRTC';
 import { supabase } from '@/integrations/supabase/client';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { Drawer, DrawerContent, DrawerTrigger } from '@/components/ui/drawer';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 interface VideoChatProps {
   currentUserId: string;
@@ -31,9 +33,11 @@ const VideoChat = ({
   const [duration, setDuration] = useState(0);
   const [messages, setMessages] = useState<Array<{ text: string; sender: 'me' | 'them'; timestamp: Date }>>([]);
   const [newMessage, setNewMessage] = useState('');
+  const [isChatOpen, setIsChatOpen] = useState(false);
   const hasInitiatedOffer = useRef(false);
   const dataChannel = useRef<RTCDataChannel | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const isMobile = useIsMobile();
 
   const {
     peerConnection,
@@ -303,8 +307,9 @@ const VideoChat = ({
           </div>
         </div>
 
-        {/* Chat Panel */}
-        <div className="absolute md:relative right-0 top-16 bottom-20 md:top-0 md:bottom-0 w-full md:w-80 bg-card border-l flex flex-col z-10">
+        {/* Chat Panel - Desktop Only */}
+        {!isMobile && (
+          <div className="w-80 bg-card border-l flex flex-col">
             <div className="p-3 border-b">
               <h3 className="font-semibold text-sm">Chat</h3>
             </div>
@@ -350,7 +355,8 @@ const VideoChat = ({
                 </Button>
               </form>
             </div>
-        </div>
+          </div>
+        )}
       </div>
 
       {/* Controls */}
@@ -384,6 +390,76 @@ const VideoChat = ({
         >
           <PhoneOff className="w-5 h-5 sm:w-6 sm:h-6" />
         </Button>
+
+        {/* Chat Button - Mobile Only */}
+        {isMobile && (
+          <Drawer open={isChatOpen} onOpenChange={setIsChatOpen}>
+            <DrawerTrigger asChild>
+              <Button
+                variant="secondary"
+                size="lg"
+                className="rounded-full w-12 h-12 sm:w-14 sm:h-14 touch-manipulation relative"
+                aria-label="Open chat"
+              >
+                <MessageCircle className="w-5 h-5 sm:w-6 sm:h-6" />
+                {messages.length > 0 && (
+                  <span className="absolute -top-1 -right-1 w-5 h-5 bg-red-500 rounded-full text-xs flex items-center justify-center text-white">
+                    {messages.length}
+                  </span>
+                )}
+              </Button>
+            </DrawerTrigger>
+            <DrawerContent className="h-[80vh]">
+              <div className="flex flex-col h-full">
+                <div className="p-4 border-b">
+                  <h3 className="font-semibold">Chat</h3>
+                </div>
+                
+                <ScrollArea className="flex-1 p-4">
+                  <div className="space-y-2">
+                    {messages.map((msg, idx) => (
+                      <div
+                        key={idx}
+                        className={`flex ${msg.sender === 'me' ? 'justify-end' : 'justify-start'}`}
+                      >
+                        <div
+                          className={`max-w-[80%] rounded-lg px-3 py-2 text-sm ${
+                            msg.sender === 'me'
+                              ? 'bg-primary text-primary-foreground'
+                              : 'bg-muted'
+                          }`}
+                        >
+                          {msg.text}
+                        </div>
+                      </div>
+                    ))}
+                    <div ref={messagesEndRef} />
+                  </div>
+                </ScrollArea>
+
+                <div className="p-4 border-t">
+                  <form
+                    onSubmit={(e) => {
+                      e.preventDefault();
+                      handleSendMessage();
+                    }}
+                    className="flex gap-2"
+                  >
+                    <Input
+                      value={newMessage}
+                      onChange={(e) => setNewMessage(e.target.value)}
+                      placeholder="Type a message..."
+                      className="flex-1"
+                    />
+                    <Button type="submit" size="icon">
+                      <Send className="w-4 h-4" />
+                    </Button>
+                  </form>
+                </div>
+              </div>
+            </DrawerContent>
+          </Drawer>
+        )}
       </div>
     </div>
   );
