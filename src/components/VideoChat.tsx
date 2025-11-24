@@ -1,8 +1,10 @@
 import { useEffect, useRef, useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { Video, VideoOff, Mic, MicOff, PhoneOff } from 'lucide-react';
+import { Input } from '@/components/ui/input';
+import { Video, VideoOff, Mic, MicOff, PhoneOff, Send, MessageSquare } from 'lucide-react';
 import { useWebRTC } from '@/hooks/useWebRTC';
 import { supabase } from '@/integrations/supabase/client';
+import { ScrollArea } from '@/components/ui/scroll-area';
 
 interface VideoChatProps {
   currentUserId: string;
@@ -27,7 +29,12 @@ const VideoChat = ({
   const [isVideoEnabled, setIsVideoEnabled] = useState(true);
   const [isAudioEnabled, setIsAudioEnabled] = useState(true);
   const [duration, setDuration] = useState(0);
+  const [messages, setMessages] = useState<Array<{ text: string; sender: 'me' | 'them'; timestamp: Date }>>([]);
+  const [newMessage, setNewMessage] = useState('');
+  const [showChat, setShowChat] = useState(false);
   const hasInitiatedOffer = useRef(false);
+  const dataChannel = useRef<RTCDataChannel | null>(null);
+  const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const {
     peerConnection,
@@ -68,6 +75,20 @@ const VideoChat = ({
           console.log('Local video srcObject set');
         }
 
+        // Set up data channel for text chat
+        const isInitiator = currentUserId < matchedUserId;
+        if (isInitiator) {
+          dataChannel.current = pc.createDataChannel('chat');
+          console.log('Data channel created (initiator)');
+          setupDataChannel(dataChannel.current);
+        } else {
+          pc.ondatachannel = (event) => {
+            console.log('Data channel received');
+            dataChannel.current = event.channel;
+            setupDataChannel(dataChannel.current);
+          };
+        }
+
         pc.onicecandidate = (event) => {
           if (event.candidate) {
             console.log('Sending ICE candidate');
@@ -75,7 +96,6 @@ const VideoChat = ({
           }
         };
 
-        const isInitiator = currentUserId < matchedUserId;
         console.log('Is initiator:', isInitiator);
         
         if (isInitiator && !hasInitiatedOffer.current) {
@@ -98,6 +118,7 @@ const VideoChat = ({
 
     return () => {
       console.log('Cleaning up video chat');
+      dataChannel.current?.close();
       cleanup();
     };
   }, [currentUserId, matchedUserId]);
@@ -174,8 +195,43 @@ const VideoChat = ({
   };
 
   const handleEndCall = async () => {
+    dataChannel.current?.close();
     cleanup();
     onEndCall();
+  };
+
+  const setupDataChannel = (channel: RTCDataChannel) => {
+    channel.onopen = () => {
+      console.log('Data channel opened');
+    };
+
+    channel.onmessage = (event) => {
+      console.log('Received message:', event.data);
+      const data = JSON.parse(event.data);
+      if (data.type === 'text') {
+        setMessages(prev => [...prev, { text: data.text, sender: 'them', timestamp: new Date() }]);
+      }
+    };
+
+    channel.onerror = (error) => {
+      console.error('Data channel error:', error);
+    };
+  };
+
+  const handleSendMessage = () => {
+    if (!newMessage.trim() || !dataChannel.current || dataChannel.current.readyState !== 'open') {
+      console.log('Cannot send message:', { 
+        hasMessage: !!newMessage.trim(), 
+        hasChannel: !!dataChannel.current, 
+        channelState: dataChannel.current?.readyState 
+      });
+      return;
+    }
+
+    const message = { type: 'text', text: newMessage };
+    dataChannel.current.send(JSON.stringify(message));
+    setMessages(prev => [...prev, { text: newMessage, sender: 'me', timestamp: new Date() }]);
+    setNewMessage('');
   };
 
   const formatDuration = (seconds: number) => {
@@ -183,6 +239,10 @@ const VideoChat = ({
     const secs = seconds % 60;
     return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
   };
+
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  }, [messages]);
 
   return (
     <div className="flex flex-col h-screen bg-background">
@@ -201,6 +261,14 @@ const VideoChat = ({
           </span>
         </div>
         <div className="flex gap-1 sm:gap-2">
+          <Button 
+            variant="outline" 
+            size="sm" 
+            onClick={() => setShowChat(!showChat)} 
+            className="h-8 px-2 sm:px-3 text-xs sm:text-sm"
+          >
+            <MessageSquare className="w-4 h-4" />
+          </Button>
           <Button variant="outline" size="sm" onClick={handleSkip} className="h-8 px-2 sm:px-3 text-xs sm:text-sm">
             Next
           </Button>
@@ -210,36 +278,90 @@ const VideoChat = ({
         </div>
       </div>
 
-      {/* Video Grid - Responsive Layout */}
-      <div className="flex-1 flex flex-col md:grid md:grid-cols-2 md:grid-rows-2 gap-2 p-2 overflow-hidden">
-        {/* Remote Video */}
-        <div className="relative flex-1 md:col-span-1 md:row-span-2 bg-black rounded-lg overflow-hidden">
-          <video
-            ref={remoteVideoRef}
-            autoPlay
-            playsInline
-            className="w-full h-full object-cover"
-            style={{ transform: 'translateZ(0)' }}
-          />
-          <div className="absolute bottom-2 left-2 bg-black/60 px-2 py-1 rounded text-xs text-white">
-            User 2
+      {/* Main Content Area */}
+      <div className="flex-1 flex overflow-hidden">
+        {/* Video Grid */}
+        <div className={`flex-1 flex flex-col md:grid md:grid-cols-2 md:grid-rows-2 gap-2 p-2 transition-all ${showChat ? 'md:mr-80' : ''}`}>
+          {/* Remote Video */}
+          <div className="relative flex-1 md:col-span-1 md:row-span-2 bg-black rounded-lg overflow-hidden">
+            <video
+              ref={remoteVideoRef}
+              autoPlay
+              playsInline
+              className="w-full h-full object-cover"
+              style={{ transform: 'translateZ(0)' }}
+            />
+            <div className="absolute bottom-2 left-2 bg-black/60 px-2 py-1 rounded text-xs text-white">
+              User 2
+            </div>
+          </div>
+          
+          {/* Local Video */}
+          <div className="relative flex-1 md:col-span-1 md:row-span-2 bg-black rounded-lg overflow-hidden">
+            <video
+              ref={localVideoRef}
+              autoPlay
+              playsInline
+              muted
+              className="w-full h-full object-cover"
+              style={{ transform: 'translateZ(0) scaleX(-1)' }}
+            />
+            <div className="absolute bottom-2 left-2 bg-black/60 px-2 py-1 rounded text-xs text-white">
+              You
+            </div>
           </div>
         </div>
-        
-        {/* Local Video */}
-        <div className="relative flex-1 md:col-span-1 md:row-span-2 bg-black rounded-lg overflow-hidden">
-          <video
-            ref={localVideoRef}
-            autoPlay
-            playsInline
-            muted
-            className="w-full h-full object-cover"
-            style={{ transform: 'translateZ(0) scaleX(-1)' }}
-          />
-          <div className="absolute bottom-2 left-2 bg-black/60 px-2 py-1 rounded text-xs text-white">
-            You
+
+        {/* Chat Panel */}
+        {showChat && (
+          <div className="absolute md:relative right-0 top-16 bottom-20 md:top-0 md:bottom-0 w-full md:w-80 bg-card border-l flex flex-col z-10">
+            <div className="p-3 border-b">
+              <h3 className="font-semibold text-sm">Chat</h3>
+            </div>
+            
+            <ScrollArea className="flex-1 p-3">
+              <div className="space-y-2">
+                {messages.map((msg, idx) => (
+                  <div
+                    key={idx}
+                    className={`flex ${msg.sender === 'me' ? 'justify-end' : 'justify-start'}`}
+                  >
+                    <div
+                      className={`max-w-[80%] rounded-lg px-3 py-2 text-sm ${
+                        msg.sender === 'me'
+                          ? 'bg-primary text-primary-foreground'
+                          : 'bg-muted'
+                      }`}
+                    >
+                      {msg.text}
+                    </div>
+                  </div>
+                ))}
+                <div ref={messagesEndRef} />
+              </div>
+            </ScrollArea>
+
+            <div className="p-3 border-t">
+              <form
+                onSubmit={(e) => {
+                  e.preventDefault();
+                  handleSendMessage();
+                }}
+                className="flex gap-2"
+              >
+                <Input
+                  value={newMessage}
+                  onChange={(e) => setNewMessage(e.target.value)}
+                  placeholder="Type a message..."
+                  className="flex-1"
+                />
+                <Button type="submit" size="icon">
+                  <Send className="w-4 h-4" />
+                </Button>
+              </form>
+            </div>
           </div>
-        </div>
+        )}
       </div>
 
       {/* Controls */}
