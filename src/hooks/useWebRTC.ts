@@ -2,11 +2,13 @@ import { useRef, useCallback, useEffect } from 'react';
 import { useToast } from '@/hooks/use-toast';
 
 export const useWebRTC = (
-  onConnectionStateChange?: (state: RTCPeerConnectionState) => void
+  onConnectionStateChange?: (state: RTCPeerConnectionState) => void,
+  onRemoteStream?: (stream: MediaStream) => void
 ) => {
   const { toast } = useToast();
   const peerConnection = useRef<RTCPeerConnection | null>(null);
   const pendingIceCandidates = useRef<RTCIceCandidateInit[]>([]);
+  const localStream = useRef<MediaStream | null>(null);
 
   const createPeerConnection = useCallback(() => {
     const pc = new RTCPeerConnection({
@@ -26,10 +28,14 @@ export const useWebRTC = (
       onConnectionStateChange?.(pc.connectionState);
     };
 
+    pc.ontrack = (event) => {
+      console.log('Received remote track:', event.streams[0]);
+      onRemoteStream?.(event.streams[0]);
+    };
 
     peerConnection.current = pc;
     return pc;
-  }, [onConnectionStateChange]);
+  }, [onConnectionStateChange, onRemoteStream]);
 
   const createOffer = useCallback(async () => {
     if (!peerConnection.current) return null;
@@ -82,7 +88,37 @@ export const useWebRTC = (
   }, []);
 
 
+  const addLocalStream = useCallback(async () => {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({
+        video: true,
+        audio: true
+      });
+      localStream.current = stream;
+      
+      if (peerConnection.current) {
+        stream.getTracks().forEach(track => {
+          peerConnection.current?.addTrack(track, stream);
+        });
+      }
+      
+      return stream;
+    } catch (error) {
+      console.error('Error accessing media devices:', error);
+      toast({
+        title: "Camera/Microphone Error",
+        description: "Could not access camera or microphone",
+        variant: "destructive"
+      });
+      throw error;
+    }
+  }, [toast]);
+
   const cleanup = useCallback(() => {
+    if (localStream.current) {
+      localStream.current.getTracks().forEach(track => track.stop());
+      localStream.current = null;
+    }
     if (peerConnection.current) {
       peerConnection.current.close();
       peerConnection.current = null;
@@ -97,11 +133,13 @@ export const useWebRTC = (
 
   return {
     peerConnection: peerConnection.current,
+    localStream: localStream.current,
     createPeerConnection,
     createOffer,
     createAnswer,
     setRemoteDescription,
     addIceCandidate,
+    addLocalStream,
     cleanup,
   };
 };
