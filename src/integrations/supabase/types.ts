@@ -230,6 +230,39 @@ export type Database = {
         }
         Relationships: []
       }
+      matchmaking_queue: {
+        Row: {
+          created_at: string | null
+          id: string
+          matched_at: string | null
+          matched_with_unique_id: string | null
+          matched_with_user_id: string | null
+          status: string
+          unique_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          matched_at?: string | null
+          matched_with_unique_id?: string | null
+          matched_with_user_id?: string | null
+          status?: string
+          unique_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          matched_at?: string | null
+          matched_with_unique_id?: string | null
+          matched_with_user_id?: string | null
+          status?: string
+          unique_id?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       messages: {
         Row: {
           content: string | null
@@ -347,7 +380,15 @@ export type Database = {
         Args: { user_a_id: string; user_b_id: string }
         Returns: undefined
       }
+      find_match: {
+        Args: { p_unique_id: string; p_user_id: string }
+        Returns: {
+          matched_unique_id: string
+          matched_user_id: string
+        }[]
+      }
       generate_unique_id: { Args: never; Returns: string }
+      get_queue_count: { Args: never; Returns: number }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
