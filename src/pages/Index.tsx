@@ -54,7 +54,11 @@ const Index = () => {
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       if (!session) {
-        navigate('/auth');
+        // Clear local state on sign out
+        setUser(null);
+        setUserProfile(null);
+        setAppState('home');
+        navigate('/auth', { replace: true });
       } else {
         setUser(session.user);
         fetchUserProfile(session.user.id);
@@ -95,25 +99,25 @@ const Index = () => {
   const handleSignOut = async () => {
     setIsSigningOut(true);
     try {
-      // Clear local state
+      // Sign out from Supabase with global scope to clear all sessions
+      await supabase.auth.signOut({ scope: 'global' });
+      
+      // The onAuthStateChange listener will handle the navigation
+      // But we'll add a fallback timeout just in case
+      setTimeout(() => {
+        if (window.location.pathname !== '/auth') {
+          navigate('/auth', { replace: true });
+        }
+      }, 1000);
+    } catch (error) {
+      console.error('Sign out error:', error);
+      // Force navigation on error
       setUser(null);
       setUserProfile(null);
       setAppState('home');
-      
-      // Sign out from Supabase (ignore errors if session already missing)
-      const { error } = await supabase.auth.signOut();
-      
-      // Only show error if it's not a "session missing" error
-      if (error && error.message !== 'Auth session missing!') {
-        console.error('Sign out error:', error);
-      }
-      
-      // Always navigate to auth page
       navigate('/auth', { replace: true });
-    } catch (error) {
-      console.error('Unexpected sign out error:', error);
-      // Still navigate even if there's an error
-      navigate('/auth', { replace: true });
+    } finally {
+      setIsSigningOut(false);
     }
   };
 
