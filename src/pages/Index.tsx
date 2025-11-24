@@ -202,11 +202,11 @@ const Index = () => {
 
   return (
     <div className="min-h-screen bg-gradient-subtle flex flex-col">
-      {/* Header with User Info */}
-      <div className="px-4 py-4 border-b border-border">
+      {/* Header with User Info - Mobile Optimized */}
+      <div className="px-3 sm:px-4 py-3 sm:py-4 border-b border-border">
         <div className="max-w-4xl mx-auto space-y-3">
-          {/* Breadcrumbs */}
-          <Breadcrumb>
+          {/* Breadcrumbs - Hidden on mobile */}
+          <Breadcrumb className="hidden sm:block">
             <BreadcrumbList>
               <BreadcrumbItem>
                 <BreadcrumbLink onClick={() => navigate('/')} className="cursor-pointer flex items-center gap-1">
@@ -221,25 +221,25 @@ const Index = () => {
             </BreadcrumbList>
           </Breadcrumb>
 
-          <div className="flex justify-between items-center">
-          <div className="flex items-center gap-4">
-            <div className="text-sm">
-              <p className="text-muted-foreground">Your ID</p>
-              <p className="font-mono font-bold text-primary text-lg">{userProfile.unique_id}</p>
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 sm:gap-0">
+          <div className="flex items-center gap-3 sm:gap-4">
+            <div className="text-xs sm:text-sm">
+              <p className="text-muted-foreground text-xs">Your ID</p>
+              <p className="font-mono font-bold text-primary text-sm sm:text-lg">{userProfile.unique_id}</p>
             </div>
             {pendingRequests.length > 0 && (
-              <Badge variant="destructive" className="animate-pulse">
-                {pendingRequests.length} Request{pendingRequests.length > 1 ? 's' : ''}
+              <Badge variant="destructive" className="animate-pulse text-xs">
+                {pendingRequests.length}
               </Badge>
             )}
           </div>
-          <div className="flex gap-2">
-            <Button variant="outline" size="sm" onClick={() => navigate('/connections')}>
-              <UserCheck className="h-4 w-4 mr-2" />
+          <div className="flex gap-2 w-full sm:w-auto">
+            <Button variant="outline" size="sm" onClick={() => navigate('/connections')} className="flex-1 sm:flex-none text-xs sm:text-sm h-8 sm:h-9">
+              <UserCheck className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
               Connections
             </Button>
-            <Button variant="outline" size="sm" onClick={handleSignOut}>
-              <LogOut className="h-4 w-4 mr-2" />
+            <Button variant="outline" size="sm" onClick={handleSignOut} className="flex-1 sm:flex-none text-xs sm:text-sm h-8 sm:h-9">
+              <LogOut className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
               Sign Out
             </Button>
           </div>
@@ -247,24 +247,25 @@ const Index = () => {
         </div>
       </div>
 
-      {/* Connection Requests */}
+      {/* Connection Requests - Mobile Optimized */}
       {pendingRequests.length > 0 && (
-        <div className="px-4 py-4 bg-muted/50">
+        <div className="px-3 sm:px-4 py-3 sm:py-4 bg-muted/50">
           <div className="max-w-4xl mx-auto">
-            <h3 className="text-lg font-semibold mb-3">Connection Requests</h3>
+            <h3 className="text-base sm:text-lg font-semibold mb-2 sm:mb-3">Connection Requests</h3>
             <div className="space-y-2">
               {pendingRequests.map((request) => (
-                <Card key={request.id} className="p-4 flex items-center justify-between">
-                  <div>
-                    <p className="font-medium">
+                <Card key={request.id} className="p-3 sm:p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 sm:gap-0">
+                  <div className="w-full sm:w-auto">
+                    <p className="font-medium text-sm sm:text-base">
                       User <span className="font-mono text-primary">{request.from_profile?.unique_id}</span> wants
                       to connect
                     </p>
                   </div>
-                  <div className="flex gap-2">
+                  <div className="flex gap-2 w-full sm:w-auto">
                     <Button
                       size="sm"
                       onClick={() => handleAcceptRequest(request.id, request.from_user_id)}
+                      className="flex-1 sm:flex-none text-xs sm:text-sm h-8 sm:h-9"
                     >
                       Accept
                     </Button>
@@ -272,6 +273,7 @@ const Index = () => {
                       size="sm"
                       variant="outline"
                       onClick={() => rejectConnectionRequest(request.id)}
+                      className="flex-1 sm:flex-none text-xs sm:text-sm h-8 sm:h-9"
                     >
                       Reject
                     </Button>
@@ -283,37 +285,37 @@ const Index = () => {
         </div>
       )}
 
-      {/* Hero Section */}
-      <div className="flex-1 flex items-center justify-center px-4 py-12">
+      {/* Hero Section - Mobile Optimized */}
+      <div className="flex-1 flex items-center justify-center px-3 sm:px-4 py-8 sm:py-12">
         <div className="max-w-4xl mx-auto text-center animate-fade-in">
           {/* Logo/Icon */}
-          <div className="mb-8 flex justify-center">
+          <div className="mb-6 sm:mb-8 flex justify-center">
             <div className="relative">
               <div className="absolute inset-0 bg-gradient-primary rounded-full blur-xl opacity-50 animate-pulse-glow"></div>
-              <div className="relative bg-gradient-primary p-6 rounded-full shadow-glow">
-                <MessageCircle className="w-16 h-16 text-white" aria-label="Chat icon" />
+              <div className="relative bg-gradient-primary p-4 sm:p-6 rounded-full shadow-glow">
+                <MessageCircle className="w-12 h-12 sm:w-16 sm:h-16 text-white" aria-label="Chat icon" />
               </div>
             </div>
           </div>
 
           {/* Heading */}
-          <h1 className="text-5xl md:text-7xl font-bold mb-6 bg-gradient-primary bg-clip-text text-transparent">
+          <h1 className="text-3xl sm:text-5xl md:text-7xl font-bold mb-4 sm:mb-6 bg-gradient-primary bg-clip-text text-transparent">
             Random Video Chat
           </h1>
-          <p className="text-xl md:text-2xl text-muted-foreground mb-12 max-w-2xl mx-auto">
+          <p className="text-base sm:text-xl md:text-2xl text-muted-foreground mb-8 sm:mb-12 max-w-2xl mx-auto px-2">
             Connect face-to-face with strangers worldwide through instant video chat. Start conversations, make
             friends, and explore new perspectives.
           </p>
 
-          {/* CTA Buttons */}
-          <div className="flex gap-4 flex-wrap justify-center">
+          {/* CTA Buttons - Mobile Stacked */}
+          <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center px-4">
             <Button
               onClick={handleStartChat}
               size="lg"
-              className="text-lg px-8 py-6 rounded-full bg-gradient-primary hover:opacity-90 transition-all hover:scale-105 shadow-glow"
+              className="text-base sm:text-lg px-6 sm:px-8 py-5 sm:py-6 rounded-full bg-gradient-primary hover:opacity-90 transition-all hover:scale-105 shadow-glow w-full sm:w-auto touch-manipulation"
               aria-label="Start video chat"
             >
-              <MessageCircle className="w-6 h-6 mr-2" aria-hidden="true" />
+              <MessageCircle className="w-5 h-5 sm:w-6 sm:h-6 mr-2" aria-hidden="true" />
               Start Video Chat
             </Button>
 
@@ -322,7 +324,7 @@ const Index = () => {
                 <Button
                   size="lg"
                   variant="outline"
-                  className="text-lg px-8 py-6 rounded-full hover:scale-105 transition-all relative"
+                  className="text-base sm:text-lg px-6 sm:px-8 py-5 sm:py-6 rounded-full hover:scale-105 transition-all w-full sm:w-auto touch-manipulation"
                   aria-label="Connect by ID"
                   onClick={handleConnectDialogOpen}
                 >
@@ -330,7 +332,7 @@ const Index = () => {
                   Connect by ID
                 </Button>
               </DialogTrigger>
-              <DialogContent>
+              <DialogContent className="max-w-[90vw] sm:max-w-md">
                 <DialogHeader>
                   <DialogTitle>Connect by User ID</DialogTitle>
                   <DialogDescription>
@@ -346,6 +348,7 @@ const Index = () => {
                       value={connectId}
                       onChange={(e) => setConnectId(e.target.value)}
                       maxLength={10}
+                      className="text-base touch-manipulation"
                     />
                   </div>
                   <p className="text-sm text-muted-foreground">
@@ -353,65 +356,65 @@ const Index = () => {
                   </p>
                 </div>
                 <DialogFooter>
-                  <Button onClick={handleConnectById}>Send Request</Button>
+                  <Button onClick={handleConnectById} className="w-full sm:w-auto">Send Request</Button>
                 </DialogFooter>
               </DialogContent>
             </Dialog>
           </div>
 
-          {/* Features */}
-          <div className="mt-20 grid grid-cols-1 md:grid-cols-3 gap-8 text-left">
+          {/* Features - Responsive Grid */}
+          <div className="mt-12 sm:mt-20 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 sm:gap-8 text-left">
             <div
-              className="bg-card rounded-xl p-6 border border-border hover:border-primary transition-all hover:shadow-card animate-slide-up"
+              className="bg-card rounded-xl p-4 sm:p-6 border border-border hover:border-primary transition-all hover:shadow-card animate-slide-up"
               style={{ animationDelay: '0.1s' }}
             >
-              <div className="bg-primary/10 w-12 h-12 rounded-lg flex items-center justify-center mb-4" aria-hidden="true">
-                <Users className="w-6 h-6 text-primary" aria-label="Users icon" />
+              <div className="bg-primary/10 w-10 h-10 sm:w-12 sm:h-12 rounded-lg flex items-center justify-center mb-3 sm:mb-4" aria-hidden="true">
+                <Users className="w-5 h-5 sm:w-6 sm:h-6 text-primary" aria-label="Users icon" />
               </div>
-              <h3 className="text-xl font-semibold mb-2">Random Matching</h3>
-              <p className="text-muted-foreground">
+              <h3 className="text-lg sm:text-xl font-semibold mb-2">Random Matching</h3>
+              <p className="text-sm sm:text-base text-muted-foreground">
                 Instantly connect with random people from around the world
               </p>
             </div>
 
             <div
-              className="bg-card rounded-xl p-6 border border-border hover:border-primary transition-all hover:shadow-card animate-slide-up"
+              className="bg-card rounded-xl p-4 sm:p-6 border border-border hover:border-primary transition-all hover:shadow-card animate-slide-up"
               style={{ animationDelay: '0.2s' }}
             >
-              <div className="bg-accent/10 w-12 h-12 rounded-lg flex items-center justify-center mb-4" aria-hidden="true">
-                <Zap className="w-6 h-6 text-accent" aria-label="Lightning icon" />
+              <div className="bg-accent/10 w-10 h-10 sm:w-12 sm:h-12 rounded-lg flex items-center justify-center mb-3 sm:mb-4" aria-hidden="true">
+                <Zap className="w-5 h-5 sm:w-6 sm:h-6 text-accent" aria-label="Lightning icon" />
               </div>
-              <h3 className="text-xl font-semibold mb-2">Lightning Fast</h3>
-              <p className="text-muted-foreground">
-                Instant peer-to-peer messaging with minimal latency for smooth conversations
+              <h3 className="text-lg sm:text-xl font-semibold mb-2">Lightning Fast</h3>
+              <p className="text-sm sm:text-base text-muted-foreground">
+                Instant peer-to-peer video with minimal latency for smooth conversations
               </p>
             </div>
 
             <div
-              className="bg-card rounded-xl p-6 border border-border hover:border-primary transition-all hover:shadow-card animate-slide-up"
+              className="bg-card rounded-xl p-4 sm:p-6 border border-border hover:border-primary transition-all hover:shadow-card animate-slide-up sm:col-span-2 md:col-span-1"
               style={{ animationDelay: '0.3s' }}
             >
-              <div className="bg-destructive/10 w-12 h-12 rounded-lg flex items-center justify-center mb-4" aria-hidden="true">
-                <Shield className="w-6 h-6 text-destructive" aria-label="Shield icon" />
+              <div className="bg-destructive/10 w-10 h-10 sm:w-12 sm:h-12 rounded-lg flex items-center justify-center mb-3 sm:mb-4" aria-hidden="true">
+                <Shield className="w-5 h-5 sm:w-6 sm:h-6 text-destructive" aria-label="Shield icon" />
               </div>
-              <h3 className="text-xl font-semibold mb-2">Safe & Private</h3>
-              <p className="text-muted-foreground">
-                End-to-end encrypted chats. No data stored. Images auto-deleted after conversations
+              <h3 className="text-lg sm:text-xl font-semibold mb-2">Safe & Private</h3>
+              <p className="text-sm sm:text-base text-muted-foreground">
+                Secure connections. No data stored. Your privacy is our priority
               </p>
             </div>
           </div>
         </div>
       </div>
 
-      {/* Footer */}
-      <footer className="py-6 text-center text-sm text-muted-foreground border-t border-border">
-        <p>
+      {/* Footer - Mobile Optimized */}
+      <footer className="py-4 sm:py-6 text-center text-xs sm:text-sm text-muted-foreground border-t border-border">
+        <p className="px-4">
           By using this service, you agree to be respectful and follow community guidelines.
         </p>
         <Button
           variant="link"
           onClick={() => navigate('/privacy')}
-          className="text-xs text-muted-foreground hover:text-foreground"
+          className="text-xs text-muted-foreground hover:text-foreground h-auto py-1"
         >
           Privacy Policy
         </Button>
