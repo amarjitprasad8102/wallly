@@ -95,28 +95,25 @@ const Index = () => {
   const handleSignOut = async () => {
     setIsSigningOut(true);
     try {
-      // Sign out from Supabase
-      const { error } = await supabase.auth.signOut();
-      
-      if (error) {
-        console.error('Sign out error:', error);
-        toast.error('Failed to sign out');
-        setIsSigningOut(false);
-        return;
-      }
-
       // Clear local state
       setUser(null);
       setUserProfile(null);
       setAppState('home');
       
-      // Navigate to auth page
-      toast.success('Signed out successfully');
+      // Sign out from Supabase (ignore errors if session already missing)
+      const { error } = await supabase.auth.signOut();
+      
+      // Only show error if it's not a "session missing" error
+      if (error && error.message !== 'Auth session missing!') {
+        console.error('Sign out error:', error);
+      }
+      
+      // Always navigate to auth page
       navigate('/auth', { replace: true });
     } catch (error) {
       console.error('Unexpected sign out error:', error);
-      toast.error('An error occurred during sign out');
-      setIsSigningOut(false);
+      // Still navigate even if there's an error
+      navigate('/auth', { replace: true });
     }
   };
 
