@@ -76,7 +76,7 @@ const Blog = () => {
           </Breadcrumb>
 
           <div className="mb-12 text-center">
-            <h1 className="text-5xl md:text-6xl font-bold mb-6 bg-gradient-primary bg-clip-text text-transparent">
+            <h1 className="text-5xl md:text-6xl font-bold mb-6 gradient-text">
               Kindred Blog
             </h1>
             <p className="text-xl text-muted-foreground max-w-3xl mx-auto mb-8">

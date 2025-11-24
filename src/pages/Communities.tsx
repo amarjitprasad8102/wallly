@@ -170,7 +170,7 @@ const Communities = () => {
         <div className="text-center mb-12">
           <div className="flex items-center justify-center gap-2 mb-4">
             <Flag className="w-8 h-8 text-primary" />
-            <h1 className="text-4xl md:text-5xl font-bold bg-gradient-primary bg-clip-text text-transparent">
+            <h1 className="text-4xl md:text-5xl font-bold gradient-text">
               Bharatiya Samudaay
             </h1>
           </div>
