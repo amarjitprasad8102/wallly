@@ -201,6 +201,19 @@ const BlogDetail = () => {
                 ))}
             </div>
           </section>
+
+          {/* Back to Home */}
+          <div className="mt-12 text-center">
+            <Button 
+              variant="outline" 
+              size="lg"
+              onClick={() => navigate('/')}
+              className="gap-2"
+            >
+              <Home className="w-5 h-5" />
+              Back to Home
+            </Button>
+          </div>
         </main>
 
         {/* Footer */}
