@@ -302,12 +302,12 @@ const VideoChat = ({
         </div>
       </div>
 
-      {/* Main Content Area */}
-      <div className="flex-1 flex overflow-hidden">
-        {/* Video Grid */}
-        <div className="flex-1 flex flex-col md:grid md:grid-cols-2 md:grid-rows-2 gap-2 p-2 transition-all md:mr-80">
+      {/* Main Content Area - Mobile: stacked, Desktop: videos on top, chat below */}
+      <div className="flex-1 flex flex-col overflow-hidden">
+        {/* Videos Section */}
+        <div className="flex-1 flex flex-col md:flex-row gap-2 p-2 md:max-h-[60vh]">
           {/* Remote Video */}
-          <div className="relative flex-1 md:col-span-1 md:row-span-2 bg-black rounded-lg overflow-hidden">
+          <div className="relative flex-1 bg-black rounded-lg overflow-hidden">
             <video
               ref={remoteVideoRef}
               autoPlay
@@ -321,7 +321,7 @@ const VideoChat = ({
           </div>
           
           {/* Local Video */}
-          <div className="relative flex-1 md:col-span-1 md:row-span-2 bg-black rounded-lg overflow-hidden">
+          <div className="relative flex-1 bg-black rounded-lg overflow-hidden">
             <video
               ref={localVideoRef}
               autoPlay
@@ -336,9 +336,9 @@ const VideoChat = ({
           </div>
         </div>
 
-        {/* Chat Panel - Desktop Only */}
+        {/* Chat Section - Desktop Only */}
         {!isMobile && (
-          <div className="w-80 bg-card border-l flex flex-col">
+          <div className="h-64 bg-card border-t flex flex-col">
             <div className="p-3 border-b">
               <h3 className="font-semibold text-sm">Chat</h3>
             </div>
@@ -351,7 +351,7 @@ const VideoChat = ({
                     className={`flex ${msg.sender === 'me' ? 'justify-end' : 'justify-start'}`}
                   >
                     <div
-                      className={`max-w-[80%] rounded-lg px-3 py-2 text-sm ${
+                      className={`max-w-[70%] rounded-lg px-3 py-2 text-sm ${
                         msg.sender === 'me'
                           ? 'bg-primary text-primary-foreground'
                           : 'bg-muted'
