@@ -277,87 +277,77 @@ const VideoChat = ({
   }, [messages]);
 
   return (
-    <div className="flex flex-col h-screen bg-background">
-      {/* Header */}
-      <div className="flex items-center justify-between p-3 sm:p-4 border-b bg-card">
+    <div className="flex flex-col h-screen bg-black">
+      {/* Minimal Status Bar */}
+      <div className="absolute top-0 left-0 right-0 z-10 flex items-center justify-between p-4 bg-gradient-to-b from-black/80 to-transparent">
         <div className="flex items-center gap-2">
-          <div className={`w-2 h-2 sm:w-3 sm:h-3 rounded-full ${
+          <div className={`w-2 h-2 rounded-full ${
             connectionStatus === 'connected' ? 'bg-green-500' : 
             connectionStatus === 'connecting' ? 'bg-yellow-500 animate-pulse' : 
             'bg-red-500'
           }`} />
-          <span className="text-xs sm:text-sm font-medium">
-            {connectionStatus === 'connected' ? `${formatDuration(duration)}` : 
-             connectionStatus === 'connecting' ? 'Connecting...' : 
-             'Disconnected'}
+          <span className="text-sm text-white font-medium">
+            {connectionStatus === 'connected' ? formatDuration(duration) : 'Connecting...'}
           </span>
-        </div>
-        <div className="flex gap-1 sm:gap-2">
-          <Button variant="outline" size="sm" onClick={handleSkip} className="h-8 px-2 sm:px-3 text-xs sm:text-sm">
-            Next
-          </Button>
-          <Button variant="destructive" size="sm" onClick={handleEndCall} className="h-8 px-2 sm:px-3 text-xs sm:text-sm">
-            End
-          </Button>
         </div>
       </div>
 
-      {/* Main Content Area */}
-      <div className="flex-1 flex overflow-hidden">
-        {/* Video Grid */}
-        <div className="flex-1 flex flex-col md:grid md:grid-cols-2 md:grid-rows-2 gap-2 p-2 transition-all md:mr-80">
-          {/* Remote Video */}
-          <div className="relative flex-1 md:col-span-1 md:row-span-2 bg-black rounded-lg overflow-hidden">
-            <video
-              ref={remoteVideoRef}
-              autoPlay
-              playsInline
-              className="w-full h-full object-cover"
-              style={{ transform: 'translateZ(0)' }}
-            />
-            <div className="absolute bottom-2 left-2 bg-black/60 px-2 py-1 rounded text-xs text-white">
-              User 2
-            </div>
+      {/* Video Area */}
+      <div className="flex-1 flex flex-col md:flex-row">
+        {/* Remote Video - Takes main area */}
+        <div className="flex-1 relative bg-black">
+          <video
+            ref={remoteVideoRef}
+            autoPlay
+            playsInline
+            className="w-full h-full object-cover"
+          />
+          <div className="absolute bottom-4 left-4 bg-black/60 backdrop-blur-sm px-3 py-1.5 rounded text-sm text-white font-medium">
+            Stranger
           </div>
-          
-          {/* Local Video */}
-          <div className="relative flex-1 md:col-span-1 md:row-span-2 bg-black rounded-lg overflow-hidden">
-            <video
-              ref={localVideoRef}
-              autoPlay
-              playsInline
-              muted
-              className="w-full h-full object-cover"
-              style={{ transform: 'translateZ(0) scaleX(-1)' }}
-            />
-            <div className="absolute bottom-2 left-2 bg-black/60 px-2 py-1 rounded text-xs text-white">
-              You
-            </div>
+        </div>
+        
+        {/* Local Video - Picture in Picture style */}
+        <div className="absolute bottom-24 right-4 w-48 h-36 md:w-64 md:h-48 bg-black rounded-lg overflow-hidden shadow-2xl border-2 border-white/20">
+          <video
+            ref={localVideoRef}
+            autoPlay
+            playsInline
+            muted
+            className="w-full h-full object-cover scale-x-[-1]"
+          />
+          <div className="absolute bottom-2 left-2 bg-black/60 backdrop-blur-sm px-2 py-1 rounded text-xs text-white font-medium">
+            You
           </div>
         </div>
 
-        {/* Chat Panel - Desktop Only */}
+        {/* Chat Panel - Desktop */}
         {!isMobile && (
-          <div className="w-80 bg-card border-l flex flex-col">
-            <div className="p-3 border-b">
-              <h3 className="font-semibold text-sm">Chat</h3>
+          <div className="w-96 bg-gray-900 border-l border-gray-800 flex flex-col">
+            <div className="p-4 border-b border-gray-800">
+              <h3 className="font-semibold text-white">Chat</h3>
             </div>
             
-            <ScrollArea className="flex-1 p-3">
-              <div className="space-y-2">
+            <ScrollArea className="flex-1 p-4">
+              <div className="space-y-3">
                 {messages.map((msg, idx) => (
                   <div
                     key={idx}
                     className={`flex ${msg.sender === 'me' ? 'justify-end' : 'justify-start'}`}
                   >
-                    <div
-                      className={`max-w-[80%] rounded-lg px-3 py-2 text-sm ${
-                        msg.sender === 'me'
-                          ? 'bg-primary text-primary-foreground'
-                          : 'bg-muted'
-                      }`}
-                    >
-                      {msg.text}
+                    <div className="flex flex-col gap-1">
+                      <span className="text-xs text-gray-400 px-2">
+                        {msg.sender === 'me' ? 'You' : 'Stranger'}
+                      </span>
+                      <div
+                        className={`max-w-[85%] rounded-lg px-3 py-2 text-sm ${
+                          msg.sender === 'me'
+                            ? 'bg-blue-600 text-white'
+                            : 'bg-gray-800 text-gray-200'
+                        }`}
+                      >
+                        {msg.text}
+                      </div>
                     </div>
                   </div>
                 ))}
@@ -365,7 +355,7 @@ const VideoChat = ({
               </div>
             </ScrollArea>
 
-            <div className="p-3 border-t">
+            <div className="p-4 border-t border-gray-800">
               <form
                 onSubmit={(e) => {
                   e.preventDefault();
@@ -377,9 +367,9 @@ const VideoChat = ({
                   value={newMessage}
                   onChange={(e) => setNewMessage(e.target.value)}
                   placeholder="Type a message..."
-                  className="flex-1"
+                  className="flex-1 bg-gray-800 border-gray-700 text-white placeholder:text-gray-500"
                 />
-                <Button type="submit" size="icon">
+                <Button type="submit" size="icon" className="bg-blue-600 hover:bg-blue-700">
                   <Send className="w-4 h-4" />
                 </Button>
               </form>
@@ -388,107 +378,123 @@ const VideoChat = ({
         )}
       </div>
 
-      {/* Controls */}
-      <div className="flex items-center justify-center gap-3 sm:gap-4 p-4 border-t bg-card safe-bottom">
-        <Button
-          variant={isVideoEnabled ? "default" : "destructive"}
-          size="lg"
-          onClick={toggleVideo}
-          className="rounded-full w-12 h-12 sm:w-14 sm:h-14 touch-manipulation"
-          aria-label={isVideoEnabled ? "Turn off camera" : "Turn on camera"}
-        >
-          {isVideoEnabled ? <Video className="w-5 h-5 sm:w-6 sm:h-6" /> : <VideoOff className="w-5 h-5 sm:w-6 sm:h-6" />}
-        </Button>
-        
-        <Button
-          variant={isAudioEnabled ? "default" : "destructive"}
-          size="lg"
-          onClick={toggleAudio}
-          className="rounded-full w-12 h-12 sm:w-14 sm:h-14 touch-manipulation"
-          aria-label={isAudioEnabled ? "Mute microphone" : "Unmute microphone"}
-        >
-          {isAudioEnabled ? <Mic className="w-5 h-5 sm:w-6 sm:h-6" /> : <MicOff className="w-5 h-5 sm:w-6 sm:h-6" />}
-        </Button>
-        
-        <Button
-          variant="destructive"
-          size="lg"
-          onClick={handleEndCall}
-          className="rounded-full w-12 h-12 sm:w-14 sm:h-14 touch-manipulation"
-          aria-label="End call"
-        >
-          <PhoneOff className="w-5 h-5 sm:w-6 sm:h-6" />
-        </Button>
+      {/* Bottom Control Bar */}
+      <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/90 to-transparent p-6">
+        <div className="flex items-center justify-center gap-4">
+          {/* Video Toggle */}
+          <Button
+            variant={isVideoEnabled ? "secondary" : "destructive"}
+            size="lg"
+            onClick={toggleVideo}
+            className="rounded-full w-14 h-14"
+          >
+            {isVideoEnabled ? <Video className="w-6 h-6" /> : <VideoOff className="w-6 h-6" />}
+          </Button>
+          
+          {/* Audio Toggle */}
+          <Button
+            variant={isAudioEnabled ? "secondary" : "destructive"}
+            size="lg"
+            onClick={toggleAudio}
+            className="rounded-full w-14 h-14"
+          >
+            {isAudioEnabled ? <Mic className="w-6 h-6" /> : <MicOff className="w-6 h-6" />}
+          </Button>
 
-        {/* Chat Button - Mobile Only */}
-        {isMobile && (
-          <Drawer open={isChatOpen} onOpenChange={setIsChatOpen}>
-            <DrawerTrigger asChild>
-              <Button
-                variant="secondary"
-                size="lg"
-                className="rounded-full w-12 h-12 sm:w-14 sm:h-14 touch-manipulation relative"
-                aria-label="Open chat"
-              >
-                <MessageCircle className="w-5 h-5 sm:w-6 sm:h-6" />
-                {messages.length > 0 && (
-                  <span className="absolute -top-1 -right-1 w-5 h-5 bg-red-500 rounded-full text-xs flex items-center justify-center text-white">
-                    {messages.length}
-                  </span>
-                )}
-              </Button>
-            </DrawerTrigger>
-            <DrawerContent className="h-[80vh]">
-              <div className="flex flex-col h-full">
-                <div className="p-4 border-b">
-                  <h3 className="font-semibold">Chat</h3>
-                </div>
-                
-                <ScrollArea className="flex-1 p-4">
-                  <div className="space-y-2">
-                    {messages.map((msg, idx) => (
-                      <div
-                        key={idx}
-                        className={`flex ${msg.sender === 'me' ? 'justify-end' : 'justify-start'}`}
-                      >
-                        <div
-                          className={`max-w-[80%] rounded-lg px-3 py-2 text-sm ${
-                            msg.sender === 'me'
-                              ? 'bg-primary text-primary-foreground'
-                              : 'bg-muted'
-                          }`}
-                        >
-                          {msg.text}
-                        </div>
-                      </div>
-                    ))}
-                    <div ref={messagesEndRef} />
+          {/* Next Button - Prominent */}
+          <Button
+            variant="default"
+            size="lg"
+            onClick={handleSkip}
+            className="px-8 h-14 text-lg font-semibold bg-blue-600 hover:bg-blue-700"
+          >
+            Next
+          </Button>
+
+          {/* Stop Button */}
+          <Button
+            variant="destructive"
+            size="lg"
+            onClick={handleEndCall}
+            className="px-8 h-14 text-lg font-semibold"
+          >
+            Stop
+          </Button>
+
+          {/* Chat Button - Mobile Only */}
+          {isMobile && (
+            <Drawer open={isChatOpen} onOpenChange={setIsChatOpen}>
+              <DrawerTrigger asChild>
+                <Button
+                  variant="secondary"
+                  size="lg"
+                  className="rounded-full w-14 h-14 relative"
+                >
+                  <MessageCircle className="w-6 h-6" />
+                  {messages.length > 0 && (
+                    <span className="absolute -top-1 -right-1 w-5 h-5 bg-red-500 rounded-full text-xs flex items-center justify-center text-white">
+                      {messages.length}
+                    </span>
+                  )}
+                </Button>
+              </DrawerTrigger>
+              <DrawerContent className="h-[80vh] bg-gray-900">
+                <div className="flex flex-col h-full">
+                  <div className="p-4 border-b border-gray-800">
+                    <h3 className="font-semibold text-white">Chat</h3>
                   </div>
-                </ScrollArea>
+                  
+                  <ScrollArea className="flex-1 p-4">
+                    <div className="space-y-3">
+                      {messages.map((msg, idx) => (
+                        <div
+                          key={idx}
+                          className={`flex ${msg.sender === 'me' ? 'justify-end' : 'justify-start'}`}
+                        >
+                          <div className="flex flex-col gap-1">
+                            <span className="text-xs text-gray-400 px-2">
+                              {msg.sender === 'me' ? 'You' : 'Stranger'}
+                            </span>
+                            <div
+                              className={`max-w-[85%] rounded-lg px-3 py-2 text-sm ${
+                                msg.sender === 'me'
+                                  ? 'bg-blue-600 text-white'
+                                  : 'bg-gray-800 text-gray-200'
+                              }`}
+                            >
+                              {msg.text}
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                      <div ref={messagesEndRef} />
+                    </div>
+                  </ScrollArea>
 
-                <div className="p-4 border-t">
-                  <form
-                    onSubmit={(e) => {
-                      e.preventDefault();
-                      handleSendMessage();
-                    }}
-                    className="flex gap-2"
-                  >
-                    <Input
-                      value={newMessage}
-                      onChange={(e) => setNewMessage(e.target.value)}
-                      placeholder="Type a message..."
-                      className="flex-1"
-                    />
-                    <Button type="submit" size="icon">
-                      <Send className="w-4 h-4" />
-                    </Button>
-                  </form>
+                  <div className="p-4 border-t border-gray-800">
+                    <form
+                      onSubmit={(e) => {
+                        e.preventDefault();
+                        handleSendMessage();
+                      }}
+                      className="flex gap-2"
+                    >
+                      <Input
+                        value={newMessage}
+                        onChange={(e) => setNewMessage(e.target.value)}
+                        placeholder="Type a message..."
+                        className="flex-1 bg-gray-800 border-gray-700 text-white placeholder:text-gray-500"
+                      />
+                      <Button type="submit" size="icon" className="bg-blue-600 hover:bg-blue-700">
+                        <Send className="w-4 h-4" />
+                      </Button>
+                    </form>
+                  </div>
                 </div>
-              </div>
-            </DrawerContent>
-          </Drawer>
-        )}
+              </DrawerContent>
+            </Drawer>
+          )}
+        </div>
       </div>
     </div>
   );
