@@ -9,6 +9,7 @@ import { Drawer, DrawerContent, DrawerTrigger } from '@/components/ui/drawer';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { soundEffects } from '@/utils/sounds';
 import { haptics } from '@/utils/haptics';
+import { ResizablePanelGroup, ResizablePanel, ResizableHandle } from '@/components/ui/resizable';
 
 interface VideoChatProps {
   currentUserId: string;
@@ -302,89 +303,131 @@ const VideoChat = ({
         </div>
       </div>
 
-      {/* Main Content Area - Mobile: stacked, Desktop: videos on top, chat below */}
+      {/* Main Content Area - Mobile: stacked, Desktop: resizable panels */}
       <div className="flex-1 flex flex-col overflow-hidden">
-        {/* Videos Section */}
-        <div className="flex-1 flex flex-col md:flex-row gap-2 p-2 md:max-h-[60vh]">
-          {/* Remote Video */}
-          <div className="relative flex-1 bg-black rounded-lg overflow-hidden">
-            <video
-              ref={remoteVideoRef}
-              autoPlay
-              playsInline
-              className="w-full h-full object-cover"
-              style={{ transform: 'translateZ(0)' }}
-            />
-            <div className="absolute bottom-2 left-2 bg-black/60 px-2 py-1 rounded text-xs text-white">
-              User 2
-            </div>
-          </div>
-          
-          {/* Local Video */}
-          <div className="relative flex-1 bg-black rounded-lg overflow-hidden">
-            <video
-              ref={localVideoRef}
-              autoPlay
-              playsInline
-              muted
-              className="w-full h-full object-cover"
-              style={{ transform: 'translateZ(0) scaleX(-1)' }}
-            />
-            <div className="absolute bottom-2 left-2 bg-black/60 px-2 py-1 rounded text-xs text-white">
-              You
-            </div>
-          </div>
-        </div>
-
-        {/* Chat Section - Desktop Only */}
-        {!isMobile && (
-          <div className="h-64 bg-card border-t flex flex-col">
-            <div className="p-3 border-b">
-              <h3 className="font-semibold text-sm">Chat</h3>
-            </div>
-            
-            <ScrollArea className="flex-1 p-3">
-              <div className="space-y-2">
-                {messages.map((msg, idx) => (
-                  <div
-                    key={idx}
-                    className={`flex ${msg.sender === 'me' ? 'justify-end' : 'justify-start'}`}
-                  >
-                    <div
-                      className={`max-w-[70%] rounded-lg px-3 py-2 text-sm ${
-                        msg.sender === 'me'
-                          ? 'bg-primary text-primary-foreground'
-                          : 'bg-muted'
-                      }`}
-                    >
-                      {msg.text}
-                    </div>
-                  </div>
-                ))}
-                <div ref={messagesEndRef} />
-              </div>
-            </ScrollArea>
-
-            <div className="p-3 border-t">
-              <form
-                onSubmit={(e) => {
-                  e.preventDefault();
-                  handleSendMessage();
-                }}
-                className="flex gap-2"
-              >
-                <Input
-                  value={newMessage}
-                  onChange={(e) => setNewMessage(e.target.value)}
-                  placeholder="Type a message..."
-                  className="flex-1"
+        {isMobile ? (
+          <>
+            {/* Videos Section - Mobile */}
+            <div className="flex-1 flex flex-col gap-2 p-2">
+              {/* Remote Video */}
+              <div className="relative flex-1 bg-black rounded-lg overflow-hidden">
+                <video
+                  ref={remoteVideoRef}
+                  autoPlay
+                  playsInline
+                  className="w-full h-full object-cover"
+                  style={{ transform: 'translateZ(0)' }}
                 />
-                <Button type="submit" size="icon">
-                  <Send className="w-4 h-4" />
-                </Button>
-              </form>
+                <div className="absolute bottom-2 left-2 bg-black/60 px-2 py-1 rounded text-xs text-white">
+                  User 2
+                </div>
+              </div>
+              
+              {/* Local Video */}
+              <div className="relative flex-1 bg-black rounded-lg overflow-hidden">
+                <video
+                  ref={localVideoRef}
+                  autoPlay
+                  playsInline
+                  muted
+                  className="w-full h-full object-cover"
+                  style={{ transform: 'translateZ(0) scaleX(-1)' }}
+                />
+                <div className="absolute bottom-2 left-2 bg-black/60 px-2 py-1 rounded text-xs text-white">
+                  You
+                </div>
+              </div>
             </div>
-          </div>
+          </>
+        ) : (
+          <ResizablePanelGroup direction="vertical" className="flex-1">
+            {/* Videos Section - Desktop */}
+            <ResizablePanel defaultSize={65} minSize={40}>
+              <div className="h-full flex gap-2 p-2">
+                {/* Remote Video */}
+                <div className="relative flex-1 bg-black rounded-lg overflow-hidden">
+                  <video
+                    ref={remoteVideoRef}
+                    autoPlay
+                    playsInline
+                    className="w-full h-full object-cover"
+                    style={{ transform: 'translateZ(0)' }}
+                  />
+                  <div className="absolute bottom-2 left-2 bg-black/60 px-2 py-1 rounded text-xs text-white">
+                    User 2
+                  </div>
+                </div>
+                
+                {/* Local Video */}
+                <div className="relative flex-1 bg-black rounded-lg overflow-hidden">
+                  <video
+                    ref={localVideoRef}
+                    autoPlay
+                    playsInline
+                    muted
+                    className="w-full h-full object-cover"
+                    style={{ transform: 'translateZ(0) scaleX(-1)' }}
+                  />
+                  <div className="absolute bottom-2 left-2 bg-black/60 px-2 py-1 rounded text-xs text-white">
+                    You
+                  </div>
+                </div>
+              </div>
+            </ResizablePanel>
+
+            <ResizableHandle withHandle />
+
+            {/* Chat Section - Desktop */}
+            <ResizablePanel defaultSize={35} minSize={20} maxSize={60}>
+              <div className="h-full bg-card flex flex-col">
+                <div className="p-3 border-b">
+                  <h3 className="font-semibold text-sm">Chat</h3>
+                </div>
+                
+                <ScrollArea className="flex-1 p-3">
+                  <div className="space-y-2">
+                    {messages.map((msg, idx) => (
+                      <div
+                        key={idx}
+                        className={`flex ${msg.sender === 'me' ? 'justify-end' : 'justify-start'}`}
+                      >
+                        <div
+                          className={`max-w-[70%] rounded-lg px-3 py-2 text-sm ${
+                            msg.sender === 'me'
+                              ? 'bg-primary text-primary-foreground'
+                              : 'bg-muted'
+                          }`}
+                        >
+                          {msg.text}
+                        </div>
+                      </div>
+                    ))}
+                    <div ref={messagesEndRef} />
+                  </div>
+                </ScrollArea>
+
+                <div className="p-3 border-t">
+                  <form
+                    onSubmit={(e) => {
+                      e.preventDefault();
+                      handleSendMessage();
+                    }}
+                    className="flex gap-2"
+                  >
+                    <Input
+                      value={newMessage}
+                      onChange={(e) => setNewMessage(e.target.value)}
+                      placeholder="Type a message..."
+                      className="flex-1"
+                    />
+                    <Button type="submit" size="icon">
+                      <Send className="w-4 h-4" />
+                    </Button>
+                  </form>
+                </div>
+              </div>
+            </ResizablePanel>
+          </ResizablePanelGroup>
         )}
       </div>
 
