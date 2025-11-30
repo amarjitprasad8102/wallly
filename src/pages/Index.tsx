@@ -276,8 +276,16 @@ const Index = () => {
     );
   }
 
+  const handleCancelSearch = () => {
+    console.log('[INDEX] Canceling search');
+    soundEffects.playClick();
+    haptics.light();
+    leaveMatchmaking();
+    setAppState('home');
+  };
+
   if (appState === 'waiting') {
-    return <WaitingScreen searchingUsersCount={searchingUsersCount} />;
+    return <WaitingScreen searchingUsersCount={searchingUsersCount} onCancel={handleCancelSearch} />;
   }
 
   return (
