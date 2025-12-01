@@ -1,4 +1,5 @@
 import { useNavigate } from 'react-router-dom';
+import { Helmet } from 'react-helmet';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft, Home } from 'lucide-react';
 import {
@@ -14,8 +15,16 @@ const Privacy = () => {
   const navigate = useNavigate();
 
   return (
-    <div className="min-h-screen bg-gradient-subtle">
-      <div className="max-w-4xl mx-auto px-4 py-8">
+    <>
+      <Helmet>
+        <title>Privacy Policy - Kindred</title>
+        <meta name="description" content="Read Kindred's Privacy Policy. Learn how we protect your data, handle encrypted conversations, and keep your random video chats safe and private." />
+        <meta name="keywords" content="privacy policy, data protection, chat privacy, encrypted messaging, user safety" />
+        <link rel="canonical" href="https://kindred.corevia.in/privacy" />
+      </Helmet>
+      
+      <div className="min-h-screen bg-gradient-subtle">
+        <div className="max-w-4xl mx-auto px-4 py-8">
         <Breadcrumb className="mb-6">
           <BreadcrumbList>
             <BreadcrumbItem>
@@ -164,8 +173,9 @@ const Privacy = () => {
             By using Random Chat, you agree to this Privacy Policy and our Terms of Service.
           </p>
         </footer>
+        </div>
       </div>
-    </div>
+    </>
   );
 };
 
