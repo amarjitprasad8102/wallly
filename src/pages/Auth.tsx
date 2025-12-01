@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { Helmet } from "react-helmet";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -150,8 +151,16 @@ const Auth = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-primary/20 via-background to-secondary/20">
-      {/* Breadcrumbs Header */}
+    <>
+      <Helmet>
+        <title>Sign In or Sign Up - Kindred</title>
+        <meta name="description" content="Join Kindred to connect with people worldwide. Sign up or sign in to start chatting with strangers, make new friends, and join communities." />
+        <link rel="canonical" href="https://kindred.corevia.in/auth" />
+        <meta name="robots" content="noindex, follow" />
+      </Helmet>
+      
+      <div className="min-h-screen bg-gradient-to-br from-primary/20 via-background to-secondary/20">
+        {/* Breadcrumbs Header */}
       <div className="px-4 py-4 border-b border-border bg-background/80 backdrop-blur-sm">
         <div className="max-w-4xl mx-auto">
           <Breadcrumb>
@@ -294,7 +303,8 @@ const Auth = () => {
           </form>
         </DialogContent>
       </Dialog>
-    </div>
+      </div>
+    </>
   );
 };
 

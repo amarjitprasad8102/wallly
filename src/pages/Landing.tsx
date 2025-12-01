@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { Helmet } from 'react-helmet';
 import { Button } from '@/components/ui/button';
 import { MessageCircle, Users, Shield, Zap, Globe, Lock, ArrowRight, Hash, ChevronDown } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
@@ -42,9 +43,46 @@ const Landing = () => {
   }, [navigate]);
 
   return (
-    <div className="min-h-screen bg-background">
-      {/* Header */}
-      <header className="border-b border-border/50 bg-background/80 backdrop-blur-md sticky top-0 z-50">
+    <>
+      <Helmet>
+        <title>Kindred - Connect With Strangers Worldwide | Free Random Video Chat</title>
+        <meta name="description" content="Connect instantly with people worldwide through Kindred. Free random video chat, text messaging, and communities. From India to the World - Join now!" />
+        <meta name="keywords" content="random chat, video chat, meet strangers, anonymous chat, online friends, global community, india chat, free chat" />
+        <link rel="canonical" href="https://kindred.corevia.in/" />
+        
+        {/* Open Graph / Facebook */}
+        <meta property="og:type" content="website" />
+        <meta property="og:url" content="https://kindred.corevia.in/" />
+        <meta property="og:title" content="Kindred - Connect With Strangers Worldwide" />
+        <meta property="og:description" content="Free random video chat connecting people from India to the World. Meet new friends instantly." />
+        
+        {/* Twitter */}
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:title" content="Kindred - Connect With Strangers Worldwide" />
+        <meta name="twitter:description" content="Free random video chat connecting people from India to the World." />
+        
+        {/* Structured Data */}
+        <script type="application/ld+json">
+          {JSON.stringify({
+            "@context": "https://schema.org",
+            "@type": "WebApplication",
+            "name": "Kindred",
+            "description": "Connect instantly with people worldwide through random video chat and text messaging",
+            "url": "https://kindred.corevia.in",
+            "applicationCategory": "SocialNetworkingApplication",
+            "operatingSystem": "Web Browser",
+            "offers": {
+              "@type": "Offer",
+              "price": "0",
+              "priceCurrency": "USD"
+            }
+          })}
+        </script>
+      </Helmet>
+      
+      <div className="min-h-screen bg-background">
+        {/* Header */}
+        <header className="border-b border-border/50 bg-background/80 backdrop-blur-md sticky top-0 z-50">
         <nav className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3 sm:py-4" aria-label="Main navigation">
           <div className="flex justify-between items-center">
             <div className="flex items-center space-x-2">
@@ -327,7 +365,8 @@ const Landing = () => {
           <p>&copy; 2025 Kindred. All rights reserved.</p>
         </div>
       </footer>
-    </div>
+      </div>
+    </>
   );
 };
 

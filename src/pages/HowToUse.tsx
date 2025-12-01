@@ -1,5 +1,6 @@
 import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { Helmet } from 'react-helmet';
 import { Button } from '@/components/ui/button';
 import { MessageCircle, UserPlus, Hash, Users, Shield, ArrowRight, CheckCircle, Home } from 'lucide-react';
 import Lenis from '@studio-freight/lenis';
@@ -36,8 +37,42 @@ const HowToUse = () => {
   }, []);
 
   return (
-    <div className="min-h-screen bg-background">
-      {/* Header */}
+    <>
+      <Helmet>
+        <title>How to Use Kindred - Complete Guide to Random Video Chat</title>
+        <meta name="description" content="Learn how to use Kindred in 5 simple steps. Complete guide to random video chat, connecting with friends by ID, joining communities, and staying safe online." />
+        <meta name="keywords" content="how to use, user guide, random chat tutorial, video chat guide, connect by ID, join communities" />
+        <link rel="canonical" href="https://kindred.corevia.in/howtouse" />
+        
+        <script type="application/ld+json">
+          {JSON.stringify({
+            "@context": "https://schema.org",
+            "@type": "HowTo",
+            "name": "How to Use Kindred for Random Video Chat",
+            "description": "Step-by-step guide to connecting with people worldwide on Kindred",
+            "step": [
+              {
+                "@type": "HowToStep",
+                "name": "Create Your Account",
+                "text": "Sign up with your email address and verify you're 16 or older"
+              },
+              {
+                "@type": "HowToStep",
+                "name": "Start Random Matching",
+                "text": "Click the Start Chat button and get instantly matched with someone new"
+              },
+              {
+                "@type": "HowToStep",
+                "name": "Connect with ID",
+                "text": "Save user IDs and send connection requests to chat again"
+              }
+            ]
+          })}
+        </script>
+      </Helmet>
+      
+      <div className="min-h-screen bg-background">
+        {/* Header */}
       <header className="border-b border-border/50 bg-background/80 backdrop-blur-md sticky top-0 z-50">
         <nav className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3 sm:py-4" aria-label="Main navigation">
           <div className="flex justify-between items-center">
@@ -351,7 +386,8 @@ const HowToUse = () => {
           <p>&copy; 2025 Kindred. All rights reserved.</p>
         </div>
       </footer>
-    </div>
+      </div>
+    </>
   );
 };
 

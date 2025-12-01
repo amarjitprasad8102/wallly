@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { Helmet } from 'react-helmet';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { ArrowLeft, UserMinus, Loader2, X, Clock, Home } from 'lucide-react';
@@ -81,8 +82,16 @@ const Connections = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-subtle">
-      {/* Header */}
+    <>
+      <Helmet>
+        <title>My Connections - Kindred</title>
+        <meta name="description" content="Manage your Kindred connections. View chat history, pending requests, and reconnect with friends from around the world." />
+        <link rel="canonical" href="https://kindred.corevia.in/connections" />
+        <meta name="robots" content="noindex, follow" />
+      </Helmet>
+      
+      <div className="min-h-screen bg-gradient-subtle">
+        {/* Header */}
       <div className="px-4 py-4 border-b border-border bg-background">
         <div className="max-w-4xl mx-auto space-y-3">
           <Breadcrumb>
@@ -226,7 +235,8 @@ const Connections = () => {
           )}
         </div>
       </div>
-    </div>
+      </div>
+    </>
   );
 };
 

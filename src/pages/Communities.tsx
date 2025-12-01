@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { Helmet } from 'react-helmet';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -121,8 +122,16 @@ const Communities = () => {
   );
 
   return (
-    <div className="min-h-screen bg-gradient-subtle">
-      {/* Header */}
+    <>
+      <Helmet>
+        <title>Bharatiya Samudaay - Indian Communities on Kindred</title>
+        <meta name="description" content="Join Bharatiya Samudaay on Kindred. Discover vibrant Indian communities connecting India to the world. Create, join, and engage with interest-based communities." />
+        <meta name="keywords" content="indian communities, bharatiya samudaay, online communities, india groups, community chat, interest groups" />
+        <link rel="canonical" href="https://kindred.corevia.in/c" />
+      </Helmet>
+      
+      <div className="min-h-screen bg-gradient-subtle">
+        {/* Header */}
       <header className="border-b border-border bg-background/80 backdrop-blur-sm sticky top-0 z-50">
         <nav className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
           <div className="flex justify-between items-center">
@@ -290,7 +299,8 @@ const Communities = () => {
           </div>
         )}
       </main>
-    </div>
+      </div>
+    </>
   );
 };
 

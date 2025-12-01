@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { Helmet } from "react-helmet";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -201,8 +202,15 @@ export default function Admin() {
   }
 
   return (
-    <div className="min-h-screen bg-background">
-      <div className="container mx-auto p-6">
+    <>
+      <Helmet>
+        <title>Admin Panel - Kindred</title>
+        <meta name="description" content="Kindred admin panel for managing users, reports, and roles." />
+        <meta name="robots" content="noindex, nofollow" />
+      </Helmet>
+      
+      <div className="min-h-screen bg-background">
+        <div className="container mx-auto p-6">
         <div className="mb-6">
           <Breadcrumb className="mb-4">
             <BreadcrumbList>
@@ -369,7 +377,8 @@ export default function Admin() {
             </Card>
           </TabsContent>
         </Tabs>
+        </div>
       </div>
-    </div>
+    </>
   );
 }
