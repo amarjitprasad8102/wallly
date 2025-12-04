@@ -356,7 +356,7 @@ const VideoChat = ({
                   autoPlay
                   playsInline
                   className="w-full h-full object-cover"
-                  style={{ transform: 'translateZ(0)' }}
+                  style={{ transform: 'translateZ(0) scaleX(-1)' }}
                 />
                 <div className="absolute bottom-2 left-2 bg-black/60 px-2 py-1 rounded text-xs text-white">
                   User 2
@@ -391,7 +391,7 @@ const VideoChat = ({
                     autoPlay
                     playsInline
                     className="w-full h-full object-cover"
-                    style={{ transform: 'translateZ(0)' }}
+                    style={{ transform: 'translateZ(0) scaleX(-1)' }}
                   />
                   <div className="absolute bottom-2 left-2 bg-black/60 px-2 py-1 rounded text-xs text-white">
                     User 2
