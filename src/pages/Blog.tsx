@@ -2,7 +2,7 @@ import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { MessageCircle, Calendar, User, Home, Search } from 'lucide-react';
 import { Input } from '@/components/ui/input';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Helmet } from 'react-helmet';
 import {
   Breadcrumb,
@@ -12,13 +12,57 @@ import {
   BreadcrumbPage,
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
-import { blogPosts } from '@/data/blogPosts';
+import { blogPosts as staticBlogPosts } from '@/data/blogPosts';
+import { supabase } from '@/integrations/supabase/client';
+
+interface BlogPost {
+  slug: string;
+  title: string;
+  metaDescription: string;
+  author: string;
+  date: string;
+  imageUrl: string;
+  category: string;
+  content: string;
+}
 
 const Blog = () => {
   const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState('');
+  const [dbBlogPosts, setDbBlogPosts] = useState<BlogPost[]>([]);
 
-  const filteredBlogs = blogPosts.filter(blog =>
+  useEffect(() => {
+    fetchDatabaseBlogs();
+  }, []);
+
+  const fetchDatabaseBlogs = async () => {
+    const { data, error } = await supabase
+      .from('blog_posts')
+      .select('*')
+      .eq('is_published', true)
+      .order('published_at', { ascending: false });
+
+    if (data && !error) {
+      const formattedPosts: BlogPost[] = data.map(post => ({
+        slug: post.slug,
+        title: post.title,
+        metaDescription: post.meta_description,
+        author: post.author,
+        date: post.published_at || post.created_at,
+        imageUrl: post.image_url || '/placeholder.svg',
+        category: post.category,
+        content: post.content,
+      }));
+      setDbBlogPosts(formattedPosts);
+    }
+  };
+
+  // Combine database posts with static posts, removing duplicates by slug
+  const allBlogPosts = [...dbBlogPosts, ...staticBlogPosts.filter(
+    staticPost => !dbBlogPosts.some(dbPost => dbPost.slug === staticPost.slug)
+  )];
+
+  const filteredBlogs = allBlogPosts.filter(blog =>
     blog.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
     blog.category.toLowerCase().includes(searchQuery.toLowerCase()) ||
     blog.metaDescription.toLowerCase().includes(searchQuery.toLowerCase())
@@ -30,7 +74,7 @@ const Blog = () => {
         <title>Kindred Blog - From India to World | Connection, Culture & Community</title>
         <meta name="description" content="Explore 100+ articles about online connections, cultural exchange, and community building. From India to World - insights on digital friendship and meaningful conversations." />
         <meta name="keywords" content="online chat, random chat, Kindred blog, cultural exchange, Indian communities, Bharatiya Samudaay, online friendship, anonymous chat" />
-        <link rel="canonical" href="https://kindred.corevia.in/blog" />
+        <link rel="canonical" href="https://kindred.corevia.in/b" />
       </Helmet>
 
       <div className="min-h-screen bg-gradient-subtle">
@@ -152,7 +196,7 @@ const Blog = () => {
           <section className="mt-16 bg-card rounded-xl border border-border p-8">
             <h2 className="text-3xl font-bold mb-6">Explore by Category</h2>
             <div className="flex flex-wrap gap-3">
-              {Array.from(new Set(blogPosts.map(blog => blog.category))).map(category => (
+              {Array.from(new Set(allBlogPosts.map(blog => blog.category))).map(category => (
                 <button
                   key={category}
                   onClick={() => setSearchQuery(category)}

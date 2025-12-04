@@ -1,6 +1,7 @@
 import { useParams, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { MessageCircle, Calendar, User, Home, ArrowLeft } from 'lucide-react';
+import { useState, useEffect } from 'react';
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -9,14 +10,96 @@ import {
   BreadcrumbPage,
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
-import { blogPosts } from '@/data/blogPosts';
+import { blogPosts as staticBlogPosts } from '@/data/blogPosts';
+import { supabase } from '@/integrations/supabase/client';
 import { Helmet } from 'react-helmet';
+
+interface BlogPost {
+  slug: string;
+  title: string;
+  metaDescription: string;
+  author: string;
+  date: string;
+  imageUrl: string;
+  category: string;
+  content: string;
+}
 
 const BlogDetail = () => {
   const { slug } = useParams<{ slug: string }>();
   const navigate = useNavigate();
-  
-  const blog = blogPosts.find(post => post.slug === slug);
+  const [blog, setBlog] = useState<BlogPost | null>(null);
+  const [allBlogs, setAllBlogs] = useState<BlogPost[]>(staticBlogPosts);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetchBlogPost();
+  }, [slug]);
+
+  const fetchBlogPost = async () => {
+    setLoading(true);
+    
+    // First try to find in database
+    const { data, error } = await supabase
+      .from('blog_posts')
+      .select('*')
+      .eq('slug', slug)
+      .eq('is_published', true)
+      .single();
+
+    if (data && !error) {
+      setBlog({
+        slug: data.slug,
+        title: data.title,
+        metaDescription: data.meta_description,
+        author: data.author,
+        date: data.published_at || data.created_at,
+        imageUrl: data.image_url || '/placeholder.svg',
+        category: data.category,
+        content: data.content,
+      });
+    } else {
+      // Fall back to static posts
+      const staticBlog = staticBlogPosts.find(post => post.slug === slug);
+      setBlog(staticBlog || null);
+    }
+
+    // Fetch all published blogs for related posts
+    const { data: allData } = await supabase
+      .from('blog_posts')
+      .select('*')
+      .eq('is_published', true);
+
+    if (allData) {
+      const dbPosts: BlogPost[] = allData.map(post => ({
+        slug: post.slug,
+        title: post.title,
+        metaDescription: post.meta_description,
+        author: post.author,
+        date: post.published_at || post.created_at,
+        imageUrl: post.image_url || '/placeholder.svg',
+        category: post.category,
+        content: post.content,
+      }));
+      
+      setAllBlogs([...dbPosts, ...staticBlogPosts.filter(
+        staticPost => !dbPosts.some(dbPost => dbPost.slug === staticPost.slug)
+      )]);
+    }
+
+    setLoading(false);
+  };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gradient-subtle flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto"></div>
+          <p className="mt-4 text-muted-foreground">Loading...</p>
+        </div>
+      </div>
+    );
+  }
 
   if (!blog) {
     return (
@@ -24,7 +107,7 @@ const BlogDetail = () => {
         <div className="text-center">
           <h1 className="text-4xl font-bold mb-4">Blog Not Found</h1>
           <p className="text-muted-foreground mb-8">The blog post you're looking for doesn't exist.</p>
-          <Button onClick={() => navigate('/blog')}>Back to Blog List</Button>
+          <Button onClick={() => navigate('/b')}>Back to Blog List</Button>
         </div>
       </div>
     );
@@ -82,7 +165,7 @@ const BlogDetail = () => {
               </BreadcrumbItem>
               <BreadcrumbSeparator />
               <BreadcrumbItem>
-                <BreadcrumbLink onClick={() => navigate('/blog')} className="cursor-pointer">
+                <BreadcrumbLink onClick={() => navigate('/b')} className="cursor-pointer">
                   Blog
                 </BreadcrumbLink>
               </BreadcrumbItem>
@@ -96,7 +179,7 @@ const BlogDetail = () => {
           {/* Back Button */}
           <Button 
             variant="ghost" 
-            onClick={() => navigate('/blog')}
+            onClick={() => navigate('/b')}
             className="mb-6"
             aria-label="Back to blog list"
           >
@@ -171,7 +254,7 @@ const BlogDetail = () => {
           <section className="mt-12">
             <h2 className="text-2xl font-bold mb-6">More from Kindred Blog</h2>
             <div className="grid md:grid-cols-2 gap-6">
-              {blogPosts
+              {allBlogs
                 .filter(post => post.slug !== slug && post.category === blog.category)
                 .slice(0, 2)
                 .map(relatedBlog => (
@@ -228,7 +311,7 @@ const BlogDetail = () => {
                 <button onClick={() => navigate('/c')} className="hover:text-primary transition-colors">
                   Communities
                 </button>
-                <button onClick={() => navigate('/how-to-use')} className="hover:text-primary transition-colors">
+                <button onClick={() => navigate('/howtouse')} className="hover:text-primary transition-colors">
                   How to Use
                 </button>
               </div>
