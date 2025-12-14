@@ -84,9 +84,9 @@ const Connections = () => {
   return (
     <>
       <Helmet>
-        <title>My Connections - Kindred</title>
-        <meta name="description" content="Manage your Kindred connections. View chat history, pending requests, and reconnect with friends from around the world." />
-        <link rel="canonical" href="https://kindred.corevia.in/connections" />
+        <title>My Connections - Wallly</title>
+        <meta name="description" content="Manage your Wallly connections. View chat history, pending requests, and reconnect with friends from around the world." />
+        <link rel="canonical" href="https://wallly.corevia.in/connections" />
         <meta name="robots" content="noindex, follow" />
       </Helmet>
       

@@ -12,7 +12,7 @@ const NotFound = () => {
   return (
     <>
       <Helmet>
-        <title>404 - Page Not Found - Kindred</title>
+        <title>404 - Page Not Found - Wallly</title>
         <meta name="description" content="Page not found. The page you are looking for does not exist." />
         <meta name="robots" content="noindex, follow" />
       </Helmet>

@@ -84,7 +84,7 @@ const defaultBlogPost = {
   slug: "",
   title: "",
   meta_description: "",
-  author: "Kindred Team",
+  author: "Wallly Team",
   image_url: "/placeholder.svg",
   category: "General",
   content: "",
@@ -424,8 +424,8 @@ export default function Admin() {
   return (
     <>
       <Helmet>
-        <title>Admin Panel - Kindred</title>
-        <meta name="description" content="Kindred admin panel for managing users, reports, blogs, and communities." />
+        <title>Admin Panel - Wallly</title>
+        <meta name="description" content="Wallly admin panel for managing users, reports, blogs, and communities." />
         <meta name="robots" content="noindex, nofollow" />
       </Helmet>
       

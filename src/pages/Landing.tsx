@@ -45,20 +45,20 @@ const Landing = () => {
   return (
     <>
       <Helmet>
-        <title>Kindred - Connect With Strangers Worldwide | Free Random Video Chat</title>
-        <meta name="description" content="Connect instantly with people worldwide through Kindred. Free random video chat, text messaging, and communities. From India to the World - Join now!" />
+        <title>Wallly - Connect With Strangers Worldwide | Free Random Video Chat</title>
+        <meta name="description" content="Connect instantly with people worldwide through Wallly. Free random video chat, text messaging, and communities. From India to the World - Join now!" />
         <meta name="keywords" content="random chat, video chat, meet strangers, anonymous chat, online friends, global community, india chat, free chat" />
-        <link rel="canonical" href="https://kindred.corevia.in/" />
+        <link rel="canonical" href="https://wallly.corevia.in/" />
         
         {/* Open Graph / Facebook */}
         <meta property="og:type" content="website" />
-        <meta property="og:url" content="https://kindred.corevia.in/" />
-        <meta property="og:title" content="Kindred - Connect With Strangers Worldwide" />
+        <meta property="og:url" content="https://wallly.corevia.in/" />
+        <meta property="og:title" content="Wallly - Connect With Strangers Worldwide" />
         <meta property="og:description" content="Free random video chat connecting people from India to the World. Meet new friends instantly." />
         
         {/* Twitter */}
         <meta name="twitter:card" content="summary_large_image" />
-        <meta name="twitter:title" content="Kindred - Connect With Strangers Worldwide" />
+        <meta name="twitter:title" content="Wallly - Connect With Strangers Worldwide" />
         <meta name="twitter:description" content="Free random video chat connecting people from India to the World." />
         
         {/* Structured Data */}
@@ -66,9 +66,9 @@ const Landing = () => {
           {JSON.stringify({
             "@context": "https://schema.org",
             "@type": "WebApplication",
-            "name": "Kindred",
+            "name": "Wallly",
             "description": "Connect instantly with people worldwide through random video chat and text messaging",
-            "url": "https://kindred.corevia.in",
+            "url": "https://wallly.corevia.in",
             "applicationCategory": "SocialNetworkingApplication",
             "operatingSystem": "Web Browser",
             "offers": {
@@ -87,9 +87,9 @@ const Landing = () => {
           <div className="flex justify-between items-center">
             <div className="flex items-center space-x-2">
               <div className="bg-gradient-primary p-1.5 sm:p-2 rounded-lg" aria-hidden="true">
-                <MessageCircle className="w-5 h-5 sm:w-6 sm:h-6 text-white" aria-label="Kindred logo" />
+                <MessageCircle className="w-5 h-5 sm:w-6 sm:h-6 text-white" aria-label="Wallly logo" />
               </div>
-              <h2 className="text-lg sm:text-xl font-bold">Kindred</h2>
+              <h2 className="text-lg sm:text-xl font-bold">Wallly</h2>
             </div>
             <div className="flex items-center gap-2 sm:gap-4">
               <Button variant="ghost" size="sm" className="hidden md:inline-flex" onClick={() => navigate('/howtouse')}>
@@ -107,7 +107,7 @@ const Landing = () => {
               <Button variant="ghost" size="sm" onClick={() => navigate('/auth')} aria-label="Sign in to your account">
                 Sign In
               </Button>
-              <Button size="sm" className="bg-gradient-primary hover:opacity-90" onClick={() => navigate('/auth')} aria-label="Get started with Kindred">
+              <Button size="sm" className="bg-gradient-primary hover:opacity-90" onClick={() => navigate('/auth')} aria-label="Get started with Wallly">
                 Start
               </Button>
             </div>
@@ -157,7 +157,7 @@ const Landing = () => {
         <section className="px-4 py-16 sm:py-20 lg:py-24">
           <div className="max-w-6xl mx-auto">
             <div className="text-center mb-12 sm:mb-16">
-              <h2 className="text-3xl sm:text-4xl font-bold mb-3 sm:mb-4">Why Choose Kindred?</h2>
+              <h2 className="text-3xl sm:text-4xl font-bold mb-3 sm:mb-4">Why Choose Wallly?</h2>
               <p className="text-base sm:text-lg lg:text-xl text-muted-foreground">Connecting India to the world, one chat at a time</p>
             </div>
 
@@ -272,7 +272,7 @@ const Landing = () => {
           <div className="max-w-3xl mx-auto">
             <div className="text-center mb-12 sm:mb-16">
               <h2 className="text-3xl sm:text-4xl font-bold mb-3 sm:mb-4">Frequently Asked Questions</h2>
-              <p className="text-base sm:text-lg text-muted-foreground">Everything you need to know about Kindred</p>
+              <p className="text-base sm:text-lg text-muted-foreground">Everything you need to know about Wallly</p>
             </div>
 
             <Accordion type="single" collapsible className="w-full space-y-4">
@@ -287,10 +287,10 @@ const Landing = () => {
 
               <AccordionItem value="item-2" className="border border-border/50 rounded-2xl px-6 bg-card">
                 <AccordionTrigger className="text-left hover:no-underline">
-                  <span className="text-base sm:text-lg font-semibold">Is Kindred really free?</span>
+                  <span className="text-base sm:text-lg font-semibold">Is Wallly really free?</span>
                 </AccordionTrigger>
                 <AccordionContent className="text-sm sm:text-base text-muted-foreground leading-relaxed">
-                  Yes! Kindred is completely free to use. You can chat with unlimited people without any cost. We believe in connecting people without barriers.
+                  Yes! Wallly is completely free to use. You can chat with unlimited people without any cost. We believe in connecting people without barriers.
                 </AccordionContent>
               </AccordionItem>
 
@@ -326,7 +326,7 @@ const Landing = () => {
                   <span className="text-base sm:text-lg font-semibold">Do I need to download an app?</span>
                 </AccordionTrigger>
                 <AccordionContent className="text-sm sm:text-base text-muted-foreground leading-relaxed">
-                  No! Kindred works directly in your web browser on any device. No downloads, no installations, no hassle. Just visit our website and start chatting.
+                  No! Wallly works directly in your web browser on any device. No downloads, no installations, no hassle. Just visit our website and start chatting.
                 </AccordionContent>
               </AccordionItem>
             </Accordion>
@@ -340,7 +340,7 @@ const Landing = () => {
               Ready to Meet Someone New?
             </h2>
             <p className="text-base sm:text-lg lg:text-xl mb-6 sm:mb-8 opacity-90 px-4">
-              Join thousands of people already chatting on Kindred. Your next conversation could change everything.
+              Join thousands of people already chatting on Wallly. Your next conversation could change everything.
             </p>
             <Button
               size="lg"
@@ -360,9 +360,9 @@ const Landing = () => {
       <footer className="border-t border-border/50 py-6 sm:py-8 px-4 bg-muted/20">
         <div className="max-w-7xl mx-auto text-center text-xs sm:text-sm text-muted-foreground">
           <p className="mb-3 sm:mb-4 leading-relaxed px-4">
-            By using Kindred, you agree to be respectful and follow our community guidelines. Users must be 16 years or older.
+            By using Wallly, you agree to be respectful and follow our community guidelines. Users must be 16 years or older.
           </p>
-          <p>&copy; 2025 Kindred. All rights reserved.</p>
+          <p>&copy; 2025 Wallly. All rights reserved.</p>
         </div>
       </footer>
       </div>

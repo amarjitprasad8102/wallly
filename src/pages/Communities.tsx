@@ -124,10 +124,10 @@ const Communities = () => {
   return (
     <>
       <Helmet>
-        <title>Bharatiya Samudaay - Indian Communities on Kindred</title>
-        <meta name="description" content="Join Bharatiya Samudaay on Kindred. Discover vibrant Indian communities connecting India to the world. Create, join, and engage with interest-based communities." />
+        <title>Bharatiya Samudaay - Indian Communities on Wallly</title>
+        <meta name="description" content="Join Bharatiya Samudaay on Wallly. Discover vibrant Indian communities connecting India to the world. Create, join, and engage with interest-based communities." />
         <meta name="keywords" content="indian communities, bharatiya samudaay, online communities, india groups, community chat, interest groups" />
-        <link rel="canonical" href="https://kindred.corevia.in/c" />
+        <link rel="canonical" href="https://wallly.corevia.in/c" />
       </Helmet>
       
       <div className="min-h-screen bg-gradient-subtle">
@@ -142,7 +142,7 @@ const Communities = () => {
               <div className="bg-gradient-primary p-2 rounded-lg">
                 <MessageCircle className="w-6 h-6 text-white" />
               </div>
-              <h2 className="text-xl font-bold">Kindred</h2>
+              <h2 className="text-xl font-bold">Wallly</h2>
             </button>
             <div className="flex items-center gap-4">
               {user ? (
