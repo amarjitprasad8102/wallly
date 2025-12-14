@@ -364,6 +364,7 @@ export type Database = {
           gender: string | null
           id: string
           is_premium: boolean | null
+          name: string | null
           premium_until: string | null
           unique_id: string
         }
@@ -374,6 +375,7 @@ export type Database = {
           gender?: string | null
           id: string
           is_premium?: boolean | null
+          name?: string | null
           premium_until?: string | null
           unique_id: string
         }
@@ -384,6 +386,7 @@ export type Database = {
           gender?: string | null
           id?: string
           is_premium?: boolean | null
+          name?: string | null
           premium_until?: string | null
           unique_id?: string
         }
