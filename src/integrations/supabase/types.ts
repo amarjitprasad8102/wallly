@@ -361,6 +361,7 @@ export type Database = {
           age: number | null
           created_at: string | null
           email: string
+          gender: string | null
           id: string
           is_premium: boolean | null
           premium_until: string | null
@@ -370,6 +371,7 @@ export type Database = {
           age?: number | null
           created_at?: string | null
           email: string
+          gender?: string | null
           id: string
           is_premium?: boolean | null
           premium_until?: string | null
@@ -379,6 +381,7 @@ export type Database = {
           age?: number | null
           created_at?: string | null
           email?: string
+          gender?: string | null
           id?: string
           is_premium?: boolean | null
           premium_until?: string | null
