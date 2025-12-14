@@ -1,12 +1,12 @@
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { Helmet } from "react-helmet";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
-import { Home } from "lucide-react";
+import { Home, UserX } from "lucide-react";
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -23,6 +23,14 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import StrangerDialog from "@/components/StrangerDialog";
 
 const Auth = () => {
   const navigate = useNavigate();
@@ -30,6 +38,7 @@ const Auth = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [age, setAge] = useState("");
+  const [gender, setGender] = useState("");
   const [loading, setLoading] = useState(false);
   const [showForgotPassword, setShowForgotPassword] = useState(false);
   const [resetEmail, setResetEmail] = useState("");
@@ -77,6 +86,13 @@ const Auth = () => {
           return;
         }
 
+        // Validate gender
+        if (!gender) {
+          toast.error("Please select your gender");
+          setLoading(false);
+          return;
+        }
+
         const { data, error } = await supabase.auth.signUp({
           email,
           password,
@@ -87,16 +103,16 @@ const Auth = () => {
         
         if (error) throw error;
 
-        // Update profile with age
+        // Update profile with age and gender
         if (data.user) {
           const { error: profileError } = await supabase
             .from('profiles')
-            .update({ age: ageNum })
+            .update({ age: ageNum, gender })
             .eq('id', data.user.id);
 
           if (profileError) {
-            console.error('Error updating age:', profileError);
-            toast.error("Account created but failed to save age. Please contact support.");
+            console.error('Error updating profile:', profileError);
+            toast.error("Account created but failed to save profile. Please contact support.");
           } else {
             toast.success("Account created! You can now start chatting.");
           }
@@ -230,19 +246,35 @@ const Auth = () => {
             </div>
 
             {!isLogin && (
-              <div className="space-y-2">
-                <Label htmlFor="age">Age</Label>
-                <Input
-                  id="age"
-                  type="number"
-                  placeholder="Enter your age"
-                  value={age}
-                  onChange={(e) => setAge(e.target.value)}
-                  required
-                  min="16"
-                />
-                <p className="text-xs text-muted-foreground">You must be at least 16 years old</p>
-              </div>
+              <>
+                <div className="space-y-2">
+                  <Label htmlFor="gender">Gender</Label>
+                  <Select value={gender} onValueChange={setGender}>
+                    <SelectTrigger id="gender">
+                      <SelectValue placeholder="Select your gender" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="male">Male</SelectItem>
+                      <SelectItem value="female">Female</SelectItem>
+                      <SelectItem value="other">Other</SelectItem>
+                      <SelectItem value="prefer_not_to_say">Prefer not to say</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="age">Age</Label>
+                  <Input
+                    id="age"
+                    type="number"
+                    placeholder="Enter your age"
+                    value={age}
+                    onChange={(e) => setAge(e.target.value)}
+                    required
+                    min="16"
+                  />
+                  <p className="text-xs text-muted-foreground">You must be at least 16 years old</p>
+                </div>
+              </>
             )}
 
             <Button type="submit" className="w-full" disabled={loading}>

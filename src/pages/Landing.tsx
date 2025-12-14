@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Helmet } from 'react-helmet';
 import { Button } from '@/components/ui/button';
-import { MessageCircle, Users, Shield, Zap, Globe, Lock, ArrowRight, Hash, ChevronDown } from 'lucide-react';
+import { MessageCircle, Users, Shield, Zap, Globe, Lock, ArrowRight, Hash, ChevronDown, UserX } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import Lenis from '@studio-freight/lenis';
 import {
@@ -11,9 +11,20 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
+import StrangerDialog from '@/components/StrangerDialog';
+import { toast } from 'sonner';
 
 const Landing = () => {
   const navigate = useNavigate();
+  const [strangerDialogOpen, setStrangerDialogOpen] = useState(false);
+
+  const handleStrangerStart = async (gender: string, age: number) => {
+    // Sign in anonymously and store gender/age in session storage for guest mode
+    sessionStorage.setItem('stranger_gender', gender);
+    sessionStorage.setItem('stranger_age', age.toString());
+    toast.success('Starting as stranger...');
+    navigate('/auth?stranger=true');
+  };
 
   useEffect(() => {
     // Check if user is already logged in
@@ -107,6 +118,10 @@ const Landing = () => {
               <Button variant="ghost" size="sm" onClick={() => navigate('/auth')} aria-label="Sign in to your account">
                 Sign In
               </Button>
+              <Button variant="outline" size="sm" onClick={() => setStrangerDialogOpen(true)} aria-label="Chat as stranger">
+                <UserX className="w-4 h-4 mr-1" />
+                Stranger
+              </Button>
               <Button size="sm" className="bg-gradient-primary hover:opacity-90" onClick={() => navigate('/auth')} aria-label="Get started with Wallly">
                 Start
               </Button>
@@ -131,11 +146,11 @@ const Landing = () => {
             <h1 className="text-4xl sm:text-5xl lg:text-7xl font-bold mb-4 sm:mb-6 gradient-text leading-tight">
               Connect With Strangers Worldwide
             </h1>
-            <p className="text-base sm:text-lg lg:text-xl text-muted-foreground mb-2 max-w-2xl mx-auto px-4">
-              From India to World - Connect instantly with people across the globe
+            <p className="text-lg sm:text-xl lg:text-2xl text-primary/80 font-medium mb-4 max-w-2xl mx-auto px-4 italic">
+              "Where the walls end, you find a friend."
             </p>
             <p className="text-base sm:text-lg lg:text-xl text-muted-foreground mb-8 sm:mb-12 max-w-2xl mx-auto px-4">
-              Join communities, make new friends, and discover different cultures through text chat.
+              From India to World - Connect instantly with people across the globe. Join communities, make new friends, and discover different cultures.
             </p>
             
             <div className="flex flex-col sm:flex-row gap-4 justify-center items-center px-4">
@@ -365,6 +380,12 @@ const Landing = () => {
           <p>&copy; 2025 Wallly. All rights reserved.</p>
         </div>
       </footer>
+
+      <StrangerDialog 
+        open={strangerDialogOpen} 
+        onOpenChange={setStrangerDialogOpen} 
+        onStart={handleStrangerStart} 
+      />
       </div>
     </>
   );
