@@ -116,14 +116,14 @@ const BlogDetail = () => {
   return (
     <>
       <Helmet>
-        <title>{blog.title} | Kindred Blog</title>
+        <title>{blog.title} | Wallly Blog</title>
         <meta name="description" content={blog.metaDescription} />
         <meta property="og:title" content={blog.title} />
         <meta property="og:description" content={blog.metaDescription} />
         <meta property="og:type" content="article" />
         <meta property="article:published_time" content={blog.date} />
         <meta property="article:author" content={blog.author} />
-        <link rel="canonical" href={`https://kindred.corevia.in/b/${blog.slug}`} />
+        <link rel="canonical" href={`https://wallly.corevia.in/b/${blog.slug}`} />
       </Helmet>
 
       <div className="min-h-screen bg-gradient-subtle">
@@ -137,15 +137,15 @@ const BlogDetail = () => {
                 aria-label="Return to homepage"
               >
                 <div className="bg-gradient-primary p-2 rounded-lg" aria-hidden="true">
-                  <MessageCircle className="w-6 h-6 text-white" aria-label="Kindred logo" />
+                  <MessageCircle className="w-6 h-6 text-white" aria-label="Wallly logo" />
                 </div>
-                <h2 className="text-xl font-bold">Kindred</h2>
+                <h2 className="text-xl font-bold">Wallly</h2>
               </button>
               <div className="space-x-4">
                 <Button variant="ghost" onClick={() => navigate('/auth')} aria-label="Sign in to your account">
                   Sign In
                 </Button>
-                <Button className="bg-gradient-primary hover:opacity-90" onClick={() => navigate('/auth')} aria-label="Get started with Kindred">
+                <Button className="bg-gradient-primary hover:opacity-90" onClick={() => navigate('/auth')} aria-label="Get started with Wallly">
                   Get Started
                 </Button>
               </div>
@@ -238,7 +238,7 @@ const BlogDetail = () => {
               <div className="bg-gradient-primary/10 rounded-lg p-6 text-center">
                 <h2 className="text-2xl font-bold mb-4">Ready to Start Connecting?</h2>
                 <p className="text-muted-foreground mb-6">
-                  Join Kindred today and experience meaningful connections from India to the world.
+                  Join Wallly today and experience meaningful connections from India to the world.
                 </p>
                 <Button 
                   className="bg-gradient-primary hover:opacity-90"
@@ -252,7 +252,7 @@ const BlogDetail = () => {
 
           {/* Related Blogs */}
           <section className="mt-12">
-            <h2 className="text-2xl font-bold mb-6">More from Kindred Blog</h2>
+            <h2 className="text-2xl font-bold mb-6">More from Wallly Blog</h2>
             <div className="grid md:grid-cols-2 gap-6">
               {allBlogs
                 .filter(post => post.slug !== slug && post.category === blog.category)
@@ -303,7 +303,7 @@ const BlogDetail = () => {
         <footer className="border-t border-border mt-24 py-12">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="text-center text-muted-foreground">
-              <p>&copy; 2025 Kindred. From India to World - Connecting Hearts and Minds.</p>
+              <p>&copy; 2025 Wallly. From India to World - Connecting Hearts and Minds.</p>
               <div className="mt-4 space-x-6">
                 <button onClick={() => navigate('/privacy')} className="hover:text-primary transition-colors">
                   Privacy Policy

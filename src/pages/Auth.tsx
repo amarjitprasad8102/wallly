@@ -153,9 +153,9 @@ const Auth = () => {
   return (
     <>
       <Helmet>
-        <title>Sign In or Sign Up - Kindred</title>
-        <meta name="description" content="Join Kindred to connect with people worldwide. Sign up or sign in to start chatting with strangers, make new friends, and join communities." />
-        <link rel="canonical" href="https://kindred.corevia.in/auth" />
+        <title>Sign In or Sign Up - Wallly</title>
+        <meta name="description" content="Join Wallly to connect with people worldwide. Sign up or sign in to start chatting with strangers, make new friends, and join communities." />
+        <link rel="canonical" href="https://wallly.corevia.in/auth" />
         <meta name="robots" content="noindex, follow" />
       </Helmet>
       

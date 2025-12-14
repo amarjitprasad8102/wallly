@@ -71,10 +71,10 @@ const Blog = () => {
   return (
     <>
       <Helmet>
-        <title>Kindred Blog - From India to World | Connection, Culture & Community</title>
+        <title>Wallly Blog - From India to World | Connection, Culture & Community</title>
         <meta name="description" content="Explore 100+ articles about online connections, cultural exchange, and community building. From India to World - insights on digital friendship and meaningful conversations." />
-        <meta name="keywords" content="online chat, random chat, Kindred blog, cultural exchange, Indian communities, Bharatiya Samudaay, online friendship, anonymous chat" />
-        <link rel="canonical" href="https://kindred.corevia.in/b" />
+        <meta name="keywords" content="online chat, random chat, Wallly blog, cultural exchange, Indian communities, Bharatiya Samudaay, online friendship, anonymous chat" />
+        <link rel="canonical" href="https://wallly.corevia.in/b" />
       </Helmet>
 
       <div className="min-h-screen bg-gradient-subtle">
@@ -87,15 +87,15 @@ const Blog = () => {
                 aria-label="Return to homepage"
               >
                 <div className="bg-gradient-primary p-2 rounded-lg" aria-hidden="true">
-                  <MessageCircle className="w-6 h-6 text-white" aria-label="Kindred logo" />
+                  <MessageCircle className="w-6 h-6 text-white" aria-label="Wallly logo" />
                 </div>
-                <h2 className="text-xl font-bold">Kindred</h2>
+                <h2 className="text-xl font-bold">Wallly</h2>
               </button>
               <div className="space-x-4">
                 <Button variant="ghost" onClick={() => navigate('/auth')} aria-label="Sign in to your account">
                   Sign In
                 </Button>
-                <Button className="bg-gradient-primary hover:opacity-90" onClick={() => navigate('/auth')} aria-label="Get started with Kindred">
+                <Button className="bg-gradient-primary hover:opacity-90" onClick={() => navigate('/auth')} aria-label="Get started with Wallly">
                   Get Started
                 </Button>
               </div>
@@ -121,7 +121,7 @@ const Blog = () => {
 
           <div className="mb-12 text-center">
             <h1 className="text-5xl md:text-6xl font-bold mb-6 gradient-text">
-              Kindred Blog
+              Wallly Blog
             </h1>
             <p className="text-xl text-muted-foreground max-w-3xl mx-auto mb-8">
               From India to World - Explore insights on connection, culture, community, and meaningful conversations
@@ -213,7 +213,7 @@ const Blog = () => {
               Ready to Start Your Connection Journey?
             </h2>
             <p className="text-xl mb-8 opacity-90">
-              Join thousands connecting from India to the world on Kindred
+              Join thousands connecting from India to the world on Wallly
             </p>
             <Button 
               variant="secondary"
@@ -229,7 +229,7 @@ const Blog = () => {
         <footer className="border-t border-border mt-24 py-12">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="text-center text-muted-foreground">
-              <p>&copy; 2025 Kindred. From India to World - Connecting Hearts and Minds.</p>
+              <p>&copy; 2025 Wallly. From India to World - Connecting Hearts and Minds.</p>
             </div>
           </div>
         </footer>

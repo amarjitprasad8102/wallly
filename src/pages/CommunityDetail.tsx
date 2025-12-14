@@ -156,10 +156,10 @@ const CommunityDetail = () => {
   return (
     <>
       <Helmet>
-        <title>{community.display_name} - Bharatiya Samudaay on Kindred</title>
-        <meta name="description" content={community.description || `Join ${community.display_name} community on Kindred. ${community.tagline || 'Connect, share, and grow together.'}`} />
+        <title>{community.display_name} - Bharatiya Samudaay on Wallly</title>
+        <meta name="description" content={community.description || `Join ${community.display_name} community on Wallly. ${community.tagline || 'Connect, share, and grow together.'}`} />
         <meta name="keywords" content={`${community.display_name}, community, bharatiya samudaay, indian community, online forum`} />
-        <link rel="canonical" href={`https://kindred.corevia.in/c/${community.name}`} />
+        <link rel="canonical" href={`https://wallly.corevia.in/c/${community.name}`} />
       </Helmet>
       
       <div className="min-h-screen bg-gradient-subtle">
@@ -174,7 +174,7 @@ const CommunityDetail = () => {
               <div className="bg-gradient-primary p-2 rounded-lg">
                 <MessageCircle className="w-6 h-6 text-white" />
               </div>
-              <h2 className="text-xl font-bold">Kindred</h2>
+              <h2 className="text-xl font-bold">Wallly</h2>
             </button>
             {user && <Button onClick={() => navigate('/app')}>Go to App</Button>}
           </div>

@@ -39,16 +39,16 @@ const HowToUse = () => {
   return (
     <>
       <Helmet>
-        <title>How to Use Kindred - Complete Guide to Random Video Chat</title>
-        <meta name="description" content="Learn how to use Kindred in 5 simple steps. Complete guide to random video chat, connecting with friends by ID, joining communities, and staying safe online." />
+        <title>How to Use Wallly - Complete Guide to Random Video Chat</title>
+        <meta name="description" content="Learn how to use Wallly in 5 simple steps. Complete guide to random video chat, connecting with friends by ID, joining communities, and staying safe online." />
         <meta name="keywords" content="how to use, user guide, random chat tutorial, video chat guide, connect by ID, join communities" />
-        <link rel="canonical" href="https://kindred.corevia.in/howtouse" />
+        <link rel="canonical" href="https://wallly.corevia.in/howtouse" />
         
         <script type="application/ld+json">
           {JSON.stringify({
             "@context": "https://schema.org",
             "@type": "HowTo",
-            "name": "How to Use Kindred for Random Video Chat",
+            "name": "How to Use Wallly for Random Video Chat",
             "description": "Step-by-step guide to connecting with people worldwide on Kindred",
             "step": [
               {
@@ -78,15 +78,15 @@ const HowToUse = () => {
           <div className="flex justify-between items-center">
             <div className="flex items-center space-x-2 cursor-pointer" onClick={() => navigate('/')}>
               <div className="bg-gradient-primary p-1.5 sm:p-2 rounded-lg" aria-hidden="true">
-                <MessageCircle className="w-5 h-5 sm:w-6 sm:h-6 text-white" aria-label="Kindred logo" />
+                <MessageCircle className="w-5 h-5 sm:w-6 sm:h-6 text-white" aria-label="Wallly logo" />
               </div>
-              <h2 className="text-lg sm:text-xl font-bold">Kindred</h2>
+              <h2 className="text-lg sm:text-xl font-bold">Wallly</h2>
             </div>
             <div className="flex items-center gap-2 sm:gap-4">
               <Button variant="ghost" size="sm" onClick={() => navigate('/')} aria-label="Go to home">
                 Home
               </Button>
-              <Button size="sm" className="bg-gradient-primary hover:opacity-90" onClick={() => navigate('/auth')} aria-label="Get started with Kindred">
+              <Button size="sm" className="bg-gradient-primary hover:opacity-90" onClick={() => navigate('/auth')} aria-label="Get started with Wallly">
                 Get Started
               </Button>
             </div>
@@ -123,7 +123,7 @@ const HowToUse = () => {
               Complete Guide
             </div>
             <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold mb-6 gradient-text">
-              How to Use Kindred
+              How to Use Wallly
             </h1>
             <p className="text-base sm:text-lg lg:text-xl text-muted-foreground max-w-2xl mx-auto">
               Follow these simple steps to start connecting with people worldwide and make meaningful conversations
@@ -153,7 +153,7 @@ const HowToUse = () => {
                 </li>
                 <li className="flex items-start gap-3">
                   <CheckCircle className="w-5 h-5 text-primary mt-0.5 flex-shrink-0" />
-                  <span className="text-muted-foreground">Receive your unique Kindred ID</span>
+                  <span className="text-muted-foreground">Receive your unique Wallly ID</span>
                 </li>
                 <li className="flex items-start gap-3">
                   <CheckCircle className="w-5 h-5 text-primary mt-0.5 flex-shrink-0" />
@@ -364,7 +364,7 @@ const HowToUse = () => {
               Ready to Get Started?
             </h2>
             <p className="text-base sm:text-lg lg:text-xl mb-6 sm:mb-8 text-white/90">
-              Join thousands of people making new friends on Kindred today!
+              Join thousands of people making new friends on Wallly today!
             </p>
             <Button
               size="lg"
@@ -383,7 +383,7 @@ const HowToUse = () => {
       {/* Footer */}
       <footer className="border-t border-border/50 py-6 sm:py-8 px-4 bg-muted/20">
         <div className="max-w-7xl mx-auto text-center text-xs sm:text-sm text-muted-foreground">
-          <p>&copy; 2025 Kindred. All rights reserved.</p>
+          <p>&copy; 2025 Wallly. All rights reserved.</p>
         </div>
       </footer>
       </div>

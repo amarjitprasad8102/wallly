@@ -17,10 +17,10 @@ const Privacy = () => {
   return (
     <>
       <Helmet>
-        <title>Privacy Policy - Kindred</title>
-        <meta name="description" content="Read Kindred's Privacy Policy. Learn how we protect your data, handle encrypted conversations, and keep your random video chats safe and private." />
+        <title>Privacy Policy - Wallly</title>
+        <meta name="description" content="Read Wallly's Privacy Policy. Learn how we protect your data, handle encrypted conversations, and keep your random video chats safe and private." />
         <meta name="keywords" content="privacy policy, data protection, chat privacy, encrypted messaging, user safety" />
-        <link rel="canonical" href="https://kindred.corevia.in/privacy" />
+        <link rel="canonical" href="https://wallly.corevia.in/privacy" />
       </Helmet>
       
       <div className="min-h-screen bg-gradient-subtle">
