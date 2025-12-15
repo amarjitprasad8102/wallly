@@ -34,7 +34,14 @@ const Index = () => {
   const [connectId, setConnectId] = useState('');
   const [isSigningOut, setIsSigningOut] = useState(false);
   const [disconnectMessage, setDisconnectMessage] = useState<string | null>(null);
-  const { isSearching, matchedUserId, searchingUsersCount, joinMatchmaking, connectDirectly, leaveMatchmaking, sendSignal, onSignal } = useMatch(user?.id || '');
+  const [isStrangerMode, setIsStrangerMode] = useState(false);
+  
+  // For stranger mode, use a generated ID; for authenticated, use actual user ID
+  const effectiveUserId = isStrangerMode 
+    ? (sessionStorage.getItem('stranger_id') || 'stranger') 
+    : (user?.id || '');
+  
+  const { isSearching, matchedUserId, searchingUsersCount, joinMatchmaking, connectDirectly, leaveMatchmaking, sendSignal, onSignal } = useMatch(effectiveUserId);
   const {
     pendingRequests,
     acceptedRequest,
@@ -42,10 +49,35 @@ const Index = () => {
     acceptConnectionRequest,
     rejectConnectionRequest,
     clearAcceptedRequest,
-  } = useConnectionRequests(user?.id);
+  } = useConnectionRequests(isStrangerMode ? null : user?.id);
+
+  // Cleanup stranger session when leaving the page
+  useEffect(() => {
+    const handleBeforeUnload = () => {
+      if (sessionStorage.getItem('stranger_mode') === 'true') {
+        sessionStorage.removeItem('stranger_mode');
+        sessionStorage.removeItem('stranger_id');
+        sessionStorage.removeItem('stranger_gender');
+        sessionStorage.removeItem('stranger_age');
+      }
+    };
+
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    return () => window.removeEventListener('beforeunload', handleBeforeUnload);
+  }, []);
 
   useEffect(() => {
-    // Check authentication
+    // Check for stranger mode first
+    const strangerMode = sessionStorage.getItem('stranger_mode') === 'true';
+    const strangerId = sessionStorage.getItem('stranger_id');
+    
+    if (strangerMode && strangerId) {
+      setIsStrangerMode(true);
+      setUserProfile({ unique_id: strangerId });
+      return; // Skip auth check for stranger mode
+    }
+
+    // Check authentication for regular users
     supabase.auth.getSession().then(({ data: { session } }) => {
       if (!session) {
         navigate('/auth');
@@ -56,20 +88,19 @@ const Index = () => {
     });
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-      if (!session) {
-        // Clear local state on sign out
+      if (!session && !isStrangerMode) {
         setUser(null);
         setUserProfile(null);
         setAppState('home');
         navigate('/auth', { replace: true });
-      } else {
+      } else if (session) {
         setUser(session.user);
         fetchUserProfile(session.user.id);
       }
     });
 
     return () => subscription.unsubscribe();
-  }, [navigate]);
+  }, [navigate, isStrangerMode]);
 
   const fetchUserProfile = async (userId: string) => {
     const { data, error } = await supabase
@@ -107,24 +138,26 @@ const Index = () => {
   };
 
   const handleSignOut = async () => {
+    // For stranger mode, just clear session and go home
+    if (isStrangerMode) {
+      sessionStorage.removeItem('stranger_mode');
+      sessionStorage.removeItem('stranger_id');
+      sessionStorage.removeItem('stranger_gender');
+      sessionStorage.removeItem('stranger_age');
+      navigate('/', { replace: true });
+      return;
+    }
+
     setIsSigningOut(true);
     try {
-      // Sign out from Supabase with global scope
       await supabase.auth.signOut({ scope: 'global' });
-      
-      // Clear local storage to ensure no session persists
       localStorage.removeItem('supabase.auth.token');
-      
-      // Clear local state
       setUser(null);
       setUserProfile(null);
       setAppState('home');
-      
-      // Navigate to auth page
       navigate('/auth', { replace: true });
     } catch (error) {
       console.error('Sign out error:', error);
-      // Force clear on error
       localStorage.clear();
       setUser(null);
       setUserProfile(null);
@@ -247,7 +280,17 @@ const Index = () => {
     }
   };
 
-  if (!user || !userProfile) {
+  // Show loading only for non-stranger mode
+  if (!isStrangerMode && (!user || !userProfile)) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <p className="text-muted-foreground">Loading...</p>
+      </div>
+    );
+  }
+
+  // For stranger mode without profile
+  if (isStrangerMode && !userProfile) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <p className="text-muted-foreground">Loading...</p>
@@ -264,7 +307,7 @@ const Index = () => {
           </div>
         )}
         <VideoChat
-          currentUserId={user.id}
+          currentUserId={effectiveUserId}
           matchedUserId={matchedUserId}
           sendSignal={sendSignal}
           onSignal={onSignal}
@@ -312,20 +355,25 @@ const Index = () => {
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 sm:gap-0">
           <div className="flex items-center gap-3 sm:gap-4">
             <div className="text-xs sm:text-sm">
-              <p className="text-muted-foreground text-xs">Your ID</p>
-              <p className="font-mono font-bold text-primary text-sm sm:text-lg">{userProfile.unique_id}</p>
+              <p className="text-muted-foreground text-xs">{isStrangerMode ? 'Temp ID' : 'Your ID'}</p>
+              <p className="font-mono font-bold text-primary text-sm sm:text-lg">{userProfile?.unique_id}</p>
+              {isStrangerMode && (
+                <p className="text-xs text-muted-foreground">(Guest Mode)</p>
+              )}
             </div>
-            {pendingRequests.length > 0 && (
+            {!isStrangerMode && pendingRequests.length > 0 && (
               <Badge variant="destructive" className="animate-pulse text-xs">
                 {pendingRequests.length}
               </Badge>
             )}
           </div>
           <div className="flex gap-2 w-full sm:w-auto">
-            <Button variant="outline" size="sm" onClick={() => navigate('/connections')} className="flex-1 sm:flex-none text-xs sm:text-sm h-8 sm:h-9">
-              <UserCheck className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
-              Connections
-            </Button>
+            {!isStrangerMode && (
+              <Button variant="outline" size="sm" onClick={() => navigate('/connections')} className="flex-1 sm:flex-none text-xs sm:text-sm h-8 sm:h-9">
+                <UserCheck className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
+                Connections
+              </Button>
+            )}
             <Button 
               variant="outline" 
               size="sm" 
@@ -334,15 +382,15 @@ const Index = () => {
               className="flex-1 sm:flex-none text-xs sm:text-sm h-8 sm:h-9"
             >
               <LogOut className={`h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2 ${isSigningOut ? 'animate-spin' : ''}`} />
-              {isSigningOut ? 'Signing Out...' : 'Sign Out'}
+              {isStrangerMode ? 'Exit' : (isSigningOut ? 'Signing Out...' : 'Sign Out')}
             </Button>
           </div>
         </div>
         </div>
       </div>
 
-      {/* Connection Requests - Mobile Optimized */}
-      {pendingRequests.length > 0 && (
+      {/* Connection Requests - Only for authenticated users */}
+      {!isStrangerMode && pendingRequests.length > 0 && (
         <div className="px-3 sm:px-4 py-3 sm:py-4 bg-muted/50">
           <div className="max-w-4xl mx-auto">
             <h3 className="text-base sm:text-lg font-semibold mb-2 sm:mb-3">Connection Requests</h3>
@@ -413,47 +461,49 @@ const Index = () => {
               Start Video Chat
             </Button>
 
-            <Dialog open={connectDialogOpen} onOpenChange={setConnectDialogOpen}>
-              <DialogTrigger asChild>
-                <Button
-                  size="lg"
-                  variant="outline"
-                  className="text-base sm:text-lg px-6 sm:px-8 py-5 sm:py-6 rounded-full hover:scale-105 transition-all w-full sm:w-auto touch-manipulation"
-                  aria-label="Connect by ID"
-                  onClick={handleConnectDialogOpen}
-                >
-                  <UserCheck className="w-5 h-5 mr-2" />
-                  Connect by ID
-                </Button>
-              </DialogTrigger>
-              <DialogContent className="max-w-[90vw] sm:max-w-md">
-                <DialogHeader>
-                  <DialogTitle>Connect by User ID</DialogTitle>
-                  <DialogDescription>
-                    Enter the unique ID of the user you want to connect with. They will receive a notification.
-                  </DialogDescription>
-                </DialogHeader>
-                <div className="grid gap-4 py-4">
-                  <div className="grid gap-2">
-                    <Label htmlFor="user-id">User ID</Label>
-                    <Input
-                      id="user-id"
-                      placeholder="Enter 10-digit user ID"
-                      value={connectId}
-                      onChange={(e) => setConnectId(e.target.value)}
-                      maxLength={10}
-                      className="text-base touch-manipulation"
-                    />
+            {!isStrangerMode && (
+              <Dialog open={connectDialogOpen} onOpenChange={setConnectDialogOpen}>
+                <DialogTrigger asChild>
+                  <Button
+                    size="lg"
+                    variant="outline"
+                    className="text-base sm:text-lg px-6 sm:px-8 py-5 sm:py-6 rounded-full hover:scale-105 transition-all w-full sm:w-auto touch-manipulation"
+                    aria-label="Connect by ID"
+                    onClick={handleConnectDialogOpen}
+                  >
+                    <UserCheck className="w-5 h-5 mr-2" />
+                    Connect by ID
+                  </Button>
+                </DialogTrigger>
+                <DialogContent className="max-w-[90vw] sm:max-w-md">
+                  <DialogHeader>
+                    <DialogTitle>Connect by User ID</DialogTitle>
+                    <DialogDescription>
+                      Enter the unique ID of the user you want to connect with. They will receive a notification.
+                    </DialogDescription>
+                  </DialogHeader>
+                  <div className="grid gap-4 py-4">
+                    <div className="grid gap-2">
+                      <Label htmlFor="user-id">User ID</Label>
+                      <Input
+                        id="user-id"
+                        placeholder="Enter 10-digit user ID"
+                        value={connectId}
+                        onChange={(e) => setConnectId(e.target.value)}
+                        maxLength={10}
+                        className="text-base touch-manipulation"
+                      />
+                    </div>
+                    <p className="text-sm text-muted-foreground">
+                      Your ID: <span className="font-mono font-semibold">{userProfile?.unique_id}</span>
+                    </p>
                   </div>
-                  <p className="text-sm text-muted-foreground">
-                    Your ID: <span className="font-mono font-semibold">{userProfile?.unique_id}</span>
-                  </p>
-                </div>
-                <DialogFooter>
-                  <Button onClick={handleConnectById} className="w-full sm:w-auto">Send Request</Button>
-                </DialogFooter>
-              </DialogContent>
-            </Dialog>
+                  <DialogFooter>
+                    <Button onClick={handleConnectById} className="w-full sm:w-auto">Send Request</Button>
+                  </DialogFooter>
+                </DialogContent>
+              </Dialog>
+            )}
           </div>
 
           {/* Features - Responsive Grid */}

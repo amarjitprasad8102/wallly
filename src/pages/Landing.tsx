@@ -19,11 +19,17 @@ const Landing = () => {
   const [strangerDialogOpen, setStrangerDialogOpen] = useState(false);
 
   const handleStrangerStart = async (gender: string, age: number) => {
-    // Sign in anonymously and store gender/age in session storage for guest mode
+    // Generate a temporary unique ID for stranger mode
+    const tempId = 'STR-' + Math.random().toString(36).substring(2, 12).toUpperCase();
+    
+    // Store stranger session data
+    sessionStorage.setItem('stranger_mode', 'true');
+    sessionStorage.setItem('stranger_id', tempId);
     sessionStorage.setItem('stranger_gender', gender);
     sessionStorage.setItem('stranger_age', age.toString());
+    
     toast.success('Starting as stranger...');
-    navigate('/auth?stranger=true');
+    navigate('/app');
   };
 
   useEffect(() => {
