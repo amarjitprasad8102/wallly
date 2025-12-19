@@ -239,6 +239,8 @@ export default function Admin() {
   const [selectedTemplate, setSelectedTemplate] = useState<string>("");
   const [emailViewDialogOpen, setEmailViewDialogOpen] = useState(false);
   const [viewingEmail, setViewingEmail] = useState<EmailLog | null>(null);
+  const [templatePickerOpen, setTemplatePickerOpen] = useState(false);
+  const [pendingEmailRecipient, setPendingEmailRecipient] = useState<string>("");
   
   const navigate = useNavigate();
   const { toast } = useToast();
@@ -675,7 +677,23 @@ export default function Admin() {
   };
 
   const sendEmailToUser = (email: string) => {
-    setSelectedRecipients([email]);
+    setPendingEmailRecipient(email);
+    setTemplatePickerOpen(true);
+  };
+
+  const selectTemplateAndOpenComposer = (templateId: string) => {
+    handleTemplateSelect(templateId);
+    setSelectedRecipients([pendingEmailRecipient]);
+    setTemplatePickerOpen(false);
+    setEmailDialogOpen(true);
+  };
+
+  const openCustomEmailComposer = () => {
+    setSelectedRecipients([pendingEmailRecipient]);
+    setEmailSubject("");
+    setEmailContent("");
+    setSelectedTemplate("");
+    setTemplatePickerOpen(false);
     setEmailDialogOpen(true);
   };
 
@@ -1516,6 +1534,53 @@ export default function Admin() {
               Close
             </Button>
           </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Template Picker Dialog */}
+      <Dialog open={templatePickerOpen} onOpenChange={setTemplatePickerOpen}>
+        <DialogContent className="max-w-2xl">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Mail className="h-5 w-5" />
+              Choose Email Template
+            </DialogTitle>
+            <DialogDescription>
+              Sending to: <span className="font-medium text-foreground">{pendingEmailRecipient}</span>
+            </DialogDescription>
+          </DialogHeader>
+          <div className="py-4">
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+              {emailTemplates.map((template) => (
+                <Button
+                  key={template.id}
+                  variant="outline"
+                  className="h-auto py-6 px-4 flex flex-col items-center gap-3 hover:border-primary hover:bg-primary/5 transition-all"
+                  onClick={() => selectTemplateAndOpenComposer(template.id)}
+                >
+                  <div className="p-3 rounded-full bg-primary/10">
+                    <Mail className="h-6 w-6 text-primary" />
+                  </div>
+                  <div className="text-center">
+                    <p className="font-medium text-sm">{template.name}</p>
+                    <p className="text-xs text-muted-foreground mt-1 line-clamp-2">
+                      {template.subject}
+                    </p>
+                  </div>
+                </Button>
+              ))}
+            </div>
+            <div className="mt-6 pt-4 border-t">
+              <Button 
+                variant="ghost" 
+                className="w-full"
+                onClick={openCustomEmailComposer}
+              >
+                <Plus className="h-4 w-4 mr-2" />
+                Write Custom Email
+              </Button>
+            </div>
+          </div>
         </DialogContent>
       </Dialog>
     </>

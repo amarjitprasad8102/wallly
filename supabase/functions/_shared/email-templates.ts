@@ -11,6 +11,18 @@ export interface EmailTemplateParams {
   communityName?: string;
 }
 
+// Wallly Logo as inline SVG for email compatibility
+const wallyLogo = `
+<div style="text-align: center; margin-bottom: 20px;">
+  <div style="display: inline-flex; align-items: center; justify-content: center; background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%); padding: 16px; border-radius: 16px; box-shadow: 0 10px 40px rgba(99, 102, 241, 0.3);">
+    <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <path d="m3 21 1.9-5.7a8.5 8.5 0 1 1 3.8 3.8z"/>
+    </svg>
+  </div>
+  <h2 style="color: #6366f1; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; font-size: 28px; font-weight: 700; margin: 16px 0 0; letter-spacing: -0.5px;">Wallly</h2>
+</div>
+`;
+
 const baseStyles = `
   <style>
     body { margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #0f0f23; }
@@ -51,6 +63,7 @@ const emailWrapper = (content: string, preheader?: string) => `
 <body style="background-color: #0f0f23; margin: 0; padding: 20px;">
   ${preheader ? `<div style="display:none;font-size:1px;color:#0f0f23;line-height:1px;max-height:0px;max-width:0px;opacity:0;overflow:hidden;">${preheader}</div>` : ''}
   <div class="container">
+    ${wallyLogo}
     ${content}
     <div class="footer">
       <p>This email was sent by Wallly</p>
