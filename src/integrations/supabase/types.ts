@@ -275,6 +275,45 @@ export type Database = {
         }
         Relationships: []
       }
+      email_logs: {
+        Row: {
+          content: string
+          created_at: string
+          error_message: string | null
+          id: string
+          message_id: string | null
+          recipients: string[]
+          sent_by: string
+          status: string
+          subject: string
+          template_used: string | null
+        }
+        Insert: {
+          content: string
+          created_at?: string
+          error_message?: string | null
+          id?: string
+          message_id?: string | null
+          recipients: string[]
+          sent_by: string
+          status?: string
+          subject: string
+          template_used?: string | null
+        }
+        Update: {
+          content?: string
+          created_at?: string
+          error_message?: string | null
+          id?: string
+          message_id?: string | null
+          recipients?: string[]
+          sent_by?: string
+          status?: string
+          subject?: string
+          template_used?: string | null
+        }
+        Relationships: []
+      }
       interests: {
         Row: {
           created_at: string | null

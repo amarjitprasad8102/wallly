@@ -9,12 +9,13 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
-import { AlertTriangle, Home, Plus, Pencil, Trash2, Eye, EyeOff, Users, FileText, Flag, Settings, Mail, Send } from "lucide-react";
+import { AlertTriangle, Home, Plus, Pencil, Trash2, Eye, EyeOff, Users, FileText, Flag, Settings, Mail, Send, Clock, CheckCircle, XCircle } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import {
   Dialog,
   DialogContent,
@@ -81,6 +82,128 @@ interface Community {
   created_at: string;
 }
 
+interface EmailLog {
+  id: string;
+  sent_by: string;
+  recipients: string[];
+  subject: string;
+  content: string;
+  template_used: string | null;
+  status: string;
+  message_id: string | null;
+  error_message: string | null;
+  created_at: string;
+}
+
+interface EmailTemplate {
+  id: string;
+  name: string;
+  subject: string;
+  content: string;
+}
+
+const emailTemplates: EmailTemplate[] = [
+  {
+    id: "welcome",
+    name: "Welcome Email",
+    subject: "Welcome to Wallly! 🎉",
+    content: `<div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+  <h1 style="color: #6366f1;">Welcome to Wallly!</h1>
+  <p>Hi there,</p>
+  <p>Thank you for joining Wallly! We're excited to have you as part of our community.</p>
+  <p>Here's what you can do:</p>
+  <ul>
+    <li>Connect with strangers through video chat</li>
+    <li>Join communities that match your interests</li>
+    <li>Build meaningful connections</li>
+  </ul>
+  <p>Get started by exploring the app and connecting with others!</p>
+  <p>Best regards,<br>The Wallly Team</p>
+</div>`,
+  },
+  {
+    id: "password-reset",
+    name: "Password Reset",
+    subject: "Reset Your Wallly Password",
+    content: `<div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+  <h1 style="color: #6366f1;">Password Reset Request</h1>
+  <p>Hi there,</p>
+  <p>We received a request to reset your password for your Wallly account.</p>
+  <p>If you didn't make this request, you can safely ignore this email.</p>
+  <p>To reset your password, click the link below:</p>
+  <p><a href="#" style="background-color: #6366f1; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; display: inline-block;">Reset Password</a></p>
+  <p>This link will expire in 24 hours.</p>
+  <p>Best regards,<br>The Wallly Team</p>
+</div>`,
+  },
+  {
+    id: "notification",
+    name: "General Notification",
+    subject: "Important Update from Wallly",
+    content: `<div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+  <h1 style="color: #6366f1;">Important Update</h1>
+  <p>Hi there,</p>
+  <p>We have an important update to share with you.</p>
+  <p>[Your message here]</p>
+  <p>Thank you for being part of Wallly!</p>
+  <p>Best regards,<br>The Wallly Team</p>
+</div>`,
+  },
+  {
+    id: "premium-upgrade",
+    name: "Premium Upgrade",
+    subject: "Congratulations! You're Now a Premium Member 🌟",
+    content: `<div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+  <h1 style="color: #6366f1;">Welcome to Wallly Premium!</h1>
+  <p>Hi there,</p>
+  <p>Congratulations on upgrading to Wallly Premium! 🎉</p>
+  <p>You now have access to exclusive features:</p>
+  <ul>
+    <li>Priority matching with other users</li>
+    <li>Ad-free experience</li>
+    <li>Premium badge on your profile</li>
+    <li>Advanced filtering options</li>
+  </ul>
+  <p>Enjoy your premium experience!</p>
+  <p>Best regards,<br>The Wallly Team</p>
+</div>`,
+  },
+  {
+    id: "account-warning",
+    name: "Account Warning",
+    subject: "Important: Account Warning",
+    content: `<div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+  <h1 style="color: #ef4444;">Account Warning</h1>
+  <p>Hi there,</p>
+  <p>We've noticed some activity on your account that violates our community guidelines.</p>
+  <p><strong>Details:</strong></p>
+  <p>[Specify the violation here]</p>
+  <p>Please review our community guidelines and ensure your future interactions comply with our policies.</p>
+  <p>Continued violations may result in account suspension.</p>
+  <p>If you believe this is a mistake, please contact our support team.</p>
+  <p>Best regards,<br>The Wallly Team</p>
+</div>`,
+  },
+  {
+    id: "newsletter",
+    name: "Newsletter",
+    subject: "Wallly Weekly Update 📰",
+    content: `<div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+  <h1 style="color: #6366f1;">Wallly Weekly Update</h1>
+  <p>Hi there,</p>
+  <p>Here's what's new at Wallly this week:</p>
+  <h3>🚀 New Features</h3>
+  <p>[List new features]</p>
+  <h3>📊 Community Highlights</h3>
+  <p>[Community stats and highlights]</p>
+  <h3>💡 Tips & Tricks</h3>
+  <p>[Helpful tips for users]</p>
+  <p>Thanks for being part of our community!</p>
+  <p>Best regards,<br>The Wallly Team</p>
+</div>`,
+  },
+];
+
 const defaultBlogPost = {
   slug: "",
   title: "",
@@ -98,6 +221,7 @@ export default function Admin() {
   const [reports, setReports] = useState<Report[]>([]);
   const [blogPosts, setBlogPosts] = useState<BlogPost[]>([]);
   const [communities, setCommunities] = useState<Community[]>([]);
+  const [emailLogs, setEmailLogs] = useState<EmailLog[]>([]);
   const [loading, setLoading] = useState(true);
   const [isAdmin, setIsAdmin] = useState(false);
   const [blogDialogOpen, setBlogDialogOpen] = useState(false);
@@ -111,6 +235,9 @@ export default function Admin() {
   const [selectedRecipients, setSelectedRecipients] = useState<string[]>([]);
   const [sendingEmail, setSendingEmail] = useState(false);
   const [selectAllUsers, setSelectAllUsers] = useState(false);
+  const [selectedTemplate, setSelectedTemplate] = useState<string>("");
+  const [emailViewDialogOpen, setEmailViewDialogOpen] = useState(false);
+  const [viewingEmail, setViewingEmail] = useState<EmailLog | null>(null);
   
   const navigate = useNavigate();
   const { toast } = useToast();
@@ -155,6 +282,7 @@ export default function Admin() {
       fetchReports(),
       fetchBlogPosts(),
       fetchCommunities(),
+      fetchEmailLogs(),
     ]);
     setLoading(false);
   };
@@ -286,6 +414,21 @@ export default function Admin() {
     }
 
     setCommunities(data || []);
+  };
+
+  const fetchEmailLogs = async () => {
+    const { data, error } = await supabase
+      .from("email_logs")
+      .select("*")
+      .order("created_at", { ascending: false })
+      .limit(100);
+
+    if (error) {
+      console.error("Error fetching email logs:", error);
+      return;
+    }
+
+    setEmailLogs(data || []);
   };
 
   const openBlogDialog = (blog?: BlogPost) => {
@@ -441,6 +584,15 @@ export default function Admin() {
     );
   };
 
+  const handleTemplateSelect = (templateId: string) => {
+    setSelectedTemplate(templateId);
+    const template = emailTemplates.find(t => t.id === templateId);
+    if (template) {
+      setEmailSubject(template.subject);
+      setEmailContent(template.content);
+    }
+  };
+
   const sendBulkEmail = async () => {
     if (selectedRecipients.length === 0) {
       toast({
@@ -468,6 +620,7 @@ export default function Admin() {
           to: selectedRecipients,
           subject: emailSubject,
           html: emailContent,
+          templateUsed: selectedTemplate || null,
         },
       });
 
@@ -483,6 +636,8 @@ export default function Admin() {
       setEmailContent("");
       setSelectedRecipients([]);
       setSelectAllUsers(false);
+      setSelectedTemplate("");
+      fetchEmailLogs();
     } catch (error: any) {
       console.error("Error sending email:", error);
       toast({
@@ -498,6 +653,11 @@ export default function Admin() {
   const sendEmailToUser = (email: string) => {
     setSelectedRecipients([email]);
     setEmailDialogOpen(true);
+  };
+
+  const viewEmailDetails = (email: EmailLog) => {
+    setViewingEmail(email);
+    setEmailViewDialogOpen(true);
   };
 
   if (loading) {
@@ -538,7 +698,7 @@ export default function Admin() {
           </div>
 
           {/* Stats Cards */}
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+          <div className="grid grid-cols-1 md:grid-cols-5 gap-4 mb-6">
             <Card>
               <CardContent className="pt-6">
                 <div className="flex items-center gap-4">
@@ -579,6 +739,17 @@ export default function Admin() {
                   <div>
                     <p className="text-2xl font-bold">{communities.length}</p>
                     <p className="text-sm text-muted-foreground">Communities</p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+            <Card>
+              <CardContent className="pt-6">
+                <div className="flex items-center gap-4">
+                  <Mail className="h-8 w-8 text-primary" />
+                  <div>
+                    <p className="text-2xl font-bold">{emailLogs.length}</p>
+                    <p className="text-sm text-muted-foreground">Emails Sent</p>
                   </div>
                 </div>
               </CardContent>
@@ -1016,111 +1187,313 @@ export default function Admin() {
 
             {/* Email Tab */}
             <TabsContent value="email">
-              <Card>
-                <CardHeader>
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <CardTitle className="flex items-center gap-2">
-                        <Mail className="w-5 h-5" />
-                        Email Management
-                      </CardTitle>
-                      <CardDescription>Send emails to your users via Amazon SES</CardDescription>
-                    </div>
-                    <Dialog open={emailDialogOpen} onOpenChange={setEmailDialogOpen}>
-                      <DialogTrigger asChild>
-                        <Button>
-                          <Send className="h-4 w-4 mr-2" />
-                          Compose Email
-                        </Button>
-                      </DialogTrigger>
-                      <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
-                        <DialogHeader>
-                          <DialogTitle>Compose Email</DialogTitle>
-                          <DialogDescription>
-                            Send an email to selected users
-                          </DialogDescription>
-                        </DialogHeader>
-                        <div className="grid gap-4 py-4">
-                          <div className="space-y-2">
-                            <Label>Recipients ({selectedRecipients.length} selected)</Label>
-                            <div className="border rounded-md p-4 max-h-48 overflow-y-auto">
-                              <div className="flex items-center space-x-2 mb-3 pb-3 border-b">
-                                <Checkbox
-                                  id="select-all"
-                                  checked={selectAllUsers}
-                                  onCheckedChange={handleSelectAllUsers}
-                                />
-                                <Label htmlFor="select-all" className="font-semibold">
-                                  Select All Users ({users.length})
-                                </Label>
-                              </div>
-                              <div className="space-y-2">
-                                {users.map((user) => (
-                                  <div key={user.id} className="flex items-center space-x-2">
-                                    <Checkbox
-                                      id={`user-${user.id}`}
-                                      checked={selectedRecipients.includes(user.email)}
-                                      onCheckedChange={() => handleRecipientToggle(user.email)}
-                                    />
-                                    <Label htmlFor={`user-${user.id}`} className="text-sm">
-                                      {user.email}
-                                    </Label>
-                                  </div>
-                                ))}
+              <div className="space-y-6">
+                {/* Compose Email Card */}
+                <Card>
+                  <CardHeader>
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <CardTitle className="flex items-center gap-2">
+                          <Mail className="w-5 h-5" />
+                          Email Management
+                        </CardTitle>
+                        <CardDescription>Send emails to your users via Amazon SES</CardDescription>
+                      </div>
+                      <Dialog open={emailDialogOpen} onOpenChange={setEmailDialogOpen}>
+                        <DialogTrigger asChild>
+                          <Button>
+                            <Send className="h-4 w-4 mr-2" />
+                            Compose Email
+                          </Button>
+                        </DialogTrigger>
+                        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+                          <DialogHeader>
+                            <DialogTitle>Compose Email</DialogTitle>
+                            <DialogDescription>
+                              Send an email to selected users
+                            </DialogDescription>
+                          </DialogHeader>
+                          <div className="grid gap-4 py-4">
+                            {/* Template Selection */}
+                            <div className="space-y-2">
+                              <Label>Email Template (Optional)</Label>
+                              <Select value={selectedTemplate} onValueChange={handleTemplateSelect}>
+                                <SelectTrigger>
+                                  <SelectValue placeholder="Select a template or write from scratch" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  {emailTemplates.map((template) => (
+                                    <SelectItem key={template.id} value={template.id}>
+                                      {template.name}
+                                    </SelectItem>
+                                  ))}
+                                </SelectContent>
+                              </Select>
+                            </div>
+
+                            {/* Recipients */}
+                            <div className="space-y-2">
+                              <Label>Recipients ({selectedRecipients.length} selected)</Label>
+                              <div className="border rounded-md p-4 max-h-48 overflow-y-auto">
+                                <div className="flex items-center space-x-2 mb-3 pb-3 border-b">
+                                  <Checkbox
+                                    id="select-all"
+                                    checked={selectAllUsers}
+                                    onCheckedChange={handleSelectAllUsers}
+                                  />
+                                  <Label htmlFor="select-all" className="font-semibold">
+                                    Select All Users ({users.length})
+                                  </Label>
+                                </div>
+                                <div className="grid grid-cols-2 gap-2">
+                                  {users.map((user) => (
+                                    <div key={user.id} className="flex items-center space-x-2">
+                                      <Checkbox
+                                        id={`user-${user.id}`}
+                                        checked={selectedRecipients.includes(user.email)}
+                                        onCheckedChange={() => handleRecipientToggle(user.email)}
+                                      />
+                                      <Label htmlFor={`user-${user.id}`} className="text-sm truncate">
+                                        {user.email}
+                                      </Label>
+                                    </div>
+                                  ))}
+                                </div>
                               </div>
                             </div>
-                          </div>
-                          <div className="space-y-2">
-                            <Label htmlFor="email-subject">Subject *</Label>
-                            <Input
-                              id="email-subject"
-                              value={emailSubject}
-                              onChange={(e) => setEmailSubject(e.target.value)}
-                              placeholder="Email subject"
-                            />
-                          </div>
-                          <div className="space-y-2">
-                            <Label htmlFor="email-content">Content * (HTML supported)</Label>
-                            <Textarea
-                              id="email-content"
-                              value={emailContent}
-                              onChange={(e) => setEmailContent(e.target.value)}
-                              placeholder="<h1>Hello!</h1><p>Your message here...</p>"
-                              className="min-h-[200px] font-mono text-sm"
-                            />
-                          </div>
-                        </div>
-                        <DialogFooter>
-                          <Button variant="outline" onClick={() => setEmailDialogOpen(false)}>
-                            Cancel
-                          </Button>
-                          <Button onClick={sendBulkEmail} disabled={sendingEmail}>
-                            {sendingEmail ? (
-                              <>Sending...</>
-                            ) : (
-                              <>
-                                <Send className="h-4 w-4 mr-2" />
-                                Send Email
-                              </>
+
+                            {/* Subject */}
+                            <div className="space-y-2">
+                              <Label htmlFor="email-subject">Subject *</Label>
+                              <Input
+                                id="email-subject"
+                                value={emailSubject}
+                                onChange={(e) => setEmailSubject(e.target.value)}
+                                placeholder="Email subject"
+                              />
+                            </div>
+
+                            {/* Content */}
+                            <div className="space-y-2">
+                              <Label htmlFor="email-content">Content * (HTML supported)</Label>
+                              <Textarea
+                                id="email-content"
+                                value={emailContent}
+                                onChange={(e) => setEmailContent(e.target.value)}
+                                placeholder="<h1>Hello!</h1><p>Your message here...</p>"
+                                className="min-h-[250px] font-mono text-sm"
+                              />
+                            </div>
+
+                            {/* Preview */}
+                            {emailContent && (
+                              <div className="space-y-2">
+                                <Label>Preview</Label>
+                                <div 
+                                  className="border rounded-md p-4 bg-white text-black max-h-48 overflow-y-auto"
+                                  dangerouslySetInnerHTML={{ __html: emailContent }}
+                                />
+                              </div>
                             )}
+                          </div>
+                          <DialogFooter>
+                            <Button variant="outline" onClick={() => setEmailDialogOpen(false)}>
+                              Cancel
+                            </Button>
+                            <Button onClick={sendBulkEmail} disabled={sendingEmail}>
+                              {sendingEmail ? (
+                                <>Sending...</>
+                              ) : (
+                                <>
+                                  <Send className="h-4 w-4 mr-2" />
+                                  Send Email
+                                </>
+                              )}
+                            </Button>
+                          </DialogFooter>
+                        </DialogContent>
+                      </Dialog>
+                    </div>
+                  </CardHeader>
+                  <CardContent>
+                    {/* Quick Templates */}
+                    <div className="mb-6">
+                      <h3 className="font-semibold mb-3">Quick Templates</h3>
+                      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
+                        {emailTemplates.map((template) => (
+                          <Button
+                            key={template.id}
+                            variant="outline"
+                            className="h-auto py-3 px-4 flex flex-col items-center gap-2"
+                            onClick={() => {
+                              handleTemplateSelect(template.id);
+                              setEmailDialogOpen(true);
+                            }}
+                          >
+                            <Mail className="h-5 w-5" />
+                            <span className="text-xs text-center">{template.name}</span>
                           </Button>
-                        </DialogFooter>
-                      </DialogContent>
-                    </Dialog>
-                  </div>
-                </CardHeader>
-                <CardContent>
-                  <div className="text-center py-8 text-muted-foreground">
-                    <Mail className="h-12 w-12 mx-auto mb-4 opacity-50" />
-                    <p>Use the "Compose Email" button to send emails to your users.</p>
-                    <p className="text-sm mt-2">You can select individual users or send to all users at once.</p>
-                  </div>
-                </CardContent>
-              </Card>
+                        ))}
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+
+                {/* Email History Card */}
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <Clock className="w-5 h-5" />
+                      Email History
+                    </CardTitle>
+                    <CardDescription>Track all emails sent from the admin panel</CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead>Subject</TableHead>
+                          <TableHead>Recipients</TableHead>
+                          <TableHead>Template</TableHead>
+                          <TableHead>Status</TableHead>
+                          <TableHead>Sent At</TableHead>
+                          <TableHead>Actions</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {emailLogs.length === 0 ? (
+                          <TableRow>
+                            <TableCell colSpan={6} className="text-center text-muted-foreground">
+                              No emails sent yet
+                            </TableCell>
+                          </TableRow>
+                        ) : (
+                          emailLogs.map((log) => (
+                            <TableRow key={log.id}>
+                              <TableCell className="max-w-xs truncate font-medium">
+                                {log.subject}
+                              </TableCell>
+                              <TableCell>
+                                <Badge variant="secondary">
+                                  {log.recipients.length} recipient{log.recipients.length > 1 ? 's' : ''}
+                                </Badge>
+                              </TableCell>
+                              <TableCell>
+                                {log.template_used ? (
+                                  <Badge variant="outline">
+                                    {emailTemplates.find(t => t.id === log.template_used)?.name || log.template_used}
+                                  </Badge>
+                                ) : (
+                                  <span className="text-muted-foreground text-sm">Custom</span>
+                                )}
+                              </TableCell>
+                              <TableCell>
+                                {log.status === 'sent' ? (
+                                  <Badge variant="default" className="bg-green-600">
+                                    <CheckCircle className="h-3 w-3 mr-1" />
+                                    Sent
+                                  </Badge>
+                                ) : (
+                                  <Badge variant="destructive">
+                                    <XCircle className="h-3 w-3 mr-1" />
+                                    Failed
+                                  </Badge>
+                                )}
+                              </TableCell>
+                              <TableCell>
+                                {new Date(log.created_at).toLocaleString()}
+                              </TableCell>
+                              <TableCell>
+                                <Button
+                                  variant="ghost"
+                                  size="icon"
+                                  onClick={() => viewEmailDetails(log)}
+                                >
+                                  <Eye className="h-4 w-4" />
+                                </Button>
+                              </TableCell>
+                            </TableRow>
+                          ))
+                        )}
+                      </TableBody>
+                    </Table>
+                  </CardContent>
+                </Card>
+              </div>
             </TabsContent>
           </Tabs>
         </div>
       </div>
+
+      {/* Email View Dialog */}
+      <Dialog open={emailViewDialogOpen} onOpenChange={setEmailViewDialogOpen}>
+        <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Email Details</DialogTitle>
+            <DialogDescription>
+              Sent on {viewingEmail && new Date(viewingEmail.created_at).toLocaleString()}
+            </DialogDescription>
+          </DialogHeader>
+          {viewingEmail && (
+            <div className="space-y-4">
+              <div>
+                <Label className="text-muted-foreground">Subject</Label>
+                <p className="font-medium">{viewingEmail.subject}</p>
+              </div>
+              <div>
+                <Label className="text-muted-foreground">Recipients ({viewingEmail.recipients.length})</Label>
+                <ScrollArea className="h-24 border rounded-md p-2 mt-1">
+                  <div className="space-y-1">
+                    {viewingEmail.recipients.map((email, i) => (
+                      <p key={i} className="text-sm">{email}</p>
+                    ))}
+                  </div>
+                </ScrollArea>
+              </div>
+              <div>
+                <Label className="text-muted-foreground">Status</Label>
+                <div className="mt-1">
+                  {viewingEmail.status === 'sent' ? (
+                    <Badge variant="default" className="bg-green-600">
+                      <CheckCircle className="h-3 w-3 mr-1" />
+                      Sent
+                    </Badge>
+                  ) : (
+                    <Badge variant="destructive">
+                      <XCircle className="h-3 w-3 mr-1" />
+                      Failed
+                    </Badge>
+                  )}
+                </div>
+              </div>
+              {viewingEmail.message_id && (
+                <div>
+                  <Label className="text-muted-foreground">Message ID</Label>
+                  <p className="font-mono text-sm">{viewingEmail.message_id}</p>
+                </div>
+              )}
+              {viewingEmail.error_message && (
+                <div>
+                  <Label className="text-muted-foreground text-destructive">Error</Label>
+                  <p className="text-sm text-destructive">{viewingEmail.error_message}</p>
+                </div>
+              )}
+              <div>
+                <Label className="text-muted-foreground">Content Preview</Label>
+                <div 
+                  className="border rounded-md p-4 bg-white text-black mt-1 max-h-64 overflow-y-auto"
+                  dangerouslySetInnerHTML={{ __html: viewingEmail.content }}
+                />
+              </div>
+            </div>
+          )}
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setEmailViewDialogOpen(false)}>
+              Close
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </>
   );
 }
