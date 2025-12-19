@@ -1,7 +1,7 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { MessageCircle, Users, Shield, Zap, LogOut, UserCheck, Home } from 'lucide-react';
+import { MessageCircle, Users, Shield, Zap, LogOut, UserCheck, Home, Crown } from 'lucide-react';
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -14,6 +14,7 @@ import VideoChat from '@/components/VideoChat';
 import WaitingScreen from '@/components/WaitingScreen';
 import { useMatch } from '@/hooks/useMatch';
 import { useConnectionRequests } from '@/hooks/useConnectionRequests';
+import { usePremiumStatus } from '@/hooks/usePremiumStatus';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import type { User } from '@supabase/supabase-js';
@@ -35,11 +36,15 @@ const Index = () => {
   const [isSigningOut, setIsSigningOut] = useState(false);
   const [disconnectMessage, setDisconnectMessage] = useState<string | null>(null);
   const [isStrangerMode, setIsStrangerMode] = useState(false);
+  const premiumWelcomeShown = useRef(false);
   
   // For stranger mode, use a generated ID; for authenticated, use actual user ID
   const effectiveUserId = isStrangerMode 
     ? (sessionStorage.getItem('stranger_id') || 'stranger') 
     : (user?.id || '');
+  
+  // Check premium status
+  const { isPremium, loading: premiumLoading } = usePremiumStatus(isStrangerMode ? undefined : user?.id);
   
   const { isSearching, matchedUserId, searchingUsersCount, joinMatchmaking, connectDirectly, leaveMatchmaking, sendSignal, onSignal } = useMatch(effectiveUserId);
   const {
@@ -50,6 +55,18 @@ const Index = () => {
     rejectConnectionRequest,
     clearAcceptedRequest,
   } = useConnectionRequests(isStrangerMode ? null : user?.id);
+
+  // Show premium welcome message once
+  useEffect(() => {
+    if (isPremium && !premiumLoading && !premiumWelcomeShown.current && user) {
+      premiumWelcomeShown.current = true;
+      toast.success('Welcome back, Premium User! ⭐', {
+        description: 'Enjoy priority matching and exclusive features.',
+        duration: 5000,
+      });
+      haptics.success();
+    }
+  }, [isPremium, premiumLoading, user]);
 
   // Cleanup stranger session when leaving the page
   useEffect(() => {
@@ -355,7 +372,15 @@ const Index = () => {
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 sm:gap-0">
           <div className="flex items-center gap-3 sm:gap-4">
             <div className="text-xs sm:text-sm">
-              <p className="text-muted-foreground text-xs">{isStrangerMode ? 'Temp ID' : 'Your ID'}</p>
+              <div className="flex items-center gap-2">
+                <p className="text-muted-foreground text-xs">{isStrangerMode ? 'Temp ID' : 'Your ID'}</p>
+                {isPremium && !isStrangerMode && (
+                  <Badge className="bg-gradient-to-r from-amber-500 to-orange-500 text-white text-[10px] px-1.5 py-0 h-4">
+                    <Crown className="w-2.5 h-2.5 mr-0.5" />
+                    PREMIUM
+                  </Badge>
+                )}
+              </div>
               <p className="font-mono font-bold text-primary text-sm sm:text-lg">{userProfile?.unique_id}</p>
               {isStrangerMode && (
                 <p className="text-xs text-muted-foreground">(Guest Mode)</p>
