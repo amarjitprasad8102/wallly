@@ -103,105 +103,180 @@ interface EmailTemplate {
   content: string;
 }
 
+// Modern email template wrapper with Wallly branding
+const emailTemplateWrapper = (content: string) => `
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Wallly</title>
+</head>
+<body style="background-color: #0a0a1a; margin: 0; padding: 30px 20px; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;">
+  <div style="max-width: 600px; margin: 0 auto; background: linear-gradient(180deg, #12122a 0%, #0f0f23 100%); border-radius: 24px; overflow: hidden; border: 1px solid rgba(99, 102, 241, 0.15);">
+    <!-- Logo Section -->
+    <div style="background: linear-gradient(135deg, rgba(99, 102, 241, 0.15) 0%, rgba(168, 85, 247, 0.15) 50%, rgba(236, 72, 153, 0.15) 100%); padding: 40px 20px 30px; text-align: center; border-bottom: 1px solid rgba(99, 102, 241, 0.1);">
+      <table cellpadding="0" cellspacing="0" border="0" align="center">
+        <tr>
+          <td style="background: linear-gradient(135deg, #6366f1 0%, #a855f7 50%, #ec4899 100%); padding: 20px; border-radius: 24px; box-shadow: 0 20px 60px rgba(99, 102, 241, 0.4);">
+            <div style="width: 48px; height: 48px; color: white; font-size: 24px;">💬</div>
+          </td>
+        </tr>
+      </table>
+      <h1 style="color: #a5b4fc; font-size: 36px; font-weight: 800; margin: 20px 0 8px; letter-spacing: -1px;">Wallly</h1>
+      <p style="color: #94a3b8; font-size: 14px; margin: 0;">Connect. Chat. Discover.</p>
+    </div>
+    
+    <!-- Content Section -->
+    <div style="padding: 40px 40px 30px; color: #e2e8f0;">
+      ${content}
+    </div>
+    
+    <!-- CTA Button -->
+    <div style="text-align: center; padding: 10px 40px 30px;">
+      <table cellpadding="0" cellspacing="0" border="0" align="center">
+        <tr>
+          <td style="background: linear-gradient(135deg, #6366f1 0%, #a855f7 100%); border-radius: 14px; box-shadow: 0 8px 30px rgba(99, 102, 241, 0.35);">
+            <a href="https://wallly.in" target="_blank" style="display: inline-block; padding: 18px 48px; color: #ffffff; font-size: 16px; font-weight: 700; text-decoration: none; letter-spacing: 0.5px;">
+              Visit Wallly →
+            </a>
+          </td>
+        </tr>
+      </table>
+    </div>
+    
+    <!-- Footer -->
+    <div style="background: linear-gradient(180deg, rgba(0,0,0,0.2) 0%, rgba(0,0,0,0.4) 100%); padding: 30px 40px; text-align: center; border-top: 1px solid rgba(99, 102, 241, 0.1);">
+      <p style="color: #64748b; font-size: 14px; margin: 0 0 16px;">Made with 💜 by the Wallly Team</p>
+      <p style="margin: 0;"><a href="https://wallly.in" style="color: #818cf8; font-weight: 600; text-decoration: none;">wallly.in</a></p>
+      <div style="margin-top: 20px; padding-top: 20px; border-top: 1px solid rgba(99, 102, 241, 0.1);">
+        <p style="color: #475569; font-size: 11px; margin: 0;">© ${new Date().getFullYear()} Wallly. All rights reserved.</p>
+      </div>
+    </div>
+  </div>
+</body>
+</html>
+`;
+
 const emailTemplates: EmailTemplate[] = [
   {
     id: "welcome",
     name: "Welcome Email",
     subject: "Welcome to Wallly! 🎉",
-    content: `<div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-  <h1 style="color: #6366f1;">Welcome to Wallly!</h1>
-  <p>Hi there,</p>
-  <p>Thank you for joining Wallly! We're excited to have you as part of our community.</p>
-  <p>Here's what you can do:</p>
-  <ul>
-    <li>Connect with strangers through video chat</li>
-    <li>Join communities that match your interests</li>
-    <li>Build meaningful connections</li>
-  </ul>
-  <p>Get started by exploring the app and connecting with others!</p>
-  <p>Best regards,<br>The Wallly Team</p>
-</div>`,
+    content: emailTemplateWrapper(`
+      <div style="text-align: center; margin-bottom: 24px;">
+        <span style="font-size: 48px; display: block; margin-bottom: 16px;">🎉</span>
+        <h2 style="color: #ffffff; font-size: 26px; margin: 0 0 8px; font-weight: 700;">Welcome to Wallly!</h2>
+        <p style="color: #94a3b8; margin: 0;">Your journey to meaningful connections starts now</p>
+      </div>
+      <p style="color: #cbd5e1; line-height: 1.8; margin: 0 0 18px;">Hey there! 👋</p>
+      <p style="color: #cbd5e1; line-height: 1.8; margin: 0 0 18px;">Thank you for joining Wallly! We're absolutely thrilled to have you as part of our community.</p>
+      <div style="background: linear-gradient(135deg, rgba(99, 102, 241, 0.08) 0%, rgba(168, 85, 247, 0.08) 100%); border: 1px solid rgba(99, 102, 241, 0.2); border-radius: 16px; padding: 24px; margin: 24px 0;">
+        <h3 style="color: #a5b4fc; margin: 0 0 16px; font-size: 17px; font-weight: 700;">🚀 What you can do on Wallly:</h3>
+        <p style="color: #94a3b8; margin: 8px 0; font-size: 14px;">✦ <strong>Video Chat</strong> — Connect face-to-face with strangers worldwide</p>
+        <p style="color: #94a3b8; margin: 8px 0; font-size: 14px;">✦ <strong>Communities</strong> — Join groups based on your interests</p>
+        <p style="color: #94a3b8; margin: 8px 0; font-size: 14px;">✦ <strong>Connections</strong> — Save and chat with people you meet</p>
+        <p style="color: #94a3b8; margin: 8px 0; font-size: 14px;">✦ <strong>Premium</strong> — Unlock priority matching & more</p>
+      </div>
+      <p style="color: #64748b; font-size: 13px; text-align: center;">Questions? Just reply to this email — we're always here to help!</p>
+    `),
   },
   {
     id: "password-reset",
     name: "Password Reset",
-    subject: "Reset Your Wallly Password",
-    content: `<div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-  <h1 style="color: #6366f1;">Password Reset Request</h1>
-  <p>Hi there,</p>
-  <p>We received a request to reset your password for your Wallly account.</p>
-  <p>If you didn't make this request, you can safely ignore this email.</p>
-  <p>To reset your password, click the link below:</p>
-  <p><a href="#" style="background-color: #6366f1; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; display: inline-block;">Reset Password</a></p>
-  <p>This link will expire in 24 hours.</p>
-  <p>Best regards,<br>The Wallly Team</p>
-</div>`,
+    subject: "Reset Your Wallly Password 🔑",
+    content: emailTemplateWrapper(`
+      <div style="text-align: center; margin-bottom: 24px;">
+        <span style="font-size: 48px; display: block; margin-bottom: 16px;">🔑</span>
+        <h2 style="color: #ffffff; font-size: 26px; margin: 0 0 8px; font-weight: 700;">Reset Your Password</h2>
+        <p style="color: #94a3b8; margin: 0;">No worries, we've got you covered!</p>
+      </div>
+      <p style="color: #cbd5e1; line-height: 1.8; margin: 0 0 18px;">We received a request to reset the password for your Wallly account.</p>
+      <p style="color: #cbd5e1; line-height: 1.8; margin: 0 0 18px;">If you didn't make this request, you can safely ignore this email.</p>
+      <div style="height: 1px; background: linear-gradient(90deg, transparent, rgba(99, 102, 241, 0.3), transparent); margin: 30px 0;"></div>
+      <p style="color: #64748b; font-size: 13px; text-align: center;">This link expires in 1 hour. Didn't request this? You can safely ignore this email.</p>
+    `),
   },
   {
     id: "notification",
     name: "General Notification",
-    subject: "Important Update from Wallly",
-    content: `<div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-  <h1 style="color: #6366f1;">Important Update</h1>
-  <p>Hi there,</p>
-  <p>We have an important update to share with you.</p>
-  <p>[Your message here]</p>
-  <p>Thank you for being part of Wallly!</p>
-  <p>Best regards,<br>The Wallly Team</p>
-</div>`,
+    subject: "Important Update from Wallly 📢",
+    content: emailTemplateWrapper(`
+      <div style="text-align: center; margin-bottom: 24px;">
+        <span style="font-size: 48px; display: block; margin-bottom: 16px;">📢</span>
+        <h2 style="color: #ffffff; font-size: 26px; margin: 0 0 8px; font-weight: 700;">Important Update</h2>
+        <p style="color: #94a3b8; margin: 0;">We have something to share with you</p>
+      </div>
+      <p style="color: #cbd5e1; line-height: 1.8; margin: 0 0 18px;">Hey there! 👋</p>
+      <p style="color: #cbd5e1; line-height: 1.8; margin: 0 0 18px;">We have an important update to share with you.</p>
+      <div style="background: linear-gradient(135deg, rgba(99, 102, 241, 0.08) 0%, rgba(168, 85, 247, 0.08) 100%); border: 1px solid rgba(99, 102, 241, 0.2); border-radius: 16px; padding: 24px; margin: 24px 0;">
+        <p style="color: #a5b4fc; margin: 0;">[Your message here]</p>
+      </div>
+      <p style="color: #cbd5e1; line-height: 1.8; margin: 0 0 18px;">Thank you for being part of Wallly!</p>
+    `),
   },
   {
     id: "premium-upgrade",
     name: "Premium Upgrade",
-    subject: "Congratulations! You're Now a Premium Member 🌟",
-    content: `<div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-  <h1 style="color: #6366f1;">Welcome to Wallly Premium!</h1>
-  <p>Hi there,</p>
-  <p>Congratulations on upgrading to Wallly Premium! 🎉</p>
-  <p>You now have access to exclusive features:</p>
-  <ul>
-    <li>Priority matching with other users</li>
-    <li>Ad-free experience</li>
-    <li>Premium badge on your profile</li>
-    <li>Advanced filtering options</li>
-  </ul>
-  <p>Enjoy your premium experience!</p>
-  <p>Best regards,<br>The Wallly Team</p>
-</div>`,
+    subject: "Congratulations! You're Now a Premium Member ⭐",
+    content: emailTemplateWrapper(`
+      <div style="text-align: center; margin-bottom: 24px;">
+        <span style="font-size: 48px; display: block; margin-bottom: 16px;">⭐</span>
+        <h2 style="color: #fbbf24; font-size: 26px; margin: 0 0 8px; font-weight: 700;">Welcome to Premium!</h2>
+        <p style="color: #fbbf24; margin: 0;">You're now a VIP member</p>
+      </div>
+      <p style="color: #cbd5e1; line-height: 1.8; margin: 0 0 18px;">Congratulations! 🎉</p>
+      <p style="color: #cbd5e1; line-height: 1.8; margin: 0 0 18px;">You've upgraded to Wallly Premium! Enjoy all the exclusive perks:</p>
+      <div style="background: linear-gradient(135deg, rgba(251, 191, 36, 0.08) 0%, rgba(245, 158, 11, 0.08) 100%); border: 1px solid rgba(251, 191, 36, 0.2); border-radius: 16px; padding: 24px; margin: 24px 0;">
+        <h3 style="color: #fbbf24; margin: 0 0 16px; font-size: 17px; font-weight: 700;">✨ Your Premium Benefits:</h3>
+        <p style="color: #94a3b8; margin: 8px 0; font-size: 14px;">✦ <strong>Priority Matching</strong> — Get matched faster</p>
+        <p style="color: #94a3b8; margin: 8px 0; font-size: 14px;">✦ <strong>Premium Badge</strong> — Stand out from the crowd</p>
+        <p style="color: #94a3b8; margin: 8px 0; font-size: 14px;">✦ <strong>Ad-Free Experience</strong> — No interruptions</p>
+        <p style="color: #94a3b8; margin: 8px 0; font-size: 14px;">✦ <strong>Advanced Filters</strong> — Find exactly who you want</p>
+        <p style="color: #94a3b8; margin: 8px 0; font-size: 14px;">✦ <strong>Unlimited Connections</strong> — No daily limits</p>
+      </div>
+    `),
   },
   {
     id: "account-warning",
     name: "Account Warning",
-    subject: "Important: Account Warning",
-    content: `<div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-  <h1 style="color: #ef4444;">Account Warning</h1>
-  <p>Hi there,</p>
-  <p>We've noticed some activity on your account that violates our community guidelines.</p>
-  <p><strong>Details:</strong></p>
-  <p>[Specify the violation here]</p>
-  <p>Please review our community guidelines and ensure your future interactions comply with our policies.</p>
-  <p>Continued violations may result in account suspension.</p>
-  <p>If you believe this is a mistake, please contact our support team.</p>
-  <p>Best regards,<br>The Wallly Team</p>
-</div>`,
+    subject: "Important: Account Warning ⚠️",
+    content: emailTemplateWrapper(`
+      <div style="text-align: center; margin-bottom: 24px;">
+        <span style="font-size: 48px; display: block; margin-bottom: 16px;">⚠️</span>
+        <h2 style="color: #fca5a5; font-size: 26px; margin: 0 0 8px; font-weight: 700;">Account Warning</h2>
+        <p style="color: #f87171; margin: 0;">Important notice about your account</p>
+      </div>
+      <div style="background: linear-gradient(135deg, rgba(239, 68, 68, 0.1) 0%, rgba(220, 38, 38, 0.1) 100%); border: 1px solid rgba(239, 68, 68, 0.3); border-radius: 16px; padding: 24px; margin: 24px 0;">
+        <h3 style="color: #fca5a5; margin: 0 0 12px; font-weight: 700;">⚠️ Community Guidelines Violation</h3>
+        <p style="color: #fecaca; margin: 0;">We've detected activity on your account that may violate our community guidelines.</p>
+      </div>
+      <p style="color: #cbd5e1; line-height: 1.8; margin: 0 0 18px;"><strong>Details:</strong> [Specify the violation here]</p>
+      <p style="color: #cbd5e1; line-height: 1.8; margin: 0 0 18px;">Please review our community guidelines and ensure your future interactions comply with our policies.</p>
+      <p style="color: #fca5a5; line-height: 1.8; margin: 0 0 18px;"><strong>Continued violations may result in account suspension or termination.</strong></p>
+      <p style="color: #64748b; font-size: 13px; text-align: center;">Believe this was sent in error? Contact our support team.</p>
+    `),
   },
   {
     id: "newsletter",
     name: "Newsletter",
     subject: "Wallly Weekly Update 📰",
-    content: `<div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-  <h1 style="color: #6366f1;">Wallly Weekly Update</h1>
-  <p>Hi there,</p>
-  <p>Here's what's new at Wallly this week:</p>
-  <h3>🚀 New Features</h3>
-  <p>[List new features]</p>
-  <h3>📊 Community Highlights</h3>
-  <p>[Community stats and highlights]</p>
-  <h3>💡 Tips & Tricks</h3>
-  <p>[Helpful tips for users]</p>
-  <p>Thanks for being part of our community!</p>
-  <p>Best regards,<br>The Wallly Team</p>
-</div>`,
+    content: emailTemplateWrapper(`
+      <div style="text-align: center; margin-bottom: 24px;">
+        <span style="font-size: 48px; display: block; margin-bottom: 16px;">📰</span>
+        <h2 style="color: #ffffff; font-size: 26px; margin: 0 0 8px; font-weight: 700;">Wallly Weekly</h2>
+        <p style="color: #94a3b8; margin: 0;">Your weekly dose of updates</p>
+      </div>
+      <p style="color: #cbd5e1; line-height: 1.8; margin: 0 0 18px;">Hey there! 👋</p>
+      <p style="color: #cbd5e1; line-height: 1.8; margin: 0 0 18px;">Here's what's happening at Wallly this week:</p>
+      <div style="background: linear-gradient(135deg, rgba(99, 102, 241, 0.08) 0%, rgba(168, 85, 247, 0.08) 100%); border: 1px solid rgba(99, 102, 241, 0.2); border-radius: 16px; padding: 24px; margin: 24px 0;">
+        <h3 style="color: #a5b4fc; margin: 0 0 16px; font-size: 17px; font-weight: 700;">🚀 What's New</h3>
+        <p style="color: #94a3b8; margin: 8px 0; font-size: 14px;">✦ Improved video chat quality</p>
+        <p style="color: #94a3b8; margin: 8px 0; font-size: 14px;">✦ New community features</p>
+        <p style="color: #94a3b8; margin: 8px 0; font-size: 14px;">✦ Enhanced matching algorithm</p>
+      </div>
+      <p style="color: #cbd5e1; line-height: 1.8; margin: 0 0 18px;">Thanks for being part of our community!</p>
+    `),
   },
 ];
 
