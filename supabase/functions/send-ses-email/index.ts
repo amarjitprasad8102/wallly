@@ -1,4 +1,5 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -10,6 +11,7 @@ interface EmailRequest {
   subject: string;
   html: string;
   text?: string;
+  templateUsed?: string;
 }
 
 serve(async (req: Request): Promise<Response> => {
@@ -28,7 +30,20 @@ serve(async (req: Request): Promise<Response> => {
       throw new Error("AWS SES credentials not configured");
     }
 
-    const { to, subject, html, text }: EmailRequest = await req.json();
+    // Get auth token to identify admin
+    const authHeader = req.headers.get("authorization");
+    const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
+    const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+    const supabase = createClient(supabaseUrl, supabaseKey);
+
+    let sentByUserId: string | null = null;
+    if (authHeader) {
+      const token = authHeader.replace("Bearer ", "");
+      const { data: { user } } = await supabase.auth.getUser(token);
+      sentByUserId = user?.id || null;
+    }
+
+    const { to, subject, html, text, templateUsed }: EmailRequest = await req.json();
 
     if (!to || !subject || !html) {
       throw new Error("Missing required fields: to, subject, html");
@@ -202,13 +217,35 @@ serve(async (req: Request): Promise<Response> => {
     const responseText = await response.text();
     console.log("SES Response:", response.status, responseText);
 
+    // Parse message ID from response
+    const messageIdMatch = responseText.match(/<MessageId>(.+?)<\/MessageId>/);
+    const messageId = messageIdMatch ? messageIdMatch[1] : null;
+
+    // Log the email
+    if (sentByUserId) {
+      const logData = {
+        sent_by: sentByUserId,
+        recipients: recipients,
+        subject: subject,
+        content: html,
+        template_used: templateUsed || null,
+        status: response.ok ? 'sent' : 'failed',
+        message_id: messageId,
+        error_message: response.ok ? null : responseText,
+      };
+
+      const { error: logError } = await supabase
+        .from('email_logs')
+        .insert([logData]);
+
+      if (logError) {
+        console.error("Failed to log email:", logError);
+      }
+    }
+
     if (!response.ok) {
       throw new Error(`SES Error: ${responseText}`);
     }
-
-    // Parse message ID from response
-    const messageIdMatch = responseText.match(/<MessageId>(.+?)<\/MessageId>/);
-    const messageId = messageIdMatch ? messageIdMatch[1] : "unknown";
 
     return new Response(
       JSON.stringify({ success: true, messageId }),
