@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Helmet } from 'react-helmet';
 import { Button } from '@/components/ui/button';
-import { MessageCircle, Users, Shield, Zap, Globe, Lock, ArrowRight, Hash, ChevronDown, UserX } from 'lucide-react';
+import { MessageCircle, Users, Shield, Zap, Globe, Lock, ArrowRight, Hash, ChevronDown, UserX, MessageSquare } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import Lenis from '@studio-freight/lenis';
 import {
@@ -164,10 +164,20 @@ const Landing = () => {
                 size="lg"
                 className="w-full sm:w-auto text-base sm:text-lg px-6 sm:px-8 py-5 sm:py-6 rounded-full bg-gradient-primary hover:opacity-90 transition-all hover:scale-105"
                 onClick={() => navigate('/auth')}
-                aria-label="Start chatting now"
+                aria-label="Start video chat"
               >
                 <MessageCircle className="w-5 h-5 sm:w-6 sm:h-6 mr-2" aria-hidden="true" />
-                Start Chatting Now
+                Video Chat
+              </Button>
+              <Button
+                size="lg"
+                variant="secondary"
+                className="w-full sm:w-auto text-base sm:text-lg px-6 sm:px-8 py-5 sm:py-6 rounded-full hover:opacity-90 transition-all hover:scale-105"
+                onClick={() => navigate('/auth')}
+                aria-label="Start text chat"
+              >
+                <MessageSquare className="w-5 h-5 sm:w-6 sm:h-6 mr-2" aria-hidden="true" />
+                Text Chat
               </Button>
             </div>
             <p className="text-xs sm:text-sm text-muted-foreground mt-4">Free • No Download • Ages 16+</p>

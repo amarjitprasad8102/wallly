@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { MessageCircle, Users, Shield, Zap, LogOut, UserCheck, Home, Crown } from 'lucide-react';
+import { MessageCircle, Users, Shield, Zap, LogOut, UserCheck, Home, Crown, MessageSquare } from 'lucide-react';
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -11,6 +11,7 @@ import {
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
 import VideoChat from '@/components/VideoChat';
+import TextChat from '@/components/TextChat';
 import WaitingScreen from '@/components/WaitingScreen';
 import { useMatch } from '@/hooks/useMatch';
 import { useConnectionRequests } from '@/hooks/useConnectionRequests';
@@ -30,7 +31,8 @@ const Index = () => {
   const navigate = useNavigate();
   const [user, setUser] = useState<User | null>(null);
   const [userProfile, setUserProfile] = useState<{ unique_id: string } | null>(null);
-  const [appState, setAppState] = useState<'home' | 'waiting' | 'chatting'>('home');
+  const [appState, setAppState] = useState<'home' | 'waiting' | 'videoChatting' | 'textChatting'>('home');
+  const [chatMode, setChatMode] = useState<'video' | 'text'>('video');
   const [connectDialogOpen, setConnectDialogOpen] = useState(false);
   const [connectId, setConnectId] = useState('');
   const [isSigningOut, setIsSigningOut] = useState(false);
@@ -140,17 +142,25 @@ const Index = () => {
       setAppState('waiting');
       setDisconnectMessage(null);
     } else if (matchedUserId) {
-      setAppState('chatting');
+      setAppState(chatMode === 'video' ? 'videoChatting' : 'textChatting');
       setDisconnectMessage(null);
       // Play match found sound and haptic
       soundEffects.playMatchFound();
       haptics.success();
     }
-  }, [isSearching, matchedUserId]);
+  }, [isSearching, matchedUserId, chatMode]);
 
-  const handleStartChat = () => {
+  const handleStartVideoChat = () => {
     soundEffects.playClick();
     haptics.light();
+    setChatMode('video');
+    joinMatchmaking();
+  };
+
+  const handleStartTextChat = () => {
+    soundEffects.playClick();
+    haptics.light();
+    setChatMode('text');
     joinMatchmaking();
   };
 
@@ -275,7 +285,7 @@ const Index = () => {
       // When our request is accepted, we are from_user_id, they are to_user_id
       // We should connect to them (to_user_id)
       connectDirectly(acceptedRequest.to_user_id);
-      setAppState('chatting');
+      setAppState('videoChatting');
       clearAcceptedRequest();
     }
   }, [acceptedRequest, connectDirectly, clearAcceptedRequest, leaveMatchmaking]);
@@ -293,7 +303,7 @@ const Index = () => {
       console.log('[INDEX] We accepted request from:', connectedUserId);
       // Connect directly to the user who sent the request
       connectDirectly(connectedUserId);
-      setAppState('chatting');
+      setAppState('videoChatting');
     }
   };
 
@@ -315,7 +325,7 @@ const Index = () => {
     );
   }
 
-  if (appState === 'chatting' && matchedUserId) {
+  if (appState === 'videoChatting' && matchedUserId) {
     return (
       <>
         {disconnectMessage && (
@@ -324,6 +334,27 @@ const Index = () => {
           </div>
         )}
         <VideoChat
+          currentUserId={effectiveUserId}
+          matchedUserId={matchedUserId}
+          sendSignal={sendSignal}
+          onSignal={onSignal}
+          onLeave={handleSkipToNext}
+          onEndCall={handleEndChat}
+          onOtherUserDisconnected={handleOtherUserDisconnected}
+        />
+      </>
+    );
+  }
+
+  if (appState === 'textChatting' && matchedUserId) {
+    return (
+      <>
+        {disconnectMessage && (
+          <div className="fixed top-4 left-1/2 -translate-x-1/2 z-50 bg-card border border-border rounded-lg px-6 py-3 shadow-lg animate-fade-in">
+            <p className="text-sm font-medium text-muted-foreground">{disconnectMessage}</p>
+          </div>
+        )}
+        <TextChat
           currentUserId={effectiveUserId}
           matchedUserId={matchedUserId}
           sendSignal={sendSignal}
@@ -477,13 +508,24 @@ const Index = () => {
           {/* CTA Buttons - Mobile Stacked */}
           <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center px-4">
             <Button
-              onClick={handleStartChat}
+              onClick={handleStartVideoChat}
               size="lg"
               className="text-base sm:text-lg px-6 sm:px-8 py-5 sm:py-6 rounded-full bg-gradient-primary hover:opacity-90 transition-all hover:scale-105 shadow-glow w-full sm:w-auto touch-manipulation"
               aria-label="Start video chat"
             >
               <MessageCircle className="w-5 h-5 sm:w-6 sm:h-6 mr-2" aria-hidden="true" />
-              Start Video Chat
+              Video Chat
+            </Button>
+
+            <Button
+              onClick={handleStartTextChat}
+              size="lg"
+              variant="secondary"
+              className="text-base sm:text-lg px-6 sm:px-8 py-5 sm:py-6 rounded-full hover:opacity-90 transition-all hover:scale-105 w-full sm:w-auto touch-manipulation"
+              aria-label="Start text chat"
+            >
+              <MessageSquare className="w-5 h-5 sm:w-6 sm:h-6 mr-2" aria-hidden="true" />
+              Text Chat
             </Button>
 
             {!isStrangerMode && (
