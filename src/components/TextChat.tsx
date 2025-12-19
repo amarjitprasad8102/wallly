@@ -8,7 +8,6 @@ import { soundEffects } from '@/utils/sounds';
 import { haptics } from '@/utils/haptics';
 import EncryptionBadge from './EncryptionBadge';
 import SecureImage from './SecureImage';
-import { ChatEncryption } from '@/utils/encryption';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 
@@ -49,8 +48,7 @@ const TextChat = ({
   const dataChannel = useRef<RTCDataChannel | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const encryptionRef = useRef<ChatEncryption>(new ChatEncryption());
-  const [isEncryptionReady, setIsEncryptionReady] = useState(false);
+  const [isChannelReady, setIsChannelReady] = useState(false);
   const uploadedImagesRef = useRef<string[]>([]);
 
   const {
@@ -165,40 +163,32 @@ const TextChat = ({
   }, [connectionStatus]);
 
   const setupDataChannel = (channel: RTCDataChannel) => {
-    channel.onopen = async () => {
-      console.log('[TEXT] Data channel opened, initiating key exchange');
-      
-      try {
-        const publicKey = await encryptionRef.current.generateKeyPair();
-        channel.send(JSON.stringify({ type: 'public-key', key: publicKey }));
-        console.log('[TEXT] Public key sent');
-      } catch (error) {
-        console.error('[TEXT] Error generating key pair:', error);
-      }
+    channel.onopen = () => {
+      console.log('[TEXT] Data channel opened');
+      setIsChannelReady(true);
     };
 
-    channel.onmessage = async (event) => {
+    channel.onmessage = (event) => {
       try {
         const data = JSON.parse(event.data);
         
-        if (data.type === 'public-key') {
-          await encryptionRef.current.setRemotePublicKey(data.key);
-          setIsEncryptionReady(true);
-          console.log('[TEXT] Encryption ready');
-        } else if (data.type === 'encrypted-message') {
-          const decryptedMessage = await encryptionRef.current.decryptMessage(data.message);
-          setMessages(prev => [...prev, { text: decryptedMessage, sender: 'them', timestamp: new Date() }]);
+        if (data.type === 'message') {
+          setMessages(prev => [...prev, { text: data.text, sender: 'them', timestamp: new Date() }]);
           soundEffects.playNotification();
           haptics.light();
-        } else if (data.type === 'encrypted-image') {
-          const decryptedUrl = await encryptionRef.current.decryptMessage(data.imageUrl);
-          setMessages(prev => [...prev, { imageUrl: decryptedUrl, sender: 'them', timestamp: new Date() }]);
+        } else if (data.type === 'image') {
+          setMessages(prev => [...prev, { imageUrl: data.imageUrl, sender: 'them', timestamp: new Date() }]);
           soundEffects.playNotification();
           haptics.light();
         }
       } catch (error) {
         console.error('[TEXT] Error processing message:', error);
       }
+    };
+
+    channel.onclose = () => {
+      console.log('[TEXT] Data channel closed');
+      setIsChannelReady(false);
     };
 
     channel.onerror = (error) => {
@@ -263,7 +253,7 @@ const TextChat = ({
   };
 
   const handleSendMessage = async () => {
-    if ((!newMessage.trim() && !selectedImage) || !dataChannel.current || dataChannel.current.readyState !== 'open' || !isEncryptionReady) {
+    if ((!newMessage.trim() && !selectedImage) || !dataChannel.current || dataChannel.current.readyState !== 'open' || !isChannelReady) {
       return;
     }
 
@@ -276,10 +266,9 @@ const TextChat = ({
         const imageUrl = await uploadImage(selectedImage);
         
         if (imageUrl) {
-          const encryptedUrl = await encryptionRef.current.encryptMessage(imageUrl);
           dataChannel.current.send(JSON.stringify({ 
-            type: 'encrypted-image', 
-            imageUrl: encryptedUrl 
+            type: 'image', 
+            imageUrl: imageUrl 
           }));
           setMessages(prev => [...prev, { imageUrl, sender: 'me', timestamp: new Date() }]);
         } else {
@@ -292,10 +281,9 @@ const TextChat = ({
       }
 
       if (newMessage.trim()) {
-        const encryptedMessage = await encryptionRef.current.encryptMessage(newMessage);
         dataChannel.current.send(JSON.stringify({ 
-          type: 'encrypted-message', 
-          message: encryptedMessage 
+          type: 'message', 
+          text: newMessage 
         }));
         setMessages(prev => [...prev, { text: newMessage, sender: 'me', timestamp: new Date() }]);
         setNewMessage('');
@@ -349,7 +337,7 @@ const TextChat = ({
              connectionStatus === 'connecting' ? 'Connecting...' : 
              'Disconnected'}
           </span>
-          <EncryptionBadge encrypted={isEncryptionReady} variant="chat" />
+          <EncryptionBadge encrypted={isChannelReady} variant="chat" />
         </div>
         <div className="flex gap-1 sm:gap-2">
           <Button variant="outline" size="sm" onClick={handleSkip} className="h-8 px-2 sm:px-3 text-xs sm:text-sm">
@@ -462,7 +450,7 @@ const TextChat = ({
             variant="outline"
             size="icon"
             onClick={() => fileInputRef.current?.click()}
-            disabled={!isEncryptionReady || isUploading}
+            disabled={!isChannelReady || isUploading}
           >
             <ImageIcon className="w-4 h-4" />
           </Button>
@@ -471,12 +459,12 @@ const TextChat = ({
             onChange={(e) => setNewMessage(e.target.value)}
             placeholder="Type a message..."
             className="flex-1"
-            disabled={!isEncryptionReady}
+            disabled={!isChannelReady}
           />
           <Button 
             type="submit" 
             size="icon"
-            disabled={!isEncryptionReady || (!newMessage.trim() && !selectedImage) || isUploading}
+            disabled={!isChannelReady || (!newMessage.trim() && !selectedImage) || isUploading}
           >
             <Send className="w-4 h-4" />
           </Button>
