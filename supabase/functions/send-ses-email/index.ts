@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { AwsClient } from "https://esm.sh/aws4fetch@1.0.20";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -12,44 +13,6 @@ interface EmailRequest {
   html: string;
   text?: string;
   templateUsed?: string;
-}
-
-// SHA-256 hash function using Web Crypto API
-async function sha256(message: string): Promise<string> {
-  const encoder = new TextEncoder();
-  const data = encoder.encode(message);
-  const hashBuffer = await crypto.subtle.digest("SHA-256", data);
-  return Array.from(new Uint8Array(hashBuffer))
-    .map(b => b.toString(16).padStart(2, '0'))
-    .join('');
-}
-
-// HMAC-SHA256 using Web Crypto API
-async function hmacSha256(key: BufferSource, message: string): Promise<ArrayBuffer> {
-  const cryptoKey = await crypto.subtle.importKey(
-    "raw",
-    key,
-    { name: "HMAC", hash: "SHA-256" },
-    false,
-    ["sign"]
-  );
-  const encoder = new TextEncoder();
-  return await crypto.subtle.sign("HMAC", cryptoKey, encoder.encode(message));
-}
-
-async function getSignatureKey(key: string, dateStamp: string, regionName: string, serviceName: string): Promise<ArrayBuffer> {
-  const encoder = new TextEncoder();
-  const kDate = await hmacSha256(encoder.encode("AWS4" + key), dateStamp);
-  const kRegion = await hmacSha256(kDate, regionName);
-  const kService = await hmacSha256(kRegion, serviceName);
-  const kSigning = await hmacSha256(kService, "aws4_request");
-  return kSigning;
-}
-
-function toHex(buffer: ArrayBuffer): string {
-  return Array.from(new Uint8Array(buffer))
-    .map(b => b.toString(16).padStart(2, '0'))
-    .join('');
 }
 
 serve(async (req: Request): Promise<Response> => {
@@ -90,13 +53,15 @@ serve(async (req: Request): Promise<Response> => {
     const recipients = Array.isArray(to) ? to : [to];
     console.log(`Sending email to: ${recipients.join(", ")}, subject: ${subject}`);
 
-    // Build SES API request
-    const host = `email.${region}.amazonaws.com`;
-    const endpoint = `https://${host}/`;
-    const service = "ses";
-    const method = "POST";
+    // Initialize AWS client
+    const aws = new AwsClient({
+      accessKeyId: accessKeyId,
+      secretAccessKey: secretAccessKey,
+      region: region,
+      service: "ses",
+    });
 
-    // Build form data for SendEmail action
+    // Build SES API request parameters
     const params = new URLSearchParams();
     params.append("Action", "SendEmail");
     params.append("Version", "2010-12-01");
@@ -117,64 +82,15 @@ serve(async (req: Request): Promise<Response> => {
     }
 
     const body = params.toString();
-    const contentType = "application/x-www-form-urlencoded";
-
-    // Create date strings
-    const now = new Date();
-    const amzDate = now.toISOString().replace(/[:\-]|\.\d{3}/g, "").substring(0, 15) + "Z";
-    const dateStamp = amzDate.substring(0, 8);
-
-    // Create canonical request
-    const payloadHash = await sha256(body);
-    
-    const canonicalHeaders = 
-      `content-type:${contentType}\n` +
-      `host:${host}\n` +
-      `x-amz-date:${amzDate}\n`;
-    
-    const signedHeaders = "content-type;host;x-amz-date";
-    
-    const canonicalRequest = 
-      `${method}\n` +
-      `/\n` +
-      `\n` +
-      `${canonicalHeaders}\n` +
-      `${signedHeaders}\n` +
-      `${payloadHash}`;
-
-    // Create string to sign
-    const algorithm = "AWS4-HMAC-SHA256";
-    const credentialScope = `${dateStamp}/${region}/${service}/aws4_request`;
-    const canonicalRequestHash = await sha256(canonicalRequest);
-    
-    const stringToSign = 
-      `${algorithm}\n` +
-      `${amzDate}\n` +
-      `${credentialScope}\n` +
-      `${canonicalRequestHash}`;
-
-    // Calculate signature
-    const signingKey = await getSignatureKey(secretAccessKey, dateStamp, region, service);
-    const signatureBuffer = await hmacSha256(signingKey, stringToSign);
-    const signature = toHex(signatureBuffer);
-
-    // Create authorization header
-    const authorizationHeader = 
-      `${algorithm} ` +
-      `Credential=${accessKeyId}/${credentialScope}, ` +
-      `SignedHeaders=${signedHeaders}, ` +
-      `Signature=${signature}`;
+    const endpoint = `https://email.${region}.amazonaws.com/`;
 
     console.log("Sending request to AWS SES...");
 
-    // Make the request
-    const response = await fetch(endpoint, {
-      method: method,
+    // Sign and send the request
+    const response = await aws.fetch(endpoint, {
+      method: "POST",
       headers: {
-        "Content-Type": contentType,
-        "Host": host,
-        "X-Amz-Date": amzDate,
-        "Authorization": authorizationHeader,
+        "Content-Type": "application/x-www-form-urlencoded",
       },
       body: body,
     });
