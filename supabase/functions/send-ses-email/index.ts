@@ -1,6 +1,5 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
-import { SESClient, SendEmailCommand } from "https://esm.sh/@aws-sdk/client-ses@3.699.0";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -15,16 +14,54 @@ interface EmailRequest {
   templateUsed?: string;
 }
 
+// SHA-256 hash function using Web Crypto API
+async function sha256(message: string): Promise<string> {
+  const encoder = new TextEncoder();
+  const data = encoder.encode(message);
+  const hashBuffer = await crypto.subtle.digest("SHA-256", data);
+  return Array.from(new Uint8Array(hashBuffer))
+    .map(b => b.toString(16).padStart(2, '0'))
+    .join('');
+}
+
+// HMAC-SHA256 using Web Crypto API
+async function hmacSha256(key: BufferSource, message: string): Promise<ArrayBuffer> {
+  const cryptoKey = await crypto.subtle.importKey(
+    "raw",
+    key,
+    { name: "HMAC", hash: "SHA-256" },
+    false,
+    ["sign"]
+  );
+  const encoder = new TextEncoder();
+  return await crypto.subtle.sign("HMAC", cryptoKey, encoder.encode(message));
+}
+
+async function getSignatureKey(key: string, dateStamp: string, regionName: string, serviceName: string): Promise<ArrayBuffer> {
+  const encoder = new TextEncoder();
+  const kDate = await hmacSha256(encoder.encode("AWS4" + key), dateStamp);
+  const kRegion = await hmacSha256(kDate, regionName);
+  const kService = await hmacSha256(kRegion, serviceName);
+  const kSigning = await hmacSha256(kService, "aws4_request");
+  return kSigning;
+}
+
+function toHex(buffer: ArrayBuffer): string {
+  return Array.from(new Uint8Array(buffer))
+    .map(b => b.toString(16).padStart(2, '0'))
+    .join('');
+}
+
 serve(async (req: Request): Promise<Response> => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
   }
 
   try {
-    const accessKeyId = Deno.env.get("AWS_ACCESS_KEY_ID");
-    const secretAccessKey = Deno.env.get("AWS_SECRET_ACCESS_KEY");
-    const region = Deno.env.get("AWS_SES_REGION") || "us-east-1";
-    const fromEmail = Deno.env.get("SES_FROM_EMAIL");
+    const accessKeyId = Deno.env.get("AWS_ACCESS_KEY_ID")?.trim();
+    const secretAccessKey = Deno.env.get("AWS_SECRET_ACCESS_KEY")?.trim();
+    const region = Deno.env.get("AWS_SES_REGION")?.trim() || "us-east-1";
+    const fromEmail = Deno.env.get("SES_FROM_EMAIL")?.trim();
 
     if (!accessKeyId || !secretAccessKey || !fromEmail) {
       console.error("AWS SES credentials not configured");
@@ -53,62 +90,134 @@ serve(async (req: Request): Promise<Response> => {
     const recipients = Array.isArray(to) ? to : [to];
     console.log(`Sending email to: ${recipients.join(", ")}, subject: ${subject}`);
 
-    // Initialize AWS SES client
-    const sesClient = new SESClient({
-      region: region,
-      credentials: {
-        accessKeyId: accessKeyId.trim(),
-        secretAccessKey: secretAccessKey.trim(),
+    // Build SES API request
+    const host = `email.${region}.amazonaws.com`;
+    const endpoint = `https://${host}/`;
+    const service = "ses";
+    const method = "POST";
+
+    // Build form data for SendEmail action
+    const params = new URLSearchParams();
+    params.append("Action", "SendEmail");
+    params.append("Version", "2010-12-01");
+    params.append("Source", fromEmail);
+    
+    recipients.forEach((recipient, index) => {
+      params.append(`Destination.ToAddresses.member.${index + 1}`, recipient);
+    });
+    
+    params.append("Message.Subject.Data", subject);
+    params.append("Message.Subject.Charset", "UTF-8");
+    params.append("Message.Body.Html.Data", html);
+    params.append("Message.Body.Html.Charset", "UTF-8");
+    
+    if (text) {
+      params.append("Message.Body.Text.Data", text);
+      params.append("Message.Body.Text.Charset", "UTF-8");
+    }
+
+    const body = params.toString();
+    const contentType = "application/x-www-form-urlencoded";
+
+    // Create date strings
+    const now = new Date();
+    const amzDate = now.toISOString().replace(/[:\-]|\.\d{3}/g, "").substring(0, 15) + "Z";
+    const dateStamp = amzDate.substring(0, 8);
+
+    // Create canonical request
+    const payloadHash = await sha256(body);
+    
+    const canonicalHeaders = 
+      `content-type:${contentType}\n` +
+      `host:${host}\n` +
+      `x-amz-date:${amzDate}\n`;
+    
+    const signedHeaders = "content-type;host;x-amz-date";
+    
+    const canonicalRequest = 
+      `${method}\n` +
+      `/\n` +
+      `\n` +
+      `${canonicalHeaders}\n` +
+      `${signedHeaders}\n` +
+      `${payloadHash}`;
+
+    // Create string to sign
+    const algorithm = "AWS4-HMAC-SHA256";
+    const credentialScope = `${dateStamp}/${region}/${service}/aws4_request`;
+    const canonicalRequestHash = await sha256(canonicalRequest);
+    
+    const stringToSign = 
+      `${algorithm}\n` +
+      `${amzDate}\n` +
+      `${credentialScope}\n` +
+      `${canonicalRequestHash}`;
+
+    // Calculate signature
+    const signingKey = await getSignatureKey(secretAccessKey, dateStamp, region, service);
+    const signatureBuffer = await hmacSha256(signingKey, stringToSign);
+    const signature = toHex(signatureBuffer);
+
+    // Create authorization header
+    const authorizationHeader = 
+      `${algorithm} ` +
+      `Credential=${accessKeyId}/${credentialScope}, ` +
+      `SignedHeaders=${signedHeaders}, ` +
+      `Signature=${signature}`;
+
+    console.log("Sending request to AWS SES...");
+
+    // Make the request
+    const response = await fetch(endpoint, {
+      method: method,
+      headers: {
+        "Content-Type": contentType,
+        "Host": host,
+        "X-Amz-Date": amzDate,
+        "Authorization": authorizationHeader,
       },
+      body: body,
     });
 
-    // Create and send the email
-    const sendEmailCommand = new SendEmailCommand({
-      Source: fromEmail,
-      Destination: {
-        ToAddresses: recipients,
-      },
-      Message: {
-        Subject: {
-          Data: subject,
-          Charset: "UTF-8",
-        },
-        Body: {
-          Html: {
-            Data: html,
-            Charset: "UTF-8",
-          },
-          ...(text && {
-            Text: {
-              Data: text,
-              Charset: "UTF-8",
-            },
-          }),
-        },
-      },
-    });
+    const responseText = await response.text();
+    console.log("SES Response status:", response.status);
+    console.log("SES Response:", responseText);
 
-    const response = await sesClient.send(sendEmailCommand);
-    console.log("SES Response:", response);
+    if (!response.ok) {
+      // Log the failed email
+      if (sentByUserId) {
+        await supabase.from('email_logs').insert([{
+          sent_by: sentByUserId,
+          recipients: recipients,
+          subject: subject,
+          content: html,
+          template_used: templateUsed || null,
+          status: 'failed',
+          message_id: null,
+          error_message: responseText,
+        }]);
+      }
+      throw new Error(`SES Error: ${responseText}`);
+    }
 
-    const messageId = response.MessageId || null;
+    // Extract MessageId from response
+    const messageIdMatch = responseText.match(/<MessageId>([^<]+)<\/MessageId>/);
+    const messageId = messageIdMatch ? messageIdMatch[1] : null;
 
-    // Log the email
+    // Log the successful email
     if (sentByUserId) {
-      const logData = {
-        sent_by: sentByUserId,
-        recipients: recipients,
-        subject: subject,
-        content: html,
-        template_used: templateUsed || null,
-        status: 'sent',
-        message_id: messageId,
-        error_message: null,
-      };
-
       const { error: logError } = await supabase
         .from('email_logs')
-        .insert([logData]);
+        .insert([{
+          sent_by: sentByUserId,
+          recipients: recipients,
+          subject: subject,
+          content: html,
+          template_used: templateUsed || null,
+          status: 'sent',
+          message_id: messageId,
+          error_message: null,
+        }]);
 
       if (logError) {
         console.error("Failed to log email:", logError);
