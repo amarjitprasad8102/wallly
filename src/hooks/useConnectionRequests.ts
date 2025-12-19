@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+import { sendConnectionRequestEmail, sendConnectionAcceptedEmail } from '@/utils/emailNotifications';
 
 interface ConnectionRequest {
   id: string;
@@ -152,6 +153,22 @@ export const useConnectionRequests = (userId: string | undefined) => {
       return { error: error.message };
     }
 
+    // Send email notification to the recipient
+    try {
+      // Get recipient's email and sender's unique_id
+      const [recipientResult, senderResult] = await Promise.all([
+        supabase.from('profiles').select('email').eq('id', toUserId).single(),
+        supabase.from('profiles').select('unique_id, name').eq('id', userId).single(),
+      ]);
+
+      if (recipientResult.data?.email) {
+        const senderName = senderResult.data?.name || `User ${senderResult.data?.unique_id}`;
+        sendConnectionRequestEmail(recipientResult.data.email, toUserId, senderName);
+      }
+    } catch (emailError) {
+      console.error('Failed to send connection request email:', emailError);
+    }
+
     // Add to sent requests set
     setSentRequests(prev => new Set([...prev, toUserId]));
     toast.success('Connection request sent!');
@@ -178,6 +195,21 @@ export const useConnectionRequests = (userId: string | undefined) => {
 
       if (connError) {
         console.error('Error creating connections:', connError);
+      }
+
+      // Send email notification to the requester that their request was accepted
+      try {
+        const [requesterResult, accepterResult] = await Promise.all([
+          supabase.from('profiles').select('email').eq('id', fromUserId).single(),
+          supabase.from('profiles').select('unique_id, name').eq('id', userId).single(),
+        ]);
+
+        if (requesterResult.data?.email) {
+          const accepterName = accepterResult.data?.name || `User ${accepterResult.data?.unique_id}`;
+          sendConnectionAcceptedEmail(requesterResult.data.email, fromUserId, accepterName);
+        }
+      } catch (emailError) {
+        console.error('Failed to send connection accepted email:', emailError);
       }
     }
 

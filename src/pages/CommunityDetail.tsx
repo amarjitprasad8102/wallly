@@ -10,6 +10,7 @@ import { Label } from '@/components/ui/label';
 import { MessageCircle, ArrowUp, ArrowDown, MessageSquare, Plus, Users, Home } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+import { sendCommunityJoinEmail } from '@/utils/emailNotifications';
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -113,6 +114,21 @@ const CommunityDetail = () => {
       toast.success('Joined community successfully!');
       setIsMember(true);
       fetchCommunity();
+
+      // Send welcome email for joining community
+      try {
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('email, name')
+          .eq('id', user.id)
+          .single();
+
+        if (profile?.email) {
+          sendCommunityJoinEmail(profile.email, user.id, community.display_name, profile.name);
+        }
+      } catch (emailError) {
+        console.error('Failed to send community join email:', emailError);
+      }
     }
   };
 
