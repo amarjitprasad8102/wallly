@@ -9,11 +9,12 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
-import { AlertTriangle, Home, Plus, Pencil, Trash2, Eye, EyeOff, Users, FileText, Flag, Settings } from "lucide-react";
+import { AlertTriangle, Home, Plus, Pencil, Trash2, Eye, EyeOff, Users, FileText, Flag, Settings, Mail, Send } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
+import { Checkbox } from "@/components/ui/checkbox";
 import {
   Dialog,
   DialogContent,
@@ -102,6 +103,15 @@ export default function Admin() {
   const [blogDialogOpen, setBlogDialogOpen] = useState(false);
   const [editingBlog, setEditingBlog] = useState<BlogPost | null>(null);
   const [blogForm, setBlogForm] = useState(defaultBlogPost);
+  
+  // Email state
+  const [emailDialogOpen, setEmailDialogOpen] = useState(false);
+  const [emailSubject, setEmailSubject] = useState("");
+  const [emailContent, setEmailContent] = useState("");
+  const [selectedRecipients, setSelectedRecipients] = useState<string[]>([]);
+  const [sendingEmail, setSendingEmail] = useState(false);
+  const [selectAllUsers, setSelectAllUsers] = useState(false);
+  
   const navigate = useNavigate();
   const { toast } = useToast();
 
@@ -413,6 +423,83 @@ export default function Admin() {
     fetchCommunities();
   };
 
+  // Email functions
+  const handleSelectAllUsers = (checked: boolean) => {
+    setSelectAllUsers(checked);
+    if (checked) {
+      setSelectedRecipients(users.map(u => u.email));
+    } else {
+      setSelectedRecipients([]);
+    }
+  };
+
+  const handleRecipientToggle = (email: string) => {
+    setSelectedRecipients(prev => 
+      prev.includes(email) 
+        ? prev.filter(e => e !== email)
+        : [...prev, email]
+    );
+  };
+
+  const sendBulkEmail = async () => {
+    if (selectedRecipients.length === 0) {
+      toast({
+        title: "Error",
+        description: "Please select at least one recipient",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (!emailSubject || !emailContent) {
+      toast({
+        title: "Error",
+        description: "Please fill in subject and content",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setSendingEmail(true);
+
+    try {
+      const { data, error } = await supabase.functions.invoke('send-ses-email', {
+        body: {
+          to: selectedRecipients,
+          subject: emailSubject,
+          html: emailContent,
+        },
+      });
+
+      if (error) throw error;
+
+      toast({
+        title: "Success",
+        description: `Email sent to ${selectedRecipients.length} recipient(s)`,
+      });
+
+      setEmailDialogOpen(false);
+      setEmailSubject("");
+      setEmailContent("");
+      setSelectedRecipients([]);
+      setSelectAllUsers(false);
+    } catch (error: any) {
+      console.error("Error sending email:", error);
+      toast({
+        title: "Error",
+        description: error.message || "Failed to send email",
+        variant: "destructive",
+      });
+    } finally {
+      setSendingEmail(false);
+    }
+  };
+
+  const sendEmailToUser = (email: string) => {
+    setSelectedRecipients([email]);
+    setEmailDialogOpen(true);
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
@@ -499,7 +586,7 @@ export default function Admin() {
           </div>
 
           <Tabs defaultValue="users" className="w-full">
-            <TabsList className="grid w-full grid-cols-4 max-w-2xl">
+            <TabsList className="grid w-full grid-cols-5 max-w-3xl">
               <TabsTrigger value="users" className="flex items-center gap-2">
                 <Users className="h-4 w-4" />
                 Users
@@ -520,6 +607,10 @@ export default function Admin() {
               <TabsTrigger value="communities" className="flex items-center gap-2">
                 <Settings className="h-4 w-4" />
                 Communities
+              </TabsTrigger>
+              <TabsTrigger value="email" className="flex items-center gap-2">
+                <Mail className="h-4 w-4" />
+                Email
               </TabsTrigger>
             </TabsList>
 
@@ -557,19 +648,29 @@ export default function Admin() {
                             <span className="capitalize">{userRoles[user.id] || "user"}</span>
                           </TableCell>
                           <TableCell>
-                            <Select
-                              value={userRoles[user.id] || "user"}
-                              onValueChange={(value) => updateUserRole(user.id, value)}
-                            >
-                              <SelectTrigger className="w-[150px]">
-                                <SelectValue />
-                              </SelectTrigger>
-                              <SelectContent>
-                                <SelectItem value="user">User</SelectItem>
-                                <SelectItem value="premium_user">Premium User</SelectItem>
-                                <SelectItem value="admin">Admin</SelectItem>
-                              </SelectContent>
-                            </Select>
+                            <div className="flex items-center gap-2">
+                              <Select
+                                value={userRoles[user.id] || "user"}
+                                onValueChange={(value) => updateUserRole(user.id, value)}
+                              >
+                                <SelectTrigger className="w-[130px]">
+                                  <SelectValue />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  <SelectItem value="user">User</SelectItem>
+                                  <SelectItem value="premium_user">Premium User</SelectItem>
+                                  <SelectItem value="admin">Admin</SelectItem>
+                                </SelectContent>
+                              </Select>
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                onClick={() => sendEmailToUser(user.email)}
+                                title="Send email"
+                              >
+                                <Mail className="h-4 w-4" />
+                              </Button>
+                            </div>
                           </TableCell>
                         </TableRow>
                       ))}
@@ -878,12 +979,8 @@ export default function Admin() {
                       ) : (
                         communities.map((community) => (
                           <TableRow key={community.id}>
-                            <TableCell className="font-mono text-sm">
-                              c/{community.name}
-                            </TableCell>
-                            <TableCell className="font-medium">
-                              {community.display_name}
-                            </TableCell>
+                            <TableCell className="font-mono">{community.name}</TableCell>
+                            <TableCell>{community.display_name}</TableCell>
                             <TableCell>{community.member_count}</TableCell>
                             <TableCell>{community.post_count}</TableCell>
                             <TableCell>
@@ -913,6 +1010,111 @@ export default function Admin() {
                       )}
                     </TableBody>
                   </Table>
+                </CardContent>
+              </Card>
+            </TabsContent>
+
+            {/* Email Tab */}
+            <TabsContent value="email">
+              <Card>
+                <CardHeader>
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <CardTitle className="flex items-center gap-2">
+                        <Mail className="w-5 h-5" />
+                        Email Management
+                      </CardTitle>
+                      <CardDescription>Send emails to your users via Amazon SES</CardDescription>
+                    </div>
+                    <Dialog open={emailDialogOpen} onOpenChange={setEmailDialogOpen}>
+                      <DialogTrigger asChild>
+                        <Button>
+                          <Send className="h-4 w-4 mr-2" />
+                          Compose Email
+                        </Button>
+                      </DialogTrigger>
+                      <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
+                        <DialogHeader>
+                          <DialogTitle>Compose Email</DialogTitle>
+                          <DialogDescription>
+                            Send an email to selected users
+                          </DialogDescription>
+                        </DialogHeader>
+                        <div className="grid gap-4 py-4">
+                          <div className="space-y-2">
+                            <Label>Recipients ({selectedRecipients.length} selected)</Label>
+                            <div className="border rounded-md p-4 max-h-48 overflow-y-auto">
+                              <div className="flex items-center space-x-2 mb-3 pb-3 border-b">
+                                <Checkbox
+                                  id="select-all"
+                                  checked={selectAllUsers}
+                                  onCheckedChange={handleSelectAllUsers}
+                                />
+                                <Label htmlFor="select-all" className="font-semibold">
+                                  Select All Users ({users.length})
+                                </Label>
+                              </div>
+                              <div className="space-y-2">
+                                {users.map((user) => (
+                                  <div key={user.id} className="flex items-center space-x-2">
+                                    <Checkbox
+                                      id={`user-${user.id}`}
+                                      checked={selectedRecipients.includes(user.email)}
+                                      onCheckedChange={() => handleRecipientToggle(user.email)}
+                                    />
+                                    <Label htmlFor={`user-${user.id}`} className="text-sm">
+                                      {user.email}
+                                    </Label>
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+                          </div>
+                          <div className="space-y-2">
+                            <Label htmlFor="email-subject">Subject *</Label>
+                            <Input
+                              id="email-subject"
+                              value={emailSubject}
+                              onChange={(e) => setEmailSubject(e.target.value)}
+                              placeholder="Email subject"
+                            />
+                          </div>
+                          <div className="space-y-2">
+                            <Label htmlFor="email-content">Content * (HTML supported)</Label>
+                            <Textarea
+                              id="email-content"
+                              value={emailContent}
+                              onChange={(e) => setEmailContent(e.target.value)}
+                              placeholder="<h1>Hello!</h1><p>Your message here...</p>"
+                              className="min-h-[200px] font-mono text-sm"
+                            />
+                          </div>
+                        </div>
+                        <DialogFooter>
+                          <Button variant="outline" onClick={() => setEmailDialogOpen(false)}>
+                            Cancel
+                          </Button>
+                          <Button onClick={sendBulkEmail} disabled={sendingEmail}>
+                            {sendingEmail ? (
+                              <>Sending...</>
+                            ) : (
+                              <>
+                                <Send className="h-4 w-4 mr-2" />
+                                Send Email
+                              </>
+                            )}
+                          </Button>
+                        </DialogFooter>
+                      </DialogContent>
+                    </Dialog>
+                  </div>
+                </CardHeader>
+                <CardContent>
+                  <div className="text-center py-8 text-muted-foreground">
+                    <Mail className="h-12 w-12 mx-auto mb-4 opacity-50" />
+                    <p>Use the "Compose Email" button to send emails to your users.</p>
+                    <p className="text-sm mt-2">You can select individual users or send to all users at once.</p>
+                  </div>
                 </CardContent>
               </Card>
             </TabsContent>
