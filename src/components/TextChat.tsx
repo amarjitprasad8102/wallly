@@ -451,6 +451,8 @@ const TextChat = ({
             size="icon"
             onClick={() => fileInputRef.current?.click()}
             disabled={!isChannelReady || isUploading}
+            className={!isChannelReady ? 'opacity-50' : ''}
+            title={!isChannelReady ? 'Waiting for connection...' : 'Send image'}
           >
             <ImageIcon className="w-4 h-4" />
           </Button>
