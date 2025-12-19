@@ -26,6 +26,11 @@ serve(async (req: Request): Promise<Response> => {
     const region = Deno.env.get("AWS_SES_REGION")?.trim() || "us-east-1";
     const fromEmail = Deno.env.get("SES_FROM_EMAIL")?.trim();
 
+    console.log("AWS Config - Region:", region);
+    console.log("AWS Config - From Email:", fromEmail);
+    console.log("AWS Config - Access Key ID length:", accessKeyId?.length || 0);
+    console.log("AWS Config - Secret Key length:", secretAccessKey?.length || 0);
+
     if (!accessKeyId || !secretAccessKey || !fromEmail) {
       console.error("AWS SES credentials not configured");
       throw new Error("AWS SES credentials not configured");
@@ -53,12 +58,10 @@ serve(async (req: Request): Promise<Response> => {
     const recipients = Array.isArray(to) ? to : [to];
     console.log(`Sending email to: ${recipients.join(", ")}, subject: ${subject}`);
 
-    // Initialize AWS client
+    // Initialize AWS client - service is inferred from the URL
     const aws = new AwsClient({
       accessKeyId: accessKeyId,
       secretAccessKey: secretAccessKey,
-      region: region,
-      service: "ses",
     });
 
     // Build SES API request parameters
