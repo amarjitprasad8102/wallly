@@ -10,6 +10,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import { AlertTriangle, Home, Plus, Pencil, Trash2, Eye, EyeOff, Users, FileText, Flag, Settings, Mail, Send, Clock, CheckCircle, XCircle } from "lucide-react";
+import { sendPremiumUpgradeEmail } from "@/utils/emailNotifications";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Switch } from "@/components/ui/switch";
@@ -309,6 +310,9 @@ export default function Admin() {
   };
 
   const updateUserRole = async (userId: string, newRole: string) => {
+    // Get user's current role to check if upgrading to premium
+    const previousRole = userRoles[userId];
+    
     await supabase
       .from("user_roles")
       .delete()
@@ -333,10 +337,30 @@ export default function Admin() {
       .update({ is_premium: isPremium })
       .eq("id", userId);
 
-    toast({
-      title: "Success",
-      description: "User role updated successfully",
-    });
+    // Send premium upgrade email if user was upgraded to premium
+    if (newRole === "premium_user" && previousRole !== "premium_user") {
+      const user = users.find(u => u.id === userId);
+      if (user?.email) {
+        try {
+          await sendPremiumUpgradeEmail(user.email, userId);
+          toast({
+            title: "Success",
+            description: "User upgraded to premium and notification email sent",
+          });
+        } catch (emailError) {
+          console.error("Failed to send premium upgrade email:", emailError);
+          toast({
+            title: "Success",
+            description: "User role updated (email notification failed)",
+          });
+        }
+      }
+    } else {
+      toast({
+        title: "Success",
+        description: "User role updated successfully",
+      });
+    }
 
     fetchUsers();
   };
