@@ -12,7 +12,6 @@ import { haptics } from '@/utils/haptics';
 import { ResizablePanelGroup, ResizablePanel, ResizableHandle } from '@/components/ui/resizable';
 import EncryptionBadge from './EncryptionBadge';
 import SecureImage from './SecureImage';
-import { ChatEncryption } from '@/utils/encryption';
 import { toast } from 'sonner';
 
 interface VideoChatProps {
@@ -51,9 +50,7 @@ const VideoChat = ({
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const isMobile = useIsMobile();
-  const encryptionRef = useRef<ChatEncryption>(new ChatEncryption());
-  const [isEncryptionReady, setIsEncryptionReady] = useState(false);
-  const uploadedImagesRef = useRef<string[]>([]);
+  const [isChannelReady, setIsChannelReady] = useState(false);
 
   const {
     peerConnection,
@@ -239,36 +236,21 @@ const VideoChat = ({
   };
 
   const setupDataChannel = (channel: RTCDataChannel) => {
-    channel.onopen = async () => {
-      console.log('Data channel opened, initiating key exchange');
-      
-      try {
-        // Generate and send our public key
-        const publicKey = await encryptionRef.current.generateKeyPair();
-        channel.send(JSON.stringify({ type: 'public-key', key: publicKey }));
-        console.log('Public key sent');
-      } catch (error) {
-        console.error('Error generating key pair:', error);
-      }
+    channel.onopen = () => {
+      console.log('Data channel opened');
+      setIsChannelReady(true);
     };
 
-    channel.onmessage = async (event) => {
+    channel.onmessage = (event) => {
       console.log('Data channel message received');
-      
       try {
         const data = JSON.parse(event.data);
-        
-        if (data.type === 'public-key') {
-          // Received remote public key
-          console.log('Received public key, setting up encryption');
-          await encryptionRef.current.setRemotePublicKey(data.key);
-          setIsEncryptionReady(true);
-          console.log('Encryption ready');
-        } else if (data.type === 'encrypted-message') {
-          // Decrypt and display message
-          const decryptedMessage = await encryptionRef.current.decryptMessage(data.message);
-          setMessages(prev => [...prev, { text: decryptedMessage, sender: 'them', timestamp: new Date() }]);
-          // Play notification sound and haptic for incoming messages
+        if (data.type === 'message') {
+          setMessages(prev => [...prev, { text: data.text, sender: 'them', timestamp: new Date() }]);
+          soundEffects.playNotification();
+          haptics.light();
+        } else if (data.type === 'image') {
+          setMessages(prev => [...prev, { imageUrl: data.imageUrl, sender: 'them', timestamp: new Date() }]);
           soundEffects.playNotification();
           haptics.light();
         }
@@ -277,18 +259,23 @@ const VideoChat = ({
       }
     };
 
+    channel.onclose = () => {
+      console.log('Data channel closed');
+      setIsChannelReady(false);
+    };
+
     channel.onerror = (error) => {
       console.error('Data channel error:', error);
     };
   };
 
-  const handleSendMessage = async () => {
-    if (!newMessage.trim() || !dataChannel.current || dataChannel.current.readyState !== 'open' || !isEncryptionReady) {
+  const handleSendMessage = () => {
+    if (!newMessage.trim() || !dataChannel.current || dataChannel.current.readyState !== 'open' || !isChannelReady) {
       console.log('Cannot send message:', { 
         hasMessage: !!newMessage.trim(), 
         hasChannel: !!dataChannel.current, 
         channelState: dataChannel.current?.readyState,
-        encryptionReady: isEncryptionReady
+        channelReady: isChannelReady
       });
       return;
     }
@@ -297,18 +284,15 @@ const VideoChat = ({
       soundEffects.playClick();
       haptics.light();
 
-      console.log('Encrypting and sending message');
-      const encryptedMessage = await encryptionRef.current.encryptMessage(newMessage);
-      
       dataChannel.current.send(JSON.stringify({ 
-        type: 'encrypted-message', 
-        message: encryptedMessage 
+        type: 'message', 
+        text: newMessage 
       }));
       
       setMessages(prev => [...prev, { text: newMessage, sender: 'me', timestamp: new Date() }]);
       setNewMessage('');
     } catch (error) {
-      console.error('Error encrypting message:', error);
+      console.error('Error sending message:', error);
     }
   };
 
@@ -338,7 +322,7 @@ const VideoChat = ({
              'Disconnected'}
           </span>
           <EncryptionBadge encrypted={connectionStatus === 'connected'} variant="video" />
-          <EncryptionBadge encrypted={isEncryptionReady} variant="chat" />
+          <EncryptionBadge encrypted={isChannelReady} variant="chat" />
         </div>
         <div className="flex gap-1 sm:gap-2">
           <Button variant="outline" size="sm" onClick={handleSkip} className="h-8 px-2 sm:px-3 text-xs sm:text-sm">
@@ -470,7 +454,7 @@ const VideoChat = ({
                     <Button 
                       type="submit" 
                       size="icon"
-                      disabled={!isEncryptionReady || !newMessage.trim() || dataChannel.current?.readyState !== 'open'}
+                      disabled={!isChannelReady || !newMessage.trim() || dataChannel.current?.readyState !== 'open'}
                     >
                       <Send className="w-4 h-4" />
                     </Button>
@@ -577,7 +561,7 @@ const VideoChat = ({
                     <Button 
                       type="submit" 
                       size="icon"
-                      disabled={!isEncryptionReady || !newMessage.trim() || dataChannel.current?.readyState !== 'open'}
+                      disabled={!isChannelReady || !newMessage.trim() || dataChannel.current?.readyState !== 'open'}
                     >
                       <Send className="w-4 h-4" />
                     </Button>
