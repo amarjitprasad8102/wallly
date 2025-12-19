@@ -54,6 +54,25 @@ const visitWallyButton = `
 </table>
 `;
 
+// Contact Support Button and No-Reply Notice
+const contactSupportSection = `
+<div style="text-align: center; margin: 30px 0 20px; padding-top: 24px; border-top: 1px solid rgba(99, 102, 241, 0.15);">
+  <table cellpadding="0" cellspacing="0" border="0" align="center" style="margin: 0 auto 16px;">
+    <tr>
+      <td style="background: linear-gradient(135deg, #059669 0%, #10b981 100%); border-radius: 12px; box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3);">
+        <a href="mailto:help@corevia.in" target="_blank" style="display: inline-block; padding: 14px 32px; color: #ffffff; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; font-size: 14px; font-weight: 600; text-decoration: none;">
+          📧 Contact Support
+        </a>
+      </td>
+    </tr>
+  </table>
+  <p style="color: #64748b; font-size: 12px; margin: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; line-height: 1.6;">
+    This is an automated email. Please do not reply directly to this message.<br/>
+    For assistance, click the button above.
+  </p>
+</div>
+`;
+
 const baseStyles = `
   <style>
     body { margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #0a0a1a; }
@@ -98,6 +117,7 @@ const emailWrapper = (content: string, preheader?: string) => `
     ${content}
     <div style="text-align: center; padding: 10px 40px 30px;">
       ${visitWallyButton}
+      ${contactSupportSection}
     </div>
     <div class="footer">
       <p style="color: #64748b; font-size: 14px; margin-bottom: 16px;">Made with 💜 by the Wallly Team</p>

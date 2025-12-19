@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Video, VideoOff, Mic, MicOff, PhoneOff, Send, MessageCircle } from 'lucide-react';
+import { Video, VideoOff, Mic, MicOff, PhoneOff, Send, MessageCircle, Image as ImageIcon, X } from 'lucide-react';
 import { useWebRTC } from '@/hooks/useWebRTC';
 import { supabase } from '@/integrations/supabase/client';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -11,7 +11,9 @@ import { soundEffects } from '@/utils/sounds';
 import { haptics } from '@/utils/haptics';
 import { ResizablePanelGroup, ResizablePanel, ResizableHandle } from '@/components/ui/resizable';
 import EncryptionBadge from './EncryptionBadge';
+import SecureImage from './SecureImage';
 import { ChatEncryption } from '@/utils/encryption';
+import { toast } from 'sonner';
 
 interface VideoChatProps {
   currentUserId: string;
@@ -38,15 +40,20 @@ const VideoChat = ({
   const [isVideoEnabled, setIsVideoEnabled] = useState(true);
   const [isAudioEnabled, setIsAudioEnabled] = useState(true);
   const [duration, setDuration] = useState(0);
-  const [messages, setMessages] = useState<Array<{ text: string; sender: 'me' | 'them'; timestamp: Date }>>([]);
+  const [messages, setMessages] = useState<Array<{ text?: string; imageUrl?: string; sender: 'me' | 'them'; timestamp: Date }>>([]);
   const [newMessage, setNewMessage] = useState('');
   const [isChatOpen, setIsChatOpen] = useState(false);
+  const [selectedImage, setSelectedImage] = useState<File | null>(null);
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const [isUploading, setIsUploading] = useState(false);
   const hasInitiatedOffer = useRef(false);
   const dataChannel = useRef<RTCDataChannel | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const isMobile = useIsMobile();
   const encryptionRef = useRef<ChatEncryption>(new ChatEncryption());
   const [isEncryptionReady, setIsEncryptionReady] = useState(false);
+  const uploadedImagesRef = useRef<string[]>([]);
 
   const {
     peerConnection,
