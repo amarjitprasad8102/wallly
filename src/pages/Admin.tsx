@@ -9,7 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
-import { AlertTriangle, Home, Plus, Pencil, Trash2, Eye, EyeOff, Users, FileText, Flag, Settings, Mail, Send, Clock, CheckCircle, XCircle } from "lucide-react";
+import { AlertTriangle, Home, Plus, Pencil, Trash2, Eye, EyeOff, Users, FileText, Flag, Settings, Mail, Send, Clock, CheckCircle, XCircle, Ban, UserX } from "lucide-react";
 import { sendPremiumUpgradeEmail } from "@/utils/emailNotifications";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -278,6 +278,44 @@ const emailTemplates: EmailTemplate[] = [
       <p style="color: #cbd5e1; line-height: 1.8; margin: 0 0 18px;">Thanks for being part of our community!</p>
     `),
   },
+  {
+    id: "account-banned",
+    name: "Account Banned",
+    subject: "Your Wallly Account Has Been Suspended 🚫",
+    content: emailTemplateWrapper(`
+      <div style="text-align: center; margin-bottom: 24px;">
+        <span style="font-size: 48px; display: block; margin-bottom: 16px;">🚫</span>
+        <h2 style="color: #fca5a5; font-size: 26px; margin: 0 0 8px; font-weight: 700;">Account Suspended</h2>
+        <p style="color: #f87171; margin: 0;">Your account has been banned</p>
+      </div>
+      <div style="background: linear-gradient(135deg, rgba(239, 68, 68, 0.1) 0%, rgba(220, 38, 38, 0.1) 100%); border: 1px solid rgba(239, 68, 68, 0.3); border-radius: 16px; padding: 24px; margin: 24px 0;">
+        <h3 style="color: #fca5a5; margin: 0 0 12px; font-weight: 700;">🚫 Account Banned</h3>
+        <p style="color: #fecaca; margin: 0;">Your Wallly account has been suspended due to violations of our community guidelines.</p>
+      </div>
+      <p style="color: #cbd5e1; line-height: 1.8; margin: 0 0 18px;"><strong>Reason:</strong> [BAN_REASON]</p>
+      <p style="color: #cbd5e1; line-height: 1.8; margin: 0 0 18px;">This means you will no longer be able to access your account or use Wallly services.</p>
+      <p style="color: #64748b; font-size: 13px; text-align: center;">If you believe this was a mistake, please contact our support team.</p>
+    `),
+  },
+  {
+    id: "account-deleted",
+    name: "Account Deleted",
+    subject: "Your Wallly Account Has Been Deleted 👋",
+    content: emailTemplateWrapper(`
+      <div style="text-align: center; margin-bottom: 24px;">
+        <span style="font-size: 48px; display: block; margin-bottom: 16px;">👋</span>
+        <h2 style="color: #fca5a5; font-size: 26px; margin: 0 0 8px; font-weight: 700;">Account Deleted</h2>
+        <p style="color: #f87171; margin: 0;">Your account has been removed</p>
+      </div>
+      <div style="background: linear-gradient(135deg, rgba(239, 68, 68, 0.1) 0%, rgba(220, 38, 38, 0.1) 100%); border: 1px solid rgba(239, 68, 68, 0.3); border-radius: 16px; padding: 24px; margin: 24px 0;">
+        <h3 style="color: #fca5a5; margin: 0 0 12px; font-weight: 700;">Account Permanently Deleted</h3>
+        <p style="color: #fecaca; margin: 0;">Your Wallly account and all associated data have been permanently deleted by an administrator.</p>
+      </div>
+      <p style="color: #cbd5e1; line-height: 1.8; margin: 0 0 18px;">All your connections, messages, and profile information have been removed from our system.</p>
+      <p style="color: #cbd5e1; line-height: 1.8; margin: 0 0 18px;">We're sorry to see you go. If you'd like to rejoin Wallly in the future, you're welcome to create a new account.</p>
+      <p style="color: #64748b; font-size: 13px; text-align: center;">If you have any questions, please contact our support team.</p>
+    `),
+  },
 ];
 
 const defaultBlogPost = {
@@ -316,6 +354,13 @@ export default function Admin() {
   const [viewingEmail, setViewingEmail] = useState<EmailLog | null>(null);
   const [templatePickerOpen, setTemplatePickerOpen] = useState(false);
   const [pendingEmailRecipient, setPendingEmailRecipient] = useState<string>("");
+  
+  // Ban/Delete user state
+  const [banDialogOpen, setBanDialogOpen] = useState(false);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [selectedUserForAction, setSelectedUserForAction] = useState<User | null>(null);
+  const [banReason, setBanReason] = useState("");
+  const [actionLoading, setActionLoading] = useState(false);
   
   const navigate = useNavigate();
   const { toast } = useToast();
@@ -777,6 +822,154 @@ export default function Admin() {
     setEmailViewDialogOpen(true);
   };
 
+  // Ban user function
+  const openBanDialog = (user: User) => {
+    setSelectedUserForAction(user);
+    setBanReason("");
+    setBanDialogOpen(true);
+  };
+
+  const banUser = async () => {
+    if (!selectedUserForAction) return;
+    
+    setActionLoading(true);
+    try {
+      // Send ban notification email first
+      const banTemplate = emailTemplates.find(t => t.id === "account-banned");
+      if (banTemplate) {
+        const emailContent = banTemplate.content.replace("[BAN_REASON]", banReason || "Violation of community guidelines");
+        
+        await supabase.functions.invoke('send-ses-email', {
+          body: {
+            to: selectedUserForAction.email,
+            subject: banTemplate.subject,
+            html: emailContent,
+            templateUsed: "account-banned",
+          },
+        });
+      }
+
+      // Delete user's data (this effectively bans them)
+      // Delete connections
+      await supabase.from("connections").delete().eq("user_id", selectedUserForAction.id);
+      await supabase.from("connections").delete().eq("connected_user_id", selectedUserForAction.id);
+      
+      // Delete connection requests
+      await supabase.from("connection_requests").delete().eq("from_user_id", selectedUserForAction.id);
+      await supabase.from("connection_requests").delete().eq("to_user_id", selectedUserForAction.id);
+      
+      // Delete messages
+      await supabase.from("messages").delete().eq("sender_id", selectedUserForAction.id);
+      await supabase.from("messages").delete().eq("receiver_id", selectedUserForAction.id);
+      
+      // Delete user interests
+      await supabase.from("user_interests").delete().eq("user_id", selectedUserForAction.id);
+      
+      // Delete matchmaking queue entries
+      await supabase.from("matchmaking_queue").delete().eq("user_id", selectedUserForAction.id);
+      
+      // Delete community memberships
+      await supabase.from("community_members").delete().eq("user_id", selectedUserForAction.id);
+      
+      // Update profile to mark as banned (we keep profile for record)
+      await supabase.from("profiles").update({ 
+        name: "[BANNED]",
+        age: null,
+        gender: null 
+      }).eq("id", selectedUserForAction.id);
+
+      toast({
+        title: "User Banned",
+        description: `${selectedUserForAction.email} has been banned and notified via email.`,
+      });
+
+      setBanDialogOpen(false);
+      setSelectedUserForAction(null);
+      fetchUsers();
+    } catch (error: any) {
+      console.error("Error banning user:", error);
+      toast({
+        title: "Error",
+        description: error.message || "Failed to ban user",
+        variant: "destructive",
+      });
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
+  // Delete user function
+  const openDeleteDialog = (user: User) => {
+    setSelectedUserForAction(user);
+    setDeleteDialogOpen(true);
+  };
+
+  const deleteUser = async () => {
+    if (!selectedUserForAction) return;
+    
+    setActionLoading(true);
+    try {
+      // Send deletion notification email first
+      const deleteTemplate = emailTemplates.find(t => t.id === "account-deleted");
+      if (deleteTemplate) {
+        await supabase.functions.invoke('send-ses-email', {
+          body: {
+            to: selectedUserForAction.email,
+            subject: deleteTemplate.subject,
+            html: deleteTemplate.content,
+            templateUsed: "account-deleted",
+          },
+        });
+      }
+
+      // Delete all user data
+      // Delete connections
+      await supabase.from("connections").delete().eq("user_id", selectedUserForAction.id);
+      await supabase.from("connections").delete().eq("connected_user_id", selectedUserForAction.id);
+      
+      // Delete connection requests
+      await supabase.from("connection_requests").delete().eq("from_user_id", selectedUserForAction.id);
+      await supabase.from("connection_requests").delete().eq("to_user_id", selectedUserForAction.id);
+      
+      // Delete messages
+      await supabase.from("messages").delete().eq("sender_id", selectedUserForAction.id);
+      await supabase.from("messages").delete().eq("receiver_id", selectedUserForAction.id);
+      
+      // Delete user interests
+      await supabase.from("user_interests").delete().eq("user_id", selectedUserForAction.id);
+      
+      // Delete matchmaking queue entries
+      await supabase.from("matchmaking_queue").delete().eq("user_id", selectedUserForAction.id);
+      
+      // Delete community memberships
+      await supabase.from("community_members").delete().eq("user_id", selectedUserForAction.id);
+      
+      // Delete user roles
+      await supabase.from("user_roles").delete().eq("user_id", selectedUserForAction.id);
+      
+      // Delete profile
+      await supabase.from("profiles").delete().eq("id", selectedUserForAction.id);
+
+      toast({
+        title: "User Deleted",
+        description: `${selectedUserForAction.email} has been permanently deleted and notified via email.`,
+      });
+
+      setDeleteDialogOpen(false);
+      setSelectedUserForAction(null);
+      fetchUsers();
+    } catch (error: any) {
+      console.error("Error deleting user:", error);
+      toast({
+        title: "Error",
+        description: error.message || "Failed to delete user",
+        variant: "destructive",
+      });
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
@@ -936,12 +1129,12 @@ export default function Admin() {
                             <span className="capitalize">{userRoles[user.id] || "user"}</span>
                           </TableCell>
                           <TableCell>
-                            <div className="flex items-center gap-2">
+                            <div className="flex items-center gap-1">
                               <Select
                                 value={userRoles[user.id] || "user"}
                                 onValueChange={(value) => updateUserRole(user.id, value)}
                               >
-                                <SelectTrigger className="w-[130px]">
+                                <SelectTrigger className="w-[120px]">
                                   <SelectValue />
                                 </SelectTrigger>
                                 <SelectContent>
@@ -957,6 +1150,24 @@ export default function Admin() {
                                 title="Send email"
                               >
                                 <Mail className="h-4 w-4" />
+                              </Button>
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                onClick={() => openBanDialog(user)}
+                                title="Ban user"
+                                className="text-orange-500 hover:text-orange-600 hover:bg-orange-500/10"
+                              >
+                                <Ban className="h-4 w-4" />
+                              </Button>
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                onClick={() => openDeleteDialog(user)}
+                                title="Delete user"
+                                className="text-destructive hover:text-destructive hover:bg-destructive/10"
+                              >
+                                <UserX className="h-4 w-4" />
                               </Button>
                             </div>
                           </TableCell>
@@ -1656,6 +1867,97 @@ export default function Admin() {
               </Button>
             </div>
           </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Ban User Dialog */}
+      <Dialog open={banDialogOpen} onOpenChange={setBanDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2 text-orange-500">
+              <Ban className="h-5 w-5" />
+              Ban User
+            </DialogTitle>
+            <DialogDescription>
+              Are you sure you want to ban this user? They will be notified via email.
+            </DialogDescription>
+          </DialogHeader>
+          {selectedUserForAction && (
+            <div className="py-4 space-y-4">
+              <div className="p-4 bg-muted rounded-lg">
+                <p className="font-medium">{selectedUserForAction.email}</p>
+                <p className="text-sm text-muted-foreground">ID: {selectedUserForAction.unique_id}</p>
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="banReason">Reason for ban</Label>
+                <Textarea
+                  id="banReason"
+                  value={banReason}
+                  onChange={(e) => setBanReason(e.target.value)}
+                  placeholder="Explain why this user is being banned..."
+                  className="min-h-[100px]"
+                />
+              </div>
+              <div className="bg-orange-500/10 border border-orange-500/30 rounded-lg p-4">
+                <p className="text-sm text-orange-500">
+                  <strong>Warning:</strong> Banning will remove all user data (connections, messages, etc.) and mark the account as banned.
+                </p>
+              </div>
+            </div>
+          )}
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setBanDialogOpen(false)} disabled={actionLoading}>
+              Cancel
+            </Button>
+            <Button 
+              variant="destructive" 
+              onClick={banUser} 
+              disabled={actionLoading}
+              className="bg-orange-500 hover:bg-orange-600"
+            >
+              {actionLoading ? "Banning..." : "Ban User"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Delete User Dialog */}
+      <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2 text-destructive">
+              <UserX className="h-5 w-5" />
+              Delete User
+            </DialogTitle>
+            <DialogDescription>
+              Are you sure you want to permanently delete this user? This action cannot be undone.
+            </DialogDescription>
+          </DialogHeader>
+          {selectedUserForAction && (
+            <div className="py-4 space-y-4">
+              <div className="p-4 bg-muted rounded-lg">
+                <p className="font-medium">{selectedUserForAction.email}</p>
+                <p className="text-sm text-muted-foreground">ID: {selectedUserForAction.unique_id}</p>
+              </div>
+              <div className="bg-destructive/10 border border-destructive/30 rounded-lg p-4">
+                <p className="text-sm text-destructive">
+                  <strong>Warning:</strong> This will permanently delete all user data including their profile, connections, messages, and account. The user will be notified via email.
+                </p>
+              </div>
+            </div>
+          )}
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setDeleteDialogOpen(false)} disabled={actionLoading}>
+              Cancel
+            </Button>
+            <Button 
+              variant="destructive" 
+              onClick={deleteUser} 
+              disabled={actionLoading}
+            >
+              {actionLoading ? "Deleting..." : "Delete User Permanently"}
+            </Button>
+          </DialogFooter>
         </DialogContent>
       </Dialog>
     </>
