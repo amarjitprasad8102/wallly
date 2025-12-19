@@ -11,43 +11,72 @@ export interface EmailTemplateParams {
   communityName?: string;
 }
 
-// Wallly Logo as inline SVG for email compatibility
+// Modern Wallly Logo with glassmorphism effect
 const wallyLogo = `
-<div style="text-align: center; margin-bottom: 20px;">
-  <div style="display: inline-flex; align-items: center; justify-content: center; background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%); padding: 16px; border-radius: 16px; box-shadow: 0 10px 40px rgba(99, 102, 241, 0.3);">
-    <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-      <path d="m3 21 1.9-5.7a8.5 8.5 0 1 1 3.8 3.8z"/>
-    </svg>
-  </div>
-  <h2 style="color: #6366f1; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; font-size: 28px; font-weight: 700; margin: 16px 0 0; letter-spacing: -0.5px;">Wallly</h2>
+<div style="text-align: center; padding: 40px 20px 30px;">
+  <table cellpadding="0" cellspacing="0" border="0" align="center">
+    <tr>
+      <td style="background: linear-gradient(135deg, #6366f1 0%, #a855f7 50%, #ec4899 100%); padding: 20px; border-radius: 24px; box-shadow: 0 20px 60px rgba(99, 102, 241, 0.4);">
+        <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <path d="m3 21 1.9-5.7a8.5 8.5 0 1 1 3.8 3.8z"/>
+        </svg>
+      </td>
+    </tr>
+  </table>
+  <h1 style="background: linear-gradient(135deg, #6366f1 0%, #a855f7 50%, #ec4899 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; font-size: 36px; font-weight: 800; margin: 20px 0 8px; letter-spacing: -1px;">Wallly</h1>
+  <p style="color: #94a3b8; font-size: 14px; margin: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;">Connect. Chat. Discover.</p>
 </div>
+`;
+
+// Modern CTA Button
+const ctaButton = (text: string, url: string, style?: string) => `
+<table cellpadding="0" cellspacing="0" border="0" align="center" style="margin: 30px auto;">
+  <tr>
+    <td style="background: linear-gradient(135deg, #6366f1 0%, #a855f7 100%); border-radius: 14px; box-shadow: 0 8px 30px rgba(99, 102, 241, 0.35); ${style || ''}">
+      <a href="${url}" target="_blank" style="display: inline-block; padding: 18px 48px; color: #ffffff; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; font-size: 16px; font-weight: 700; text-decoration: none; letter-spacing: 0.5px;">
+        ${text} →
+      </a>
+    </td>
+  </tr>
+</table>
+`;
+
+// Visit Wallly Button (always included)
+const visitWallyButton = `
+<table cellpadding="0" cellspacing="0" border="0" align="center" style="margin: 20px auto;">
+  <tr>
+    <td style="background: linear-gradient(135deg, #1e1e3f 0%, #2d2d5a 100%); border: 2px solid rgba(99, 102, 241, 0.3); border-radius: 14px;">
+      <a href="https://wallly.in" target="_blank" style="display: inline-block; padding: 14px 36px; color: #a5b4fc; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; font-size: 14px; font-weight: 600; text-decoration: none;">
+        🌐 Visit wallly.in
+      </a>
+    </td>
+  </tr>
+</table>
 `;
 
 const baseStyles = `
   <style>
-    body { margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #0f0f23; }
-    .container { max-width: 600px; margin: 0 auto; background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%); border-radius: 16px; overflow: hidden; }
-    .header { background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%); padding: 40px 30px; text-align: center; }
-    .header h1 { color: #ffffff; margin: 0; font-size: 28px; font-weight: 700; }
-    .header p { color: rgba(255,255,255,0.8); margin: 10px 0 0; font-size: 14px; }
-    .content { padding: 40px 30px; color: #e2e8f0; }
-    .content h2 { color: #ffffff; font-size: 22px; margin: 0 0 20px; }
-    .content p { line-height: 1.7; margin: 0 0 16px; font-size: 15px; }
-    .button { display: inline-block; background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%); color: #ffffff !important; padding: 14px 32px; text-decoration: none; border-radius: 8px; font-weight: 600; font-size: 16px; margin: 20px 0; }
-    .button:hover { opacity: 0.9; }
-    .info-box { background: rgba(99, 102, 241, 0.1); border: 1px solid rgba(99, 102, 241, 0.3); border-radius: 12px; padding: 20px; margin: 20px 0; }
-    .info-box h3 { color: #a5b4fc; margin: 0 0 12px; font-size: 16px; }
-    .info-box ul { margin: 0; padding-left: 20px; color: #94a3b8; }
-    .info-box li { margin: 8px 0; }
-    .footer { background: rgba(0,0,0,0.3); padding: 30px; text-align: center; border-top: 1px solid rgba(99, 102, 241, 0.2); }
-    .footer p { color: #64748b; font-size: 13px; margin: 0 0 8px; }
-    .footer a { color: #818cf8; text-decoration: none; }
-    .code-box { background: rgba(99, 102, 241, 0.15); border: 2px dashed rgba(99, 102, 241, 0.4); border-radius: 8px; padding: 20px; text-align: center; margin: 20px 0; }
-    .code { font-size: 32px; font-weight: 700; color: #a5b4fc; letter-spacing: 4px; font-family: monospace; }
-    .divider { height: 1px; background: linear-gradient(90deg, transparent, rgba(99, 102, 241, 0.4), transparent); margin: 30px 0; }
+    body { margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #0a0a1a; }
+    .container { max-width: 600px; margin: 0 auto; background: linear-gradient(180deg, #12122a 0%, #0f0f23 100%); border-radius: 24px; overflow: hidden; border: 1px solid rgba(99, 102, 241, 0.15); }
+    .header { background: linear-gradient(135deg, rgba(99, 102, 241, 0.15) 0%, rgba(168, 85, 247, 0.15) 50%, rgba(236, 72, 153, 0.15) 100%); padding: 0; text-align: center; border-bottom: 1px solid rgba(99, 102, 241, 0.1); }
+    .content { padding: 40px 40px 30px; color: #e2e8f0; }
+    .content h2 { color: #ffffff; font-size: 26px; margin: 0 0 20px; font-weight: 700; letter-spacing: -0.5px; }
+    .content p { line-height: 1.8; margin: 0 0 18px; font-size: 15px; color: #cbd5e1; }
+    .feature-card { background: linear-gradient(135deg, rgba(99, 102, 241, 0.08) 0%, rgba(168, 85, 247, 0.08) 100%); border: 1px solid rgba(99, 102, 241, 0.2); border-radius: 16px; padding: 24px; margin: 24px 0; }
+    .feature-card h3 { color: #a5b4fc; margin: 0 0 16px; font-size: 17px; font-weight: 700; }
+    .feature-card ul { margin: 0; padding-left: 0; list-style: none; }
+    .feature-card li { margin: 12px 0; color: #94a3b8; padding-left: 28px; position: relative; font-size: 14px; }
+    .feature-card li::before { content: "✦"; position: absolute; left: 0; color: #818cf8; font-size: 12px; }
+    .footer { background: linear-gradient(180deg, rgba(0,0,0,0.2) 0%, rgba(0,0,0,0.4) 100%); padding: 30px 40px; text-align: center; border-top: 1px solid rgba(99, 102, 241, 0.1); }
+    .footer p { color: #475569; font-size: 13px; margin: 0 0 8px; }
+    .footer a { color: #818cf8; text-decoration: none; font-weight: 500; }
+    .code-box { background: linear-gradient(135deg, rgba(99, 102, 241, 0.1) 0%, rgba(168, 85, 247, 0.1) 100%); border: 2px dashed rgba(99, 102, 241, 0.3); border-radius: 16px; padding: 24px; text-align: center; margin: 24px 0; }
+    .code { font-size: 36px; font-weight: 800; background: linear-gradient(135deg, #a5b4fc 0%, #c4b5fd 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; letter-spacing: 8px; font-family: 'Courier New', monospace; }
+    .divider { height: 1px; background: linear-gradient(90deg, transparent, rgba(99, 102, 241, 0.3), transparent); margin: 30px 0; }
     .highlight { color: #a5b4fc; font-weight: 600; }
-    .warning { background: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.3); border-radius: 12px; padding: 20px; margin: 20px 0; }
-    .warning h3 { color: #fca5a5; margin: 0 0 12px; }
+    .warning-card { background: linear-gradient(135deg, rgba(239, 68, 68, 0.1) 0%, rgba(220, 38, 38, 0.1) 100%); border: 1px solid rgba(239, 68, 68, 0.3); border-radius: 16px; padding: 24px; margin: 24px 0; }
+    .warning-card h3 { color: #fca5a5; margin: 0 0 12px; font-weight: 700; }
+    .emoji-icon { font-size: 48px; margin-bottom: 16px; display: block; }
   </style>
 `;
 
@@ -60,15 +89,22 @@ const emailWrapper = (content: string, preheader?: string) => `
   <title>Wallly</title>
   ${baseStyles}
 </head>
-<body style="background-color: #0f0f23; margin: 0; padding: 20px;">
-  ${preheader ? `<div style="display:none;font-size:1px;color:#0f0f23;line-height:1px;max-height:0px;max-width:0px;opacity:0;overflow:hidden;">${preheader}</div>` : ''}
+<body style="background-color: #0a0a1a; margin: 0; padding: 30px 20px;">
+  ${preheader ? `<div style="display:none;font-size:1px;color:#0a0a1a;line-height:1px;max-height:0px;max-width:0px;opacity:0;overflow:hidden;">${preheader}</div>` : ''}
   <div class="container">
-    ${wallyLogo}
+    <div class="header">
+      ${wallyLogo}
+    </div>
     ${content}
+    <div style="text-align: center; padding: 10px 40px 30px;">
+      ${visitWallyButton}
+    </div>
     <div class="footer">
-      <p>This email was sent by Wallly</p>
-      <p><a href="https://wallly.corevia.in">wallly.corevia.in</a></p>
-      <p style="margin-top: 16px; font-size: 11px;">© ${new Date().getFullYear()} Wallly. All rights reserved.</p>
+      <p style="color: #64748b; font-size: 14px; margin-bottom: 16px;">Made with 💜 by the Wallly Team</p>
+      <p><a href="https://wallly.in" style="color: #818cf8; font-weight: 600;">wallly.in</a></p>
+      <div style="margin-top: 20px; padding-top: 20px; border-top: 1px solid rgba(99, 102, 241, 0.1);">
+        <p style="color: #475569; font-size: 11px; margin: 0;">© ${new Date().getFullYear()} Wallly. All rights reserved.</p>
+      </div>
     </div>
   </div>
 </body>
@@ -78,88 +114,95 @@ const emailWrapper = (content: string, preheader?: string) => `
 export const EmailTemplates = {
   // Email Verification
   emailVerification: (params: EmailTemplateParams) => emailWrapper(`
-    <div class="header">
-      <h1>🔐 Verify Your Email</h1>
-      <p>Almost there! Just one more step.</p>
-    </div>
     <div class="content">
-      <h2>Welcome to Wallly${params.userName ? `, ${params.userName}` : ''}!</h2>
-      <p>Thanks for signing up! Please verify your email address to get started with connecting to people around the world.</p>
-      <div style="text-align: center;">
-        <a href="${params.actionUrl}" class="button">Verify Email Address</a>
+      <div style="text-align: center; margin-bottom: 24px;">
+        <span class="emoji-icon">🔐</span>
+        <h2 style="background: linear-gradient(135deg, #ffffff 0%, #e2e8f0 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;">Verify Your Email</h2>
+        <p style="color: #94a3b8; margin: 0;">Almost there! Just one more step.</p>
       </div>
+      
+      <p>Hey${params.userName ? ` <span class="highlight">${params.userName}</span>` : ' there'}! 👋</p>
+      <p>Thanks for joining Wallly! Verify your email to unlock the full experience and start connecting with amazing people worldwide.</p>
+      
+      ${ctaButton('Verify Email', params.actionUrl || 'https://wallly.in')}
+      
       ${params.token ? `
       <div class="code-box">
-        <p style="color: #94a3b8; margin: 0 0 10px; font-size: 13px;">Or use this verification code:</p>
+        <p style="color: #94a3b8; margin: 0 0 12px; font-size: 13px;">Or use this verification code:</p>
         <div class="code">${params.token}</div>
       </div>
       ` : ''}
-      <p style="color: #64748b; font-size: 13px;">This link will expire in 24 hours. If you didn't create an account, you can safely ignore this email.</p>
+      
+      <p style="color: #64748b; font-size: 13px; text-align: center;">This link expires in 24 hours. Didn't create an account? Just ignore this email.</p>
     </div>
   `, 'Verify your email to start using Wallly'),
 
   // Password Reset
   passwordReset: (params: EmailTemplateParams) => emailWrapper(`
-    <div class="header">
-      <h1>🔑 Reset Your Password</h1>
-      <p>Don't worry, we've got you covered!</p>
-    </div>
     <div class="content">
-      <h2>Password Reset Request</h2>
-      <p>We received a request to reset the password for your Wallly account${params.userEmail ? ` (${params.userEmail})` : ''}.</p>
-      <div style="text-align: center;">
-        <a href="${params.actionUrl}" class="button">Reset Password</a>
+      <div style="text-align: center; margin-bottom: 24px;">
+        <span class="emoji-icon">🔑</span>
+        <h2>Reset Your Password</h2>
+        <p style="color: #94a3b8; margin: 0;">No worries, we've got you covered!</p>
       </div>
+      
+      <p>We received a request to reset the password for your Wallly account${params.userEmail ? ` (<span class="highlight">${params.userEmail}</span>)` : ''}.</p>
+      
+      ${ctaButton('Reset Password', params.actionUrl || 'https://wallly.in')}
+      
       ${params.token ? `
       <div class="code-box">
-        <p style="color: #94a3b8; margin: 0 0 10px; font-size: 13px;">Or use this code:</p>
+        <p style="color: #94a3b8; margin: 0 0 12px; font-size: 13px;">Or use this code:</p>
         <div class="code">${params.token}</div>
       </div>
       ` : ''}
+      
       <div class="divider"></div>
-      <p style="color: #64748b; font-size: 13px;">This link expires in 1 hour. If you didn't request a password reset, please ignore this email or contact support if you're concerned about your account security.</p>
+      <p style="color: #64748b; font-size: 13px; text-align: center;">This link expires in 1 hour. Didn't request this? You can safely ignore this email.</p>
     </div>
   `, 'Reset your Wallly password'),
 
   // Welcome Email
   welcome: (params: EmailTemplateParams) => emailWrapper(`
-    <div class="header">
-      <h1>🎉 Welcome to Wallly!</h1>
-      <p>Your journey to meaningful connections starts now</p>
-    </div>
     <div class="content">
-      <h2>Hey${params.userName ? ` ${params.userName}` : ' there'}! 👋</h2>
-      <p>Welcome to the Wallly community! We're thrilled to have you with us. Get ready to meet amazing people from around the world.</p>
+      <div style="text-align: center; margin-bottom: 24px;">
+        <span class="emoji-icon">🎉</span>
+        <h2>Welcome to Wallly!</h2>
+        <p style="color: #94a3b8; margin: 0;">Your journey to meaningful connections starts now</p>
+      </div>
       
-      <div class="info-box">
-        <h3>🚀 Here's what you can do:</h3>
+      <p>Hey${params.userName ? ` <span class="highlight">${params.userName}</span>` : ' there'}! 👋</p>
+      <p>Welcome to the Wallly community! We're absolutely thrilled to have you. Get ready to meet amazing people from around the globe.</p>
+      
+      <div class="feature-card">
+        <h3>🚀 What you can do on Wallly:</h3>
         <ul>
-          <li><strong>Video Chat</strong> - Connect face-to-face with strangers worldwide</li>
-          <li><strong>Communities</strong> - Join groups based on your interests</li>
-          <li><strong>Connections</strong> - Save and chat with people you meet</li>
-          <li><strong>Premium Features</strong> - Upgrade for priority matching</li>
+          <li><strong>Video Chat</strong> — Connect face-to-face with strangers worldwide</li>
+          <li><strong>Communities</strong> — Join groups based on your interests</li>
+          <li><strong>Connections</strong> — Save and chat with people you meet</li>
+          <li><strong>Premium</strong> — Unlock priority matching & more</li>
         </ul>
       </div>
       
-      <div style="text-align: center;">
-        <a href="${params.siteUrl || 'https://wallly.corevia.in'}/app" class="button">Start Exploring</a>
-      </div>
+      ${ctaButton('Start Exploring', 'https://wallly.in')}
       
-      <p>Have questions? Just reply to this email - we're always here to help!</p>
+      <p style="text-align: center; color: #64748b; font-size: 13px;">Questions? Just reply to this email — we're always here to help!</p>
     </div>
   `, 'Welcome to Wallly - Start connecting today!'),
 
   // Connection Request
   connectionRequest: (params: EmailTemplateParams) => emailWrapper(`
-    <div class="header">
-      <h1>🤝 New Connection Request</h1>
-      <p>Someone wants to connect with you!</p>
-    </div>
     <div class="content">
-      <h2>Hey${params.userName ? ` ${params.userName}` : ''}!</h2>
+      <div style="text-align: center; margin-bottom: 24px;">
+        <span class="emoji-icon">🤝</span>
+        <h2>New Connection Request</h2>
+        <p style="color: #94a3b8; margin: 0;">Someone wants to connect with you!</p>
+      </div>
+      
+      <p>Hey${params.userName ? ` <span class="highlight">${params.userName}</span>` : ''}! 👋</p>
       <p>Great news! <span class="highlight">${params.connectionName || 'Someone'}</span> would like to connect with you on Wallly.</p>
       
-      <div class="info-box">
+      <div class="feature-card">
         <h3>What happens next?</h3>
         <ul>
           <li>Accept to start chatting with them</li>
@@ -168,107 +211,110 @@ export const EmailTemplates = {
         </ul>
       </div>
       
-      <div style="text-align: center;">
-        <a href="${params.siteUrl || 'https://wallly.corevia.in'}/connections" class="button">View Request</a>
-      </div>
+      ${ctaButton('View Request', 'https://wallly.in/connections')}
     </div>
   `, 'You have a new connection request on Wallly'),
 
   // Connection Accepted
   connectionAccepted: (params: EmailTemplateParams) => emailWrapper(`
-    <div class="header">
-      <h1>✅ Connection Accepted!</h1>
-      <p>You're now connected!</p>
-    </div>
     <div class="content">
-      <h2>Great news${params.userName ? `, ${params.userName}` : ''}!</h2>
-      <p><span class="highlight">${params.connectionName || 'Your connection request was'}</span> accepted your connection request! You can now chat with them anytime.</p>
-      
-      <div style="text-align: center;">
-        <a href="${params.siteUrl || 'https://wallly.corevia.in'}/connections" class="button">Start Chatting</a>
+      <div style="text-align: center; margin-bottom: 24px;">
+        <span class="emoji-icon">✅</span>
+        <h2>Connection Accepted!</h2>
+        <p style="color: #94a3b8; margin: 0;">You're now connected!</p>
       </div>
+      
+      <p>Awesome news${params.userName ? `, <span class="highlight">${params.userName}</span>` : ''}! 🎊</p>
+      <p><span class="highlight">${params.connectionName || 'Your connection'}</span> accepted your request! You can now chat with them anytime.</p>
+      
+      ${ctaButton('Start Chatting', 'https://wallly.in/connections')}
     </div>
   `, 'Your connection request was accepted!'),
 
   // New Message Notification
   newMessage: (params: EmailTemplateParams) => emailWrapper(`
-    <div class="header">
-      <h1>💬 New Message</h1>
-      <p>You've got a message waiting!</p>
-    </div>
     <div class="content">
-      <h2>Hey${params.userName ? ` ${params.userName}` : ''}!</h2>
-      <p><span class="highlight">${params.connectionName || 'Someone'}</span> sent you a message on Wallly.</p>
-      
-      <div style="text-align: center;">
-        <a href="${params.siteUrl || 'https://wallly.corevia.in'}/connections" class="button">Read Message</a>
+      <div style="text-align: center; margin-bottom: 24px;">
+        <span class="emoji-icon">💬</span>
+        <h2>New Message</h2>
+        <p style="color: #94a3b8; margin: 0;">You've got a message waiting!</p>
       </div>
       
-      <p style="color: #64748b; font-size: 13px;">You can manage your email notification preferences in your profile settings.</p>
+      <p>Hey${params.userName ? ` <span class="highlight">${params.userName}</span>` : ''}! 👋</p>
+      <p><span class="highlight">${params.connectionName || 'Someone'}</span> sent you a message on Wallly. Don't keep them waiting!</p>
+      
+      ${ctaButton('Read Message', 'https://wallly.in/connections')}
+      
+      <p style="color: #64748b; font-size: 13px; text-align: center;">Manage your notification preferences in profile settings.</p>
     </div>
   `, 'You have a new message on Wallly'),
 
   // Premium Upgrade
   premiumUpgrade: (params: EmailTemplateParams) => emailWrapper(`
-    <div class="header" style="background: linear-gradient(135deg, #f59e0b 0%, #f97316 100%);">
-      <h1>⭐ Welcome to Premium!</h1>
-      <p>You're now a VIP member</p>
-    </div>
     <div class="content">
-      <h2>Congratulations${params.userName ? `, ${params.userName}` : ''}! 🎉</h2>
-      <p>You've upgraded to Wallly Premium! Enjoy all the exclusive benefits:</p>
+      <div style="text-align: center; margin-bottom: 24px;">
+        <span class="emoji-icon">⭐</span>
+        <h2 style="background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;">Welcome to Premium!</h2>
+        <p style="color: #fbbf24; margin: 0;">You're now a VIP member</p>
+      </div>
       
-      <div class="info-box" style="border-color: rgba(245, 158, 11, 0.3); background: rgba(245, 158, 11, 0.1);">
+      <p>Congratulations${params.userName ? `, <span class="highlight">${params.userName}</span>` : ''}! 🎉</p>
+      <p>You've upgraded to Wallly Premium! Enjoy all the exclusive perks:</p>
+      
+      <div class="feature-card" style="background: linear-gradient(135deg, rgba(251, 191, 36, 0.08) 0%, rgba(245, 158, 11, 0.08) 100%); border-color: rgba(251, 191, 36, 0.2);">
         <h3 style="color: #fbbf24;">✨ Your Premium Benefits:</h3>
         <ul>
-          <li><strong>Priority Matching</strong> - Get matched faster with other users</li>
-          <li><strong>Premium Badge</strong> - Stand out with your exclusive badge</li>
-          <li><strong>Ad-Free Experience</strong> - No more interruptions</li>
-          <li><strong>Advanced Filters</strong> - Find exactly who you want to meet</li>
-          <li><strong>Unlimited Connections</strong> - No daily limits</li>
+          <li><strong>Priority Matching</strong> — Get matched faster</li>
+          <li><strong>Premium Badge</strong> — Stand out from the crowd</li>
+          <li><strong>Ad-Free Experience</strong> — No interruptions</li>
+          <li><strong>Advanced Filters</strong> — Find exactly who you want</li>
+          <li><strong>Unlimited Connections</strong> — No daily limits</li>
         </ul>
       </div>
       
-      <div style="text-align: center;">
-        <a href="${params.siteUrl || 'https://wallly.corevia.in'}/app" class="button" style="background: linear-gradient(135deg, #f59e0b 0%, #f97316 100%);">Start Premium Experience</a>
-      </div>
+      ${ctaButton('Start Premium Experience', 'https://wallly.in', 'background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);')}
     </div>
   `, 'Welcome to Wallly Premium!'),
 
   // Account Warning
   accountWarning: (params: EmailTemplateParams) => emailWrapper(`
-    <div class="header" style="background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);">
-      <h1>⚠️ Account Warning</h1>
-      <p>Important notice about your account</p>
-    </div>
     <div class="content">
-      <h2>Important Notice</h2>
-      <div class="warning">
+      <div style="text-align: center; margin-bottom: 24px;">
+        <span class="emoji-icon">⚠️</span>
+        <h2 style="color: #fca5a5;">Account Warning</h2>
+        <p style="color: #f87171; margin: 0;">Important notice about your account</p>
+      </div>
+      
+      <div class="warning-card">
         <h3>⚠️ Community Guidelines Violation</h3>
         <p style="color: #fecaca; margin: 0;">We've detected activity on your account that may violate our community guidelines.</p>
       </div>
       
       ${params.customMessage ? `<p>${params.customMessage}</p>` : ''}
       
-      <p>Please review our <a href="${params.siteUrl || 'https://wallly.corevia.in'}/terms" style="color: #818cf8;">community guidelines</a> to ensure your future interactions comply with our policies.</p>
+      <p>Please review our <a href="https://wallly.in/terms" style="color: #818cf8; font-weight: 600;">community guidelines</a> to ensure your future interactions comply with our policies.</p>
       
-      <p><strong>Continued violations may result in account suspension or termination.</strong></p>
+      <p><strong style="color: #fca5a5;">Continued violations may result in account suspension or termination.</strong></p>
       
-      <p style="color: #64748b; font-size: 13px;">If you believe this warning was sent in error, please contact our support team.</p>
+      ${ctaButton('Review Guidelines', 'https://wallly.in/terms', 'background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);')}
+      
+      <p style="color: #64748b; font-size: 13px; text-align: center;">Believe this was sent in error? Contact our support team.</p>
     </div>
   `, 'Important notice about your Wallly account'),
 
   // Community Join
   communityJoin: (params: EmailTemplateParams) => emailWrapper(`
-    <div class="header">
-      <h1>👥 Welcome to the Community!</h1>
-      <p>You're now a member</p>
-    </div>
     <div class="content">
-      <h2>Hey${params.userName ? ` ${params.userName}` : ''}!</h2>
+      <div style="text-align: center; margin-bottom: 24px;">
+        <span class="emoji-icon">👥</span>
+        <h2>Welcome to the Community!</h2>
+        <p style="color: #94a3b8; margin: 0;">You're officially a member</p>
+      </div>
+      
+      <p>Hey${params.userName ? ` <span class="highlight">${params.userName}</span>` : ''}! 👋</p>
       <p>You've successfully joined <span class="highlight">${params.communityName || 'a new community'}</span> on Wallly!</p>
       
-      <div class="info-box">
+      <div class="feature-card">
         <h3>💡 Getting Started:</h3>
         <ul>
           <li>Introduce yourself to the community</li>
@@ -277,24 +323,24 @@ export const EmailTemplates = {
         </ul>
       </div>
       
-      <div style="text-align: center;">
-        <a href="${params.siteUrl || 'https://wallly.corevia.in'}/communities" class="button">Visit Community</a>
-      </div>
+      ${ctaButton('Visit Community', 'https://wallly.in/communities')}
     </div>
   `, `You've joined a new community on Wallly`),
 
   // Newsletter
   newsletter: (params: EmailTemplateParams) => emailWrapper(`
-    <div class="header">
-      <h1>📰 Wallly Weekly</h1>
-      <p>Your weekly dose of updates</p>
-    </div>
     <div class="content">
-      <h2>Hey${params.userName ? ` ${params.userName}` : ' there'}! 👋</h2>
+      <div style="text-align: center; margin-bottom: 24px;">
+        <span class="emoji-icon">📰</span>
+        <h2>Wallly Weekly</h2>
+        <p style="color: #94a3b8; margin: 0;">Your weekly dose of updates</p>
+      </div>
+      
+      <p>Hey${params.userName ? ` <span class="highlight">${params.userName}</span>` : ' there'}! 👋</p>
       <p>Here's what's happening at Wallly this week:</p>
       
       ${params.customMessage || `
-      <div class="info-box">
+      <div class="feature-card">
         <h3>🚀 What's New</h3>
         <ul>
           <li>Improved video chat quality</li>
@@ -304,11 +350,9 @@ export const EmailTemplates = {
       </div>
       `}
       
-      <div style="text-align: center;">
-        <a href="${params.siteUrl || 'https://wallly.corevia.in'}/app" class="button">Open Wallly</a>
-      </div>
+      ${ctaButton('Open Wallly', 'https://wallly.in')}
       
-      <p style="color: #64748b; font-size: 13px; text-align: center;">Don't want to receive these emails? <a href="${params.siteUrl || 'https://wallly.corevia.in'}/settings" style="color: #818cf8;">Unsubscribe</a></p>
+      <p style="color: #64748b; font-size: 13px; text-align: center;">Don't want these emails? <a href="https://wallly.in/settings" style="color: #818cf8;">Unsubscribe</a></p>
     </div>
   `, 'Your Wallly Weekly Update'),
 };
