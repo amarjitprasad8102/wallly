@@ -11,7 +11,7 @@ interface SignalMessage {
   data: any;
 }
 
-export const useMatch = (userId: string) => {
+export const useMatch = (userId: string, chatMode: 'video' | 'text' = 'video') => {
   const [isSearching, setIsSearching] = useState(false);
   const [matchedUserId, setMatchedUserId] = useState<string | null>(null);
   const [searchingUsersCount, setSearchingUsersCount] = useState(0);
@@ -43,7 +43,8 @@ export const useMatch = (userId: string) => {
     
     setMatchedUserId(targetUserId);
 
-    const channel = supabase.channel('matchmaking', {
+    const channelName = `matchmaking-${chatMode}`;
+    const channel = supabase.channel(channelName, {
       config: {
         presence: {
           key: userId,
@@ -98,7 +99,8 @@ export const useMatch = (userId: string) => {
     
     setIsSearching(true);
 
-    const channel = supabase.channel('matchmaking', {
+    const channelName = `matchmaking-${chatMode}`;
+    const channel = supabase.channel(channelName, {
       config: {
         presence: {
           key: userId,

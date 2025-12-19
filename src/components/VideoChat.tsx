@@ -140,6 +140,7 @@ const VideoChat = ({
 
     return () => {
       console.log('Cleaning up video chat');
+      deleteUploadedImages();
       dataChannel.current?.close();
       cleanup();
     };
@@ -215,6 +216,7 @@ const VideoChat = ({
     console.log('[VIDEO] Skipping to next user, cleaning up...');
     soundEffects.playClick();
     haptics.light();
+    await deleteUploadedImages();
     if (dataChannel.current) {
       dataChannel.current.close();
       dataChannel.current = null;
@@ -227,6 +229,7 @@ const VideoChat = ({
     console.log('[VIDEO] Ending call, cleaning up...');
     soundEffects.playDisconnect();
     haptics.medium();
+    await deleteUploadedImages();
     if (dataChannel.current) {
       dataChannel.current.close();
       dataChannel.current = null;
@@ -269,14 +272,42 @@ const VideoChat = ({
     };
   };
 
-  const handleSendMessage = () => {
-    if (!newMessage.trim() || !dataChannel.current || dataChannel.current.readyState !== 'open' || !isChannelReady) {
-      console.log('Cannot send message:', { 
-        hasMessage: !!newMessage.trim(), 
-        hasChannel: !!dataChannel.current, 
-        channelState: dataChannel.current?.readyState,
-        channelReady: isChannelReady
-      });
+  const uploadedImagesRef = useRef<string[]>([]);
+
+  const deleteUploadedImages = async () => {
+    if (uploadedImagesRef.current.length === 0) return;
+    try {
+      await supabase.storage.from('chat-images').remove(uploadedImagesRef.current);
+    } catch (error) {
+      console.error('[VIDEO] Error deleting images:', error);
+    }
+  };
+
+  const handleImageSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (file.size > 5 * 1024 * 1024) {
+      toast.error('Image must be less than 5MB');
+      return;
+    }
+    setSelectedImage(file);
+    const reader = new FileReader();
+    reader.onload = () => setImagePreview(reader.result as string);
+    reader.readAsDataURL(file);
+  };
+
+  const uploadImage = async (file: File): Promise<string | null> => {
+    const timestamp = Date.now();
+    const fileName = `${currentUserId}/${timestamp}_${file.name}`;
+    const { data, error } = await supabase.storage.from('chat-images').upload(fileName, file, { cacheControl: '3600', upsert: false });
+    if (error) return null;
+    uploadedImagesRef.current.push(data.path);
+    const { data: signedData } = await supabase.storage.from('chat-images').createSignedUrl(data.path, 3600);
+    return signedData?.signedUrl || null;
+  };
+
+  const handleSendMessage = async () => {
+    if ((!newMessage.trim() && !selectedImage) || !dataChannel.current || dataChannel.current.readyState !== 'open' || !isChannelReady) {
       return;
     }
 
@@ -284,15 +315,28 @@ const VideoChat = ({
       soundEffects.playClick();
       haptics.light();
 
-      dataChannel.current.send(JSON.stringify({ 
-        type: 'message', 
-        text: newMessage 
-      }));
-      
-      setMessages(prev => [...prev, { text: newMessage, sender: 'me', timestamp: new Date() }]);
-      setNewMessage('');
+      if (selectedImage) {
+        setIsUploading(true);
+        const imageUrl = await uploadImage(selectedImage);
+        if (imageUrl) {
+          dataChannel.current.send(JSON.stringify({ type: 'image', imageUrl }));
+          setMessages(prev => [...prev, { imageUrl, sender: 'me', timestamp: new Date() }]);
+        } else {
+          toast.error('Failed to upload image');
+        }
+        setSelectedImage(null);
+        setImagePreview(null);
+        setIsUploading(false);
+      }
+
+      if (newMessage.trim()) {
+        dataChannel.current.send(JSON.stringify({ type: 'message', text: newMessage }));
+        setMessages(prev => [...prev, { text: newMessage, sender: 'me', timestamp: new Date() }]);
+        setNewMessage('');
+      }
     } catch (error) {
       console.error('Error sending message:', error);
+      setIsUploading(false);
     }
   };
 
@@ -423,19 +467,35 @@ const VideoChat = ({
                         className={`flex ${msg.sender === 'me' ? 'justify-end' : 'justify-start'}`}
                       >
                         <div
-                          className={`max-w-[70%] rounded-lg px-3 py-2 text-sm ${
+                          className={`max-w-[70%] rounded-lg overflow-hidden ${
                             msg.sender === 'me'
                               ? 'bg-primary text-primary-foreground'
                               : 'bg-muted'
                           }`}
                         >
-                          {msg.text}
+                          {msg.imageUrl && (
+                            <div className="p-1">
+                              <SecureImage src={msg.imageUrl} alt="Shared image" className="max-w-[200px] max-h-[200px] rounded-lg" />
+                            </div>
+                          )}
+                          {msg.text && <p className="px-3 py-2 text-sm">{msg.text}</p>}
                         </div>
                       </div>
                     ))}
                     <div ref={messagesEndRef} />
                   </div>
                 </ScrollArea>
+
+                {imagePreview && (
+                  <div className="px-3 py-2 border-t bg-muted/50">
+                    <div className="relative inline-block">
+                      <img src={imagePreview} alt="Preview" className="h-16 rounded-lg object-cover" />
+                      <Button size="icon" variant="destructive" className="absolute -top-2 -right-2 w-5 h-5" onClick={() => { setSelectedImage(null); setImagePreview(null); }}>
+                        <X className="w-3 h-3" />
+                      </Button>
+                    </div>
+                  </div>
+                )}
 
                 <div className="p-3 border-t">
                   <form
@@ -445,6 +505,10 @@ const VideoChat = ({
                     }}
                     className="flex gap-2"
                   >
+                    <input type="file" ref={fileInputRef} accept="image/*" onChange={handleImageSelect} className="hidden" />
+                    <Button type="button" variant="outline" size="icon" onClick={() => fileInputRef.current?.click()} disabled={!isChannelReady || isUploading}>
+                      <ImageIcon className="w-4 h-4" />
+                    </Button>
                     <Input
                       value={newMessage}
                       onChange={(e) => setNewMessage(e.target.value)}
@@ -454,7 +518,7 @@ const VideoChat = ({
                     <Button 
                       type="submit" 
                       size="icon"
-                      disabled={!isChannelReady || !newMessage.trim() || dataChannel.current?.readyState !== 'open'}
+                      disabled={!isChannelReady || (!newMessage.trim() && !selectedImage) || isUploading}
                     >
                       <Send className="w-4 h-4" />
                     </Button>
@@ -530,19 +594,35 @@ const VideoChat = ({
                         className={`flex ${msg.sender === 'me' ? 'justify-end' : 'justify-start'}`}
                       >
                         <div
-                          className={`max-w-[80%] rounded-lg px-3 py-2 text-sm ${
+                          className={`max-w-[80%] rounded-lg overflow-hidden ${
                             msg.sender === 'me'
                               ? 'bg-primary text-primary-foreground'
                               : 'bg-muted'
                           }`}
                         >
-                          {msg.text}
+                          {msg.imageUrl && (
+                            <div className="p-1">
+                              <SecureImage src={msg.imageUrl} alt="Shared image" className="max-w-[200px] max-h-[200px] rounded-lg" />
+                            </div>
+                          )}
+                          {msg.text && <p className="px-3 py-2 text-sm">{msg.text}</p>}
                         </div>
                       </div>
                     ))}
                     <div ref={messagesEndRef} />
                   </div>
                 </ScrollArea>
+
+                {imagePreview && (
+                  <div className="px-4 py-2 border-t bg-muted/50">
+                    <div className="relative inline-block">
+                      <img src={imagePreview} alt="Preview" className="h-16 rounded-lg object-cover" />
+                      <Button size="icon" variant="destructive" className="absolute -top-2 -right-2 w-5 h-5" onClick={() => { setSelectedImage(null); setImagePreview(null); }}>
+                        <X className="w-3 h-3" />
+                      </Button>
+                    </div>
+                  </div>
+                )}
 
                 <div className="p-4 border-t">
                   <form
@@ -552,6 +632,9 @@ const VideoChat = ({
                     }}
                     className="flex gap-2"
                   >
+                    <Button type="button" variant="outline" size="icon" onClick={() => fileInputRef.current?.click()} disabled={!isChannelReady || isUploading}>
+                      <ImageIcon className="w-4 h-4" />
+                    </Button>
                     <Input
                       value={newMessage}
                       onChange={(e) => setNewMessage(e.target.value)}
@@ -561,7 +644,7 @@ const VideoChat = ({
                     <Button 
                       type="submit" 
                       size="icon"
-                      disabled={!isChannelReady || !newMessage.trim() || dataChannel.current?.readyState !== 'open'}
+                      disabled={!isChannelReady || (!newMessage.trim() && !selectedImage) || isUploading}
                     >
                       <Send className="w-4 h-4" />
                     </Button>

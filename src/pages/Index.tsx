@@ -48,7 +48,7 @@ const Index = () => {
   // Check premium status
   const { isPremium, loading: premiumLoading } = usePremiumStatus(isStrangerMode ? undefined : user?.id);
   
-  const { isSearching, matchedUserId, searchingUsersCount, joinMatchmaking, connectDirectly, leaveMatchmaking, sendSignal, onSignal } = useMatch(effectiveUserId);
+  const { isSearching, matchedUserId, searchingUsersCount, joinMatchmaking, connectDirectly, leaveMatchmaking, sendSignal, onSignal } = useMatch(effectiveUserId, chatMode);
   const {
     pendingRequests,
     acceptedRequest,
