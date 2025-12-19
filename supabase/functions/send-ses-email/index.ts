@@ -15,6 +15,13 @@ interface EmailRequest {
   templateUsed?: string;
 }
 
+interface EmailResult {
+  email: string;
+  success: boolean;
+  messageId?: string;
+  error?: string;
+}
+
 serve(async (req: Request): Promise<Response> => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
@@ -56,95 +63,123 @@ serve(async (req: Request): Promise<Response> => {
     }
 
     const recipients = Array.isArray(to) ? to : [to];
-    console.log(`Sending email to: ${recipients.join(", ")}, subject: ${subject}`);
+    console.log(`Sending emails to ${recipients.length} recipient(s) individually`);
 
-    // Initialize AWS client - service is inferred from the URL
+    // Initialize AWS client
     const aws = new AwsClient({
       accessKeyId: accessKeyId,
       secretAccessKey: secretAccessKey,
     });
 
-    // Build SES API request parameters
-    const params = new URLSearchParams();
-    params.append("Action", "SendEmail");
-    params.append("Version", "2010-12-01");
-    params.append("Source", fromEmail);
-    
-    recipients.forEach((recipient, index) => {
-      params.append(`Destination.ToAddresses.member.${index + 1}`, recipient);
-    });
-    
-    params.append("Message.Subject.Data", subject);
-    params.append("Message.Subject.Charset", "UTF-8");
-    params.append("Message.Body.Html.Data", html);
-    params.append("Message.Body.Html.Charset", "UTF-8");
-    
-    if (text) {
-      params.append("Message.Body.Text.Data", text);
-      params.append("Message.Body.Text.Charset", "UTF-8");
-    }
-
-    const body = params.toString();
     const endpoint = `https://email.${region}.amazonaws.com/`;
+    const results: EmailResult[] = [];
 
-    console.log("Sending request to AWS SES...");
+    // Send emails one by one to each recipient
+    for (const recipient of recipients) {
+      try {
+        console.log(`Sending email to: ${recipient}`);
 
-    // Sign and send the request
-    const response = await aws.fetch(endpoint, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/x-www-form-urlencoded",
-      },
-      body: body,
-    });
+        const params = new URLSearchParams();
+        params.append("Action", "SendEmail");
+        params.append("Version", "2010-12-01");
+        params.append("Source", fromEmail);
+        // Only ONE recipient per email - they won't see other recipients
+        params.append("Destination.ToAddresses.member.1", recipient);
+        params.append("Message.Subject.Data", subject);
+        params.append("Message.Subject.Charset", "UTF-8");
+        params.append("Message.Body.Html.Data", html);
+        params.append("Message.Body.Html.Charset", "UTF-8");
 
-    const responseText = await response.text();
-    console.log("SES Response status:", response.status);
-    console.log("SES Response:", responseText);
+        if (text) {
+          params.append("Message.Body.Text.Data", text);
+          params.append("Message.Body.Text.Charset", "UTF-8");
+        }
 
-    if (!response.ok) {
-      // Log the failed email
-      if (sentByUserId) {
-        await supabase.from('email_logs').insert([{
-          sent_by: sentByUserId,
-          recipients: recipients,
-          subject: subject,
-          content: html,
-          template_used: templateUsed || null,
-          status: 'failed',
-          message_id: null,
-          error_message: responseText,
-        }]);
+        const response = await aws.fetch(endpoint, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/x-www-form-urlencoded",
+          },
+          body: params.toString(),
+        });
+
+        const responseText = await response.text();
+        console.log(`SES Response for ${recipient}: status ${response.status}`);
+
+        if (!response.ok) {
+          console.error(`Failed to send to ${recipient}:`, responseText);
+          results.push({
+            email: recipient,
+            success: false,
+            error: responseText,
+          });
+
+          // Log failed email individually
+          if (sentByUserId) {
+            await supabase.from('email_logs').insert([{
+              sent_by: sentByUserId,
+              recipients: [recipient],
+              subject: subject,
+              content: html,
+              template_used: templateUsed || null,
+              status: 'failed',
+              message_id: null,
+              error_message: responseText,
+            }]);
+          }
+        } else {
+          // Extract MessageId from response
+          const messageIdMatch = responseText.match(/<MessageId>([^<]+)<\/MessageId>/);
+          const messageId = messageIdMatch ? messageIdMatch[1] : null;
+
+          console.log(`Email sent successfully to ${recipient}, messageId: ${messageId}`);
+          results.push({
+            email: recipient,
+            success: true,
+            messageId: messageId || undefined,
+          });
+
+          // Log successful email individually
+          if (sentByUserId) {
+            await supabase.from('email_logs').insert([{
+              sent_by: sentByUserId,
+              recipients: [recipient],
+              subject: subject,
+              content: html,
+              template_used: templateUsed || null,
+              status: 'sent',
+              message_id: messageId,
+              error_message: null,
+            }]);
+          }
+        }
+
+        // Small delay between emails to avoid rate limiting
+        if (recipients.length > 1) {
+          await new Promise(resolve => setTimeout(resolve, 100));
+        }
+      } catch (emailError: any) {
+        console.error(`Error sending to ${recipient}:`, emailError.message);
+        results.push({
+          email: recipient,
+          success: false,
+          error: emailError.message,
+        });
       }
-      throw new Error(`SES Error: ${responseText}`);
     }
 
-    // Extract MessageId from response
-    const messageIdMatch = responseText.match(/<MessageId>([^<]+)<\/MessageId>/);
-    const messageId = messageIdMatch ? messageIdMatch[1] : null;
+    const successCount = results.filter(r => r.success).length;
+    const failCount = results.filter(r => !r.success).length;
 
-    // Log the successful email
-    if (sentByUserId) {
-      const { error: logError } = await supabase
-        .from('email_logs')
-        .insert([{
-          sent_by: sentByUserId,
-          recipients: recipients,
-          subject: subject,
-          content: html,
-          template_used: templateUsed || null,
-          status: 'sent',
-          message_id: messageId,
-          error_message: null,
-        }]);
-
-      if (logError) {
-        console.error("Failed to log email:", logError);
-      }
-    }
+    console.log(`Bulk email complete: ${successCount} sent, ${failCount} failed`);
 
     return new Response(
-      JSON.stringify({ success: true, messageId }),
+      JSON.stringify({ 
+        success: failCount === 0, 
+        totalSent: successCount,
+        totalFailed: failCount,
+        results: results,
+      }),
       {
         status: 200,
         headers: { "Content-Type": "application/json", ...corsHeaders },
