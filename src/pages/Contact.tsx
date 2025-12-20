@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Helmet } from 'react-helmet';
 import { Button } from '@/components/ui/button';
@@ -11,6 +11,8 @@ import { toast } from 'sonner';
 import { z } from 'zod';
 import { supabase } from '@/integrations/supabase/client';
 import logo from '@/assets/logo.png';
+import PrioritySupportBadge from '@/components/PrioritySupportBadge';
+import { usePremiumStatus } from '@/hooks/usePremiumStatus';
 
 const contactSchema = z.object({
   name: z.string().trim().min(1, "Name is required").max(100, "Name must be less than 100 characters"),
@@ -25,6 +27,8 @@ const Contact = () => {
   const navigate = useNavigate();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
+  const [userId, setUserId] = useState<string | undefined>(undefined);
+  const { isPremium } = usePremiumStatus(userId);
   const [formData, setFormData] = useState<ContactForm>({
     name: '',
     email: '',
@@ -32,6 +36,19 @@ const Contact = () => {
     message: '',
   });
   const [errors, setErrors] = useState<Partial<Record<keyof ContactForm, string>>>({});
+
+  // Get current user
+  useEffect(() => {
+    const getUser = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+        setUserId(user.id);
+        // Pre-fill email if logged in
+        setFormData(prev => ({ ...prev, email: user.email || '' }));
+      }
+    };
+    getUser();
+  }, []);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
@@ -56,8 +73,9 @@ const Contact = () => {
         email: validatedData.email,
         subject: validatedData.subject,
         message: validatedData.message,
-        lead_type: 'contact',
-        status: 'new',
+        lead_type: isPremium ? 'priority_contact' : 'contact',
+        status: isPremium ? 'priority' : 'new',
+        user_id: userId || null,
       });
 
       if (error) {
@@ -99,8 +117,16 @@ const Contact = () => {
               </div>
               <h2 className="text-2xl font-bold mb-2">Message Sent!</h2>
               <p className="text-muted-foreground mb-6">
-                Thank you for reaching out. Our team will get back to you within 24-48 hours.
+                {isPremium 
+                  ? "As a Premium member, your message has been prioritized. We'll respond within 4-8 hours."
+                  : "Thank you for reaching out. Our team will get back to you within 24-48 hours."
+                }
               </p>
+              {isPremium && (
+                <div className="mb-6">
+                  <PrioritySupportBadge isPremium={isPremium} variant="badge" />
+                </div>
+              )}
               <div className="flex gap-3 justify-center">
                 <Button variant="outline" onClick={() => setSubmitted(false)}>
                   Send Another
@@ -259,12 +285,24 @@ const Contact = () => {
             {/* Contact Form */}
             <Card className="border-border/50">
               <CardHeader>
-                <CardTitle>Send us a Message</CardTitle>
-                <CardDescription>
-                  Fill out the form below and we'll get back to you as soon as possible
-                </CardDescription>
+                <div className="flex items-center justify-between">
+                  <div>
+                    <CardTitle>Send us a Message</CardTitle>
+                    <CardDescription>
+                      Fill out the form below and we'll get back to you as soon as possible
+                    </CardDescription>
+                  </div>
+                  <PrioritySupportBadge isPremium={isPremium} />
+                </div>
               </CardHeader>
               <CardContent>
+                {/* Priority Support Banner for Premium Users */}
+                {isPremium && (
+                  <div className="mb-6">
+                    <PrioritySupportBadge isPremium={isPremium} variant="card" />
+                  </div>
+                )}
+                
                 <form onSubmit={handleSubmit} className="space-y-4">
                   <div className="space-y-2">
                     <Label htmlFor="name">Name *</Label>

@@ -6,7 +6,7 @@ import { Slider } from '@/components/ui/slider';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Crown, Filter, Users, Zap, Lock } from 'lucide-react';
+import { Crown, Filter, Users, Zap, Lock, Heart, Palette, Headphones } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 interface PremiumFiltersProps {
@@ -58,10 +58,36 @@ const PremiumFilters = ({ isPremium, onFiltersChange, className = '' }: PremiumF
             </Badge>
           </div>
           <CardDescription className="text-sm">
-            Upgrade to Premium to unlock gender filters, age preferences, and priority matching.
+            Upgrade to Premium to unlock gender filters, age preferences, priority matching, virtual backgrounds, and priority support.
           </CardDescription>
         </CardHeader>
-        <CardContent>
+        <CardContent className="space-y-3">
+          <div className="grid grid-cols-2 gap-2 text-xs text-muted-foreground">
+            <div className="flex items-center gap-1.5">
+              <Users className="w-3.5 h-3.5 text-primary/50" />
+              <span>Gender Filters</span>
+            </div>
+            <div className="flex items-center gap-1.5">
+              <Zap className="w-3.5 h-3.5 text-primary/50" />
+              <span>Priority Matching</span>
+            </div>
+            <div className="flex items-center gap-1.5">
+              <Heart className="w-3.5 h-3.5 text-primary/50" />
+              <span>Interest Priority</span>
+            </div>
+            <div className="flex items-center gap-1.5">
+              <Palette className="w-3.5 h-3.5 text-primary/50" />
+              <span>Virtual Backgrounds</span>
+            </div>
+            <div className="flex items-center gap-1.5">
+              <Crown className="w-3.5 h-3.5 text-primary/50" />
+              <span>Premium Badge</span>
+            </div>
+            <div className="flex items-center gap-1.5">
+              <Headphones className="w-3.5 h-3.5 text-primary/50" />
+              <span>Priority Support</span>
+            </div>
+          </div>
           <Button 
             className="w-full bg-gradient-to-r from-yellow-500 to-orange-500 hover:opacity-90 text-white"
             onClick={() => navigate('/premium')}

@@ -16,6 +16,7 @@ import TypingIndicator from './TypingIndicator';
 import MessageStatus from './MessageStatus';
 import { Badge } from '@/components/ui/badge';
 import { toast } from 'sonner';
+import VirtualBackgrounds, { BackgroundOption } from './VirtualBackgrounds';
 
 interface ChatMessage {
   id: string;
@@ -68,6 +69,39 @@ const VideoChat = ({
   const lastTypingSentRef = useRef<number>(0);
   const isMobile = useIsMobile();
   const [isChannelReady, setIsChannelReady] = useState(false);
+  const [virtualBackground, setVirtualBackground] = useState<BackgroundOption | null>(null);
+
+  // Get background style for local video overlay
+  const getBackgroundStyle = (): React.CSSProperties => {
+    if (!virtualBackground) return {};
+    
+    if (virtualBackground.type === 'blur') {
+      return {
+        backdropFilter: `blur(${virtualBackground.value}px)`,
+        WebkitBackdropFilter: `blur(${virtualBackground.value}px)`,
+      };
+    }
+    
+    if (virtualBackground.type === 'color') {
+      return {
+        background: virtualBackground.value,
+        opacity: 0.85,
+        mixBlendMode: 'multiply' as const,
+      };
+    }
+    
+    if (virtualBackground.type === 'image') {
+      return {
+        backgroundImage: `url(${virtualBackground.value})`,
+        backgroundSize: 'cover',
+        backgroundPosition: 'center',
+        opacity: 0.9,
+        mixBlendMode: 'multiply' as const,
+      };
+    }
+    
+    return {};
+  };
 
   const {
     peerConnection,
@@ -449,8 +483,18 @@ const VideoChat = ({
                   className="w-full h-full object-cover"
                   style={{ transform: 'translateZ(0) scaleX(-1)' }}
                 />
-                <div className="absolute bottom-2 left-2 bg-black/60 px-2 py-1 rounded text-xs text-white">
+                {/* Virtual Background Overlay */}
+                {virtualBackground && (
+                  <div 
+                    className="absolute inset-0 pointer-events-none"
+                    style={getBackgroundStyle()}
+                  />
+                )}
+                <div className="absolute bottom-2 left-2 bg-black/60 px-2 py-1 rounded text-xs text-white flex items-center gap-1">
                   You
+                  {isPremium && virtualBackground && (
+                    <span className="text-amber-400">✨</span>
+                  )}
                 </div>
               </div>
             </div>
@@ -484,8 +528,18 @@ const VideoChat = ({
                     className="w-full h-full object-cover"
                     style={{ transform: 'translateZ(0) scaleX(-1)' }}
                   />
-                  <div className="absolute bottom-2 left-2 bg-black/60 px-2 py-1 rounded text-xs text-white">
+                  {/* Virtual Background Overlay */}
+                  {virtualBackground && (
+                    <div 
+                      className="absolute inset-0 pointer-events-none"
+                      style={getBackgroundStyle()}
+                    />
+                  )}
+                  <div className="absolute bottom-2 left-2 bg-black/60 px-2 py-1 rounded text-xs text-white flex items-center gap-1">
                     You
+                    {isPremium && virtualBackground && (
+                      <span className="text-amber-400">✨</span>
+                    )}
                   </div>
                 </div>
               </div>
@@ -592,6 +646,13 @@ const VideoChat = ({
         >
           {isAudioEnabled ? <Mic className="w-5 h-5 sm:w-6 sm:h-6" /> : <MicOff className="w-5 h-5 sm:w-6 sm:h-6" />}
         </Button>
+
+        {/* Virtual Backgrounds - Premium Only */}
+        <VirtualBackgrounds 
+          isPremium={isPremium}
+          currentBackground={virtualBackground}
+          onBackgroundChange={setVirtualBackground}
+        />
         
         <Button
           variant="destructive"
