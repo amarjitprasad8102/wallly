@@ -48,7 +48,7 @@ const Index = () => {
   // Check premium status
   const { isPremium, loading: premiumLoading } = usePremiumStatus(isStrangerMode ? undefined : user?.id);
   
-  const { isSearching, matchedUserId, searchingUsersCount, joinMatchmaking, connectDirectly, leaveMatchmaking, sendSignal, onSignal } = useMatch(effectiveUserId, chatMode);
+  const { isSearching, matchedUserId, searchingUsersCount, joinMatchmaking, connectDirectly, leaveMatchmaking, sendSignal, onSignal } = useMatch(effectiveUserId, chatMode, isPremium);
   const {
     pendingRequests,
     acceptedRequest,
@@ -572,6 +572,20 @@ const Index = () => {
               </Dialog>
             )}
           </div>
+
+          {/* Premium CTA - Only show for non-premium users */}
+          {!isPremium && !isStrangerMode && (
+            <div className="mt-6 sm:mt-8">
+              <Button
+                onClick={() => navigate('/premium')}
+                variant="outline"
+                className="bg-gradient-to-r from-yellow-500/10 to-orange-500/10 border-yellow-500/30 hover:border-yellow-500/50 text-yellow-600 dark:text-yellow-400"
+              >
+                <Crown className="w-4 h-4 mr-2" />
+                Upgrade to Premium for Gender Filters & Priority Matching
+              </Button>
+            </div>
+          )}
 
           {/* Features - Responsive Grid */}
           <div className="mt-12 sm:mt-20 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 sm:gap-8 text-left">

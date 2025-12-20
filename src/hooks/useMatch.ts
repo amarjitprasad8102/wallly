@@ -11,7 +11,14 @@ interface SignalMessage {
   data: any;
 }
 
-export const useMatch = (userId: string, chatMode: 'video' | 'text' = 'video') => {
+export interface PremiumMatchFilters {
+  genderFilter?: 'any' | 'male' | 'female';
+  ageRange?: [number, number];
+  priorityMatching?: boolean;
+  interestPriority?: boolean;
+}
+
+export const useMatch = (userId: string, chatMode: 'video' | 'text' = 'video', isPremium: boolean = false, filters?: PremiumMatchFilters) => {
   const [isSearching, setIsSearching] = useState(false);
   const [matchedUserId, setMatchedUserId] = useState<string | null>(null);
   const [searchingUsersCount, setSearchingUsersCount] = useState(0);
@@ -166,8 +173,13 @@ export const useMatch = (userId: string, chatMode: 'video' | 'text' = 'video') =
       .subscribe(async (status) => {
         console.log('[MATCH] Channel subscription status:', status);
         if (status === 'SUBSCRIBED') {
-          console.log('[MATCH] Tracking presence for user:', userId);
-          await channel.track({ user_id: userId, timestamp: Date.now() });
+          console.log('[MATCH] Tracking presence for user:', userId, 'isPremium:', isPremium);
+          await channel.track({ 
+            user_id: userId, 
+            timestamp: Date.now(),
+            is_premium: isPremium,
+            filters: filters || {},
+          });
         }
       });
 

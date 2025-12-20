@@ -20,6 +20,7 @@ const staticPages = [
   { path: "/c", priority: "0.8", changefreq: "weekly" },
   { path: "/profile", priority: "0.6", changefreq: "monthly" },
   { path: "/contact", priority: "0.7", changefreq: "monthly" },
+  { path: "/premium", priority: "0.9", changefreq: "weekly" },
 ];
 
 Deno.serve(async (req) => {

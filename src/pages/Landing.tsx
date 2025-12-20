@@ -136,8 +136,8 @@ const Landing = () => {
                 <UserX className="w-4 h-4 mr-1" />
                 Stranger
               </Button>
-              <Button size="sm" className="bg-gradient-primary hover:opacity-90" onClick={() => navigate('/auth')} aria-label="Get started with Wallly">
-                Start
+              <Button size="sm" className="bg-gradient-to-r from-yellow-500 to-orange-500 hover:opacity-90 text-white" onClick={() => navigate('/premium')} aria-label="Premium">
+                Premium
               </Button>
             </div>
           </div>
