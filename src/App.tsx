@@ -16,6 +16,7 @@ import Communities from "./pages/Communities";
 import CommunityDetail from "./pages/CommunityDetail";
 import ProfileSettings from "./pages/ProfileSettings";
 import Contact from "./pages/Contact";
+import Premium from "./pages/Premium";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -40,6 +41,7 @@ const App = () => (
           <Route path="/c/:communityName" element={<CommunityDetail />} />
           <Route path="/profile" element={<ProfileSettings />} />
           <Route path="/contact" element={<Contact />} />
+          <Route path="/premium" element={<Premium />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>
