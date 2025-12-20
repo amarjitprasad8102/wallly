@@ -1,7 +1,7 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, useCallback } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Video, VideoOff, Mic, MicOff, PhoneOff, Send, MessageCircle, Image as ImageIcon, X } from 'lucide-react';
+import { Video, VideoOff, Mic, MicOff, PhoneOff, Send, MessageCircle, Image as ImageIcon, X, Crown } from 'lucide-react';
 import { useWebRTC } from '@/hooks/useWebRTC';
 import { supabase } from '@/integrations/supabase/client';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -12,7 +12,19 @@ import { haptics } from '@/utils/haptics';
 import { ResizablePanelGroup, ResizablePanel, ResizableHandle } from '@/components/ui/resizable';
 import EncryptionBadge from './EncryptionBadge';
 import SecureImage from './SecureImage';
+import TypingIndicator from './TypingIndicator';
+import MessageStatus from './MessageStatus';
+import { Badge } from '@/components/ui/badge';
 import { toast } from 'sonner';
+
+interface ChatMessage {
+  id: string;
+  text?: string;
+  imageUrl?: string;
+  sender: 'me' | 'them';
+  timestamp: Date;
+  status: 'sending' | 'sent' | 'delivered' | 'read';
+}
 
 interface VideoChatProps {
   currentUserId: string;
@@ -22,6 +34,7 @@ interface VideoChatProps {
   onLeave: () => void;
   onEndCall: () => void;
   onOtherUserDisconnected: () => void;
+  isPremium?: boolean;
 }
 
 const VideoChat = ({
@@ -32,6 +45,7 @@ const VideoChat = ({
   onLeave,
   onEndCall,
   onOtherUserDisconnected,
+  isPremium = false,
 }: VideoChatProps) => {
   const localVideoRef = useRef<HTMLVideoElement>(null);
   const remoteVideoRef = useRef<HTMLVideoElement>(null);
@@ -39,16 +53,19 @@ const VideoChat = ({
   const [isVideoEnabled, setIsVideoEnabled] = useState(true);
   const [isAudioEnabled, setIsAudioEnabled] = useState(true);
   const [duration, setDuration] = useState(0);
-  const [messages, setMessages] = useState<Array<{ text?: string; imageUrl?: string; sender: 'me' | 'them'; timestamp: Date }>>([]);
+  const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [newMessage, setNewMessage] = useState('');
   const [isChatOpen, setIsChatOpen] = useState(false);
   const [selectedImage, setSelectedImage] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [isUploading, setIsUploading] = useState(false);
+  const [isTyping, setIsTyping] = useState(false);
   const hasInitiatedOffer = useRef(false);
   const dataChannel = useRef<RTCDataChannel | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const lastTypingSentRef = useRef<number>(0);
   const isMobile = useIsMobile();
   const [isChannelReady, setIsChannelReady] = useState(false);
 
@@ -249,13 +266,31 @@ const VideoChat = ({
       try {
         const data = JSON.parse(event.data);
         if (data.type === 'message') {
-          setMessages(prev => [...prev, { text: data.text, sender: 'them', timestamp: new Date() }]);
+          const msgId = `msg-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+          setMessages(prev => [...prev, { id: msgId, text: data.text, sender: 'them', timestamp: new Date(), status: 'delivered' }]);
           soundEffects.playNotification();
           haptics.light();
+          if (isPremium && dataChannel.current?.readyState === 'open') {
+            dataChannel.current.send(JSON.stringify({ type: 'read_receipt', msgId }));
+          }
         } else if (data.type === 'image') {
-          setMessages(prev => [...prev, { imageUrl: data.imageUrl, sender: 'them', timestamp: new Date() }]);
+          const msgId = `msg-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+          setMessages(prev => [...prev, { id: msgId, imageUrl: data.imageUrl, sender: 'them', timestamp: new Date(), status: 'delivered' }]);
           soundEffects.playNotification();
           haptics.light();
+          if (isPremium && dataChannel.current?.readyState === 'open') {
+            dataChannel.current.send(JSON.stringify({ type: 'read_receipt', msgId }));
+          }
+        } else if (data.type === 'typing') {
+          setIsTyping(true);
+          if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current);
+          typingTimeoutRef.current = setTimeout(() => setIsTyping(false), 3000);
+        } else if (data.type === 'stop_typing') {
+          setIsTyping(false);
+        } else if (data.type === 'read_receipt') {
+          setMessages(prev => prev.map(m => 
+            m.id === data.msgId ? { ...m, status: 'read' } : m
+          ));
         }
       } catch (error) {
         console.error('Error processing message:', error);
@@ -315,12 +350,17 @@ const VideoChat = ({
       soundEffects.playClick();
       haptics.light();
 
+      if (isPremium && dataChannel.current?.readyState === 'open') {
+        dataChannel.current.send(JSON.stringify({ type: 'stop_typing' }));
+      }
+
       if (selectedImage) {
         setIsUploading(true);
         const imageUrl = await uploadImage(selectedImage);
         if (imageUrl) {
-          dataChannel.current.send(JSON.stringify({ type: 'image', imageUrl }));
-          setMessages(prev => [...prev, { imageUrl, sender: 'me', timestamp: new Date() }]);
+          const msgId = `msg-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+          dataChannel.current.send(JSON.stringify({ type: 'image', imageUrl, msgId }));
+          setMessages(prev => [...prev, { id: msgId, imageUrl, sender: 'me', timestamp: new Date(), status: 'sent' }]);
         } else {
           toast.error('Failed to upload image');
         }
@@ -330,8 +370,9 @@ const VideoChat = ({
       }
 
       if (newMessage.trim()) {
-        dataChannel.current.send(JSON.stringify({ type: 'message', text: newMessage }));
-        setMessages(prev => [...prev, { text: newMessage, sender: 'me', timestamp: new Date() }]);
+        const msgId = `msg-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+        dataChannel.current.send(JSON.stringify({ type: 'message', text: newMessage, msgId }));
+        setMessages(prev => [...prev, { id: msgId, text: newMessage, sender: 'me', timestamp: new Date(), status: 'sent' }]);
         setNewMessage('');
       }
     } catch (error) {
