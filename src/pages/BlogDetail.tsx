@@ -107,7 +107,7 @@ const BlogDetail = () => {
         <div className="text-center">
           <h1 className="text-4xl font-bold mb-4">Blog Not Found</h1>
           <p className="text-muted-foreground mb-8">The blog post you're looking for doesn't exist.</p>
-          <Button onClick={() => navigate('/b')}>Back to Blog List</Button>
+          <Button onClick={() => navigate('/blog')}>Back to Blog List</Button>
         </div>
       </div>
     );
@@ -165,7 +165,7 @@ const BlogDetail = () => {
               </BreadcrumbItem>
               <BreadcrumbSeparator />
               <BreadcrumbItem>
-                <BreadcrumbLink onClick={() => navigate('/b')} className="cursor-pointer">
+                <BreadcrumbLink onClick={() => navigate('/blog')} className="cursor-pointer">
                   Blog
                 </BreadcrumbLink>
               </BreadcrumbItem>
@@ -179,7 +179,7 @@ const BlogDetail = () => {
           {/* Back Button */}
           <Button 
             variant="ghost" 
-            onClick={() => navigate('/b')}
+            onClick={() => navigate('/blog')}
             className="mb-6"
             aria-label="Back to blog list"
           >
