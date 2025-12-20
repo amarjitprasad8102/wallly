@@ -84,7 +84,7 @@ const AdminLeads = ({ adminId }: AdminLeadsProps) => {
       .order('created_at', { ascending: false });
 
     if (filter !== 'all') {
-      if (filter === 'premium' || filter === 'contact' || filter === 'priority_contact') {
+      if (filter === 'premium' || filter === 'contact' || filter === 'priority_contact' || filter === 'stranger') {
         query = query.eq('lead_type', filter);
       } else if (filter === 'priority') {
         query = query.eq('status', filter);
@@ -189,6 +189,14 @@ const AdminLeads = ({ adminId }: AdminLeadsProps) => {
         <Badge className="bg-gradient-to-r from-purple-500 to-pink-500 text-white">
           <Zap className="w-3 h-3 mr-1" />
           Priority Support
+        </Badge>
+      );
+    }
+    if (type === 'stranger') {
+      return (
+        <Badge className="bg-gradient-to-r from-slate-500 to-gray-600 text-white">
+          <User className="w-3 h-3 mr-1" />
+          Stranger
         </Badge>
       );
     }
@@ -312,6 +320,7 @@ const AdminLeads = ({ adminId }: AdminLeadsProps) => {
             <SelectItem value="all">All Leads</SelectItem>
             <SelectItem value="premium">Premium Inquiries</SelectItem>
             <SelectItem value="priority_contact">Priority Support</SelectItem>
+            <SelectItem value="stranger">Stranger Sessions</SelectItem>
             <SelectItem value="contact">Contact Forms</SelectItem>
             <SelectItem value="new">New</SelectItem>
             <SelectItem value="priority">Priority Status</SelectItem>

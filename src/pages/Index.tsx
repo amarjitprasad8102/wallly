@@ -86,12 +86,36 @@ const Index = () => {
 
   // Cleanup stranger session when leaving the page
   useEffect(() => {
+    const cleanupStrangerSession = async () => {
+      const strangerId = sessionStorage.getItem('stranger_id');
+      if (strangerId) {
+        // Delete stranger session from database
+        try {
+          await supabase
+            .from('stranger_sessions')
+            .delete()
+            .eq('temp_id', strangerId);
+        } catch (err) {
+          console.error('Failed to cleanup stranger session:', err);
+        }
+      }
+      
+      sessionStorage.removeItem('stranger_mode');
+      sessionStorage.removeItem('stranger_id');
+      sessionStorage.removeItem('stranger_gender');
+      sessionStorage.removeItem('stranger_age');
+      sessionStorage.removeItem('stranger_email');
+    };
+
     const handleBeforeUnload = () => {
       if (sessionStorage.getItem('stranger_mode') === 'true') {
-        sessionStorage.removeItem('stranger_mode');
-        sessionStorage.removeItem('stranger_id');
-        sessionStorage.removeItem('stranger_gender');
-        sessionStorage.removeItem('stranger_age');
+        // Use sendBeacon for reliable cleanup on page unload
+        const strangerId = sessionStorage.getItem('stranger_id');
+        if (strangerId) {
+          // Can't await in beforeunload, so we just try to send it
+          navigator.sendBeacon && navigator.sendBeacon('/api/cleanup', JSON.stringify({ temp_id: strangerId }));
+        }
+        cleanupStrangerSession();
       }
     };
 
@@ -179,12 +203,26 @@ const Index = () => {
   };
 
   const handleSignOut = async () => {
-    // For stranger mode, just clear session and go home
+    // For stranger mode, cleanup session and go home
     if (isStrangerMode) {
+      const strangerId = sessionStorage.getItem('stranger_id');
+      if (strangerId) {
+        // Delete stranger session from database
+        try {
+          await supabase
+            .from('stranger_sessions')
+            .delete()
+            .eq('temp_id', strangerId);
+        } catch (err) {
+          console.error('Failed to cleanup stranger session:', err);
+        }
+      }
+      
       sessionStorage.removeItem('stranger_mode');
       sessionStorage.removeItem('stranger_id');
       sessionStorage.removeItem('stranger_gender');
       sessionStorage.removeItem('stranger_age');
+      sessionStorage.removeItem('stranger_email');
       navigate('/', { replace: true });
       return;
     }

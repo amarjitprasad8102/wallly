@@ -19,15 +19,13 @@ const Landing = () => {
   const navigate = useNavigate();
   const [strangerDialogOpen, setStrangerDialogOpen] = useState(false);
 
-  const handleStrangerStart = async (gender: string, age: number) => {
-    // Generate a temporary unique ID for stranger mode
-    const tempId = 'STR-' + Math.random().toString(36).substring(2, 12).toUpperCase();
-    
+  const handleStrangerStart = async (gender: string, age: number, email: string, tempId: string) => {
     // Store stranger session data
     sessionStorage.setItem('stranger_mode', 'true');
     sessionStorage.setItem('stranger_id', tempId);
     sessionStorage.setItem('stranger_gender', gender);
     sessionStorage.setItem('stranger_age', age.toString());
+    sessionStorage.setItem('stranger_email', email);
     
     toast.success('Starting as stranger...');
     navigate('/app');

@@ -541,6 +541,39 @@ export type Database = {
         }
         Relationships: []
       }
+      stranger_sessions: {
+        Row: {
+          age: number | null
+          created_at: string
+          email: string
+          gender: string | null
+          id: string
+          is_verified: boolean | null
+          temp_id: string
+          verification_token: string | null
+        }
+        Insert: {
+          age?: number | null
+          created_at?: string
+          email: string
+          gender?: string | null
+          id?: string
+          is_verified?: boolean | null
+          temp_id: string
+          verification_token?: string | null
+        }
+        Update: {
+          age?: number | null
+          created_at?: string
+          email?: string
+          gender?: string | null
+          id?: string
+          is_verified?: boolean | null
+          temp_id?: string
+          verification_token?: string | null
+        }
+        Relationships: []
+      }
       user_interests: {
         Row: {
           created_at: string | null
