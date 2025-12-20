@@ -126,8 +126,8 @@ const Landing = () => {
               <Button variant="ghost" size="sm" className="hidden sm:inline-flex" onClick={() => navigate('/blog')}>
                 Blog
               </Button>
-              <Button variant="ghost" size="sm" className="hidden sm:inline-flex" onClick={() => navigate('/privacy')} aria-label="Privacy Policy">
-                Privacy
+              <Button variant="ghost" size="sm" className="hidden sm:inline-flex" onClick={() => navigate('/contact')} aria-label="Contact Us">
+                Contact
               </Button>
               <Button variant="ghost" size="sm" onClick={() => navigate('/auth')} aria-label="Sign in to your account">
                 Sign In
@@ -395,11 +395,30 @@ const Landing = () => {
 
       {/* Footer */}
       <footer className="border-t border-border/50 py-6 sm:py-8 px-4 bg-muted/20">
-        <div className="max-w-7xl mx-auto text-center text-xs sm:text-sm text-muted-foreground">
-          <p className="mb-3 sm:mb-4 leading-relaxed px-4">
-            By using Wallly, you agree to be respectful and follow our community guidelines. Users must be 16 years or older.
-          </p>
-          <p>&copy; 2025 Wallly. All rights reserved.</p>
+        <div className="max-w-7xl mx-auto">
+          <div className="flex flex-wrap justify-center gap-4 mb-4 text-sm">
+            <button onClick={() => navigate('/privacy')} className="text-muted-foreground hover:text-primary transition-colors">
+              Privacy Policy
+            </button>
+            <button onClick={() => navigate('/howtouse')} className="text-muted-foreground hover:text-primary transition-colors">
+              How to Use
+            </button>
+            <button onClick={() => navigate('/contact')} className="text-muted-foreground hover:text-primary transition-colors">
+              Contact Us
+            </button>
+            <button onClick={() => navigate('/blog')} className="text-muted-foreground hover:text-primary transition-colors">
+              Blog
+            </button>
+          </div>
+          <div className="text-center text-xs sm:text-sm text-muted-foreground">
+            <p className="mb-3 sm:mb-4 leading-relaxed px-4">
+              By using Wallly, you agree to be respectful and follow our community guidelines. Users must be 16 years or older.
+            </p>
+            <p className="mb-2">
+              Need help? <a href="mailto:help@corevia.in" className="text-primary hover:underline">help@corevia.in</a>
+            </p>
+            <p>&copy; 2025 Wallly. All rights reserved.</p>
+          </div>
         </div>
       </footer>
 
