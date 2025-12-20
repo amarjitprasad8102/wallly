@@ -6,7 +6,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Send, MessageCircle, Crown, Mail, Phone, Clock, CheckCircle, XCircle, ArrowLeft, User } from 'lucide-react';
+import { Send, MessageCircle, Crown, Mail, Phone, Clock, CheckCircle, XCircle, ArrowLeft, User, Zap } from 'lucide-react';
 import { toast } from 'sonner';
 import { format } from 'date-fns';
 
@@ -84,8 +84,10 @@ const AdminLeads = ({ adminId }: AdminLeadsProps) => {
       .order('created_at', { ascending: false });
 
     if (filter !== 'all') {
-      if (filter === 'premium' || filter === 'contact') {
+      if (filter === 'premium' || filter === 'contact' || filter === 'priority_contact') {
         query = query.eq('lead_type', filter);
+      } else if (filter === 'priority') {
+        query = query.eq('status', filter);
       } else {
         query = query.eq('status', filter);
       }
@@ -160,6 +162,8 @@ const AdminLeads = ({ adminId }: AdminLeadsProps) => {
     switch (status) {
       case 'new':
         return <Badge className="bg-blue-500">New</Badge>;
+      case 'priority':
+        return <Badge className="bg-gradient-to-r from-amber-500 to-orange-500 text-white"><Zap className="w-3 h-3 mr-1" />Priority</Badge>;
       case 'in_progress':
         return <Badge className="bg-yellow-500">In Progress</Badge>;
       case 'converted':
@@ -177,6 +181,14 @@ const AdminLeads = ({ adminId }: AdminLeadsProps) => {
         <Badge className="bg-gradient-to-r from-yellow-500 to-orange-500 text-white">
           <Crown className="w-3 h-3 mr-1" />
           {planInterest ? planInterest.charAt(0).toUpperCase() + planInterest.slice(1) : 'Premium'}
+        </Badge>
+      );
+    }
+    if (type === 'priority_contact') {
+      return (
+        <Badge className="bg-gradient-to-r from-purple-500 to-pink-500 text-white">
+          <Zap className="w-3 h-3 mr-1" />
+          Priority Support
         </Badge>
       );
     }
@@ -217,6 +229,7 @@ const AdminLeads = ({ adminId }: AdminLeadsProps) => {
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="new">New</SelectItem>
+              <SelectItem value="priority">Priority</SelectItem>
               <SelectItem value="in_progress">In Progress</SelectItem>
               <SelectItem value="converted">Converted</SelectItem>
               <SelectItem value="closed">Closed</SelectItem>
@@ -298,8 +311,10 @@ const AdminLeads = ({ adminId }: AdminLeadsProps) => {
           <SelectContent>
             <SelectItem value="all">All Leads</SelectItem>
             <SelectItem value="premium">Premium Inquiries</SelectItem>
+            <SelectItem value="priority_contact">Priority Support</SelectItem>
             <SelectItem value="contact">Contact Forms</SelectItem>
             <SelectItem value="new">New</SelectItem>
+            <SelectItem value="priority">Priority Status</SelectItem>
             <SelectItem value="in_progress">In Progress</SelectItem>
             <SelectItem value="converted">Converted</SelectItem>
             <SelectItem value="closed">Closed</SelectItem>
@@ -328,7 +343,11 @@ const AdminLeads = ({ adminId }: AdminLeadsProps) => {
           {leads.map((lead) => (
             <Card
               key={lead.id}
-              className="cursor-pointer hover:border-primary/50 transition-colors"
+              className={`cursor-pointer transition-colors ${
+                lead.status === 'priority' || lead.lead_type === 'priority_contact' 
+                  ? 'border-amber-500/50 bg-gradient-to-r from-amber-500/5 to-orange-500/5 hover:border-amber-500' 
+                  : 'hover:border-primary/50'
+              }`}
               onClick={() => setSelectedLead(lead)}
             >
               <CardContent className="p-4">
