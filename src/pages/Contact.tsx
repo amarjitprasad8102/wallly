@@ -6,9 +6,10 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { ArrowLeft, Mail, MessageCircle, Send, Clock, MapPin } from 'lucide-react';
+import { ArrowLeft, Mail, MessageCircle, Send, Clock, CheckCircle } from 'lucide-react';
 import { toast } from 'sonner';
 import { z } from 'zod';
+import { supabase } from '@/integrations/supabase/client';
 import logo from '@/assets/logo.png';
 
 const contactSchema = z.object({
@@ -23,6 +24,7 @@ type ContactForm = z.infer<typeof contactSchema>;
 const Contact = () => {
   const navigate = useNavigate();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitted, setSubmitted] = useState(false);
   const [formData, setFormData] = useState<ContactForm>({
     name: '',
     email: '',
@@ -48,16 +50,24 @@ const Contact = () => {
     try {
       const validatedData = contactSchema.parse(formData);
       
-      // Create mailto link with form data
-      const mailtoLink = `mailto:help@corevia.in?subject=${encodeURIComponent(validatedData.subject)}&body=${encodeURIComponent(
-        `Name: ${validatedData.name}\nEmail: ${validatedData.email}\n\nMessage:\n${validatedData.message}`
-      )}`;
-      
-      window.location.href = mailtoLink;
-      
-      toast.success('Opening your email client...');
-      
-      // Reset form
+      // Save to database
+      const { error } = await supabase.from('leads').insert({
+        name: validatedData.name,
+        email: validatedData.email,
+        subject: validatedData.subject,
+        message: validatedData.message,
+        lead_type: 'contact',
+        status: 'new',
+      });
+
+      if (error) {
+        console.error('Error submitting contact form:', error);
+        toast.error('Failed to submit. Please try again.');
+        return;
+      }
+
+      setSubmitted(true);
+      toast.success('Message sent successfully!');
       setFormData({ name: '', email: '', subject: '', message: '' });
     } catch (err) {
       if (err instanceof z.ZodError) {
@@ -74,6 +84,37 @@ const Contact = () => {
       setIsSubmitting(false);
     }
   };
+
+  if (submitted) {
+    return (
+      <>
+        <Helmet>
+          <title>Message Sent - Wallly</title>
+        </Helmet>
+        <div className="min-h-screen bg-background flex items-center justify-center p-4">
+          <Card className="max-w-md w-full text-center">
+            <CardContent className="pt-8 pb-8">
+              <div className="bg-green-500/10 w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-4">
+                <CheckCircle className="w-10 h-10 text-green-500" />
+              </div>
+              <h2 className="text-2xl font-bold mb-2">Message Sent!</h2>
+              <p className="text-muted-foreground mb-6">
+                Thank you for reaching out. Our team will get back to you within 24-48 hours.
+              </p>
+              <div className="flex gap-3 justify-center">
+                <Button variant="outline" onClick={() => setSubmitted(false)}>
+                  Send Another
+                </Button>
+                <Button onClick={() => navigate('/')}>
+                  Go Home
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      </>
+    );
+  }
 
   return (
     <>

@@ -28,6 +28,7 @@ import {
   Heart
 } from 'lucide-react';
 import logo from '@/assets/logo.png';
+import PremiumLeadForm from '@/components/PremiumLeadForm';
 
 const Premium = () => {
   const navigate = useNavigate();
@@ -359,14 +360,11 @@ const Premium = () => {
                     </CardContent>
                     
                     <CardFooter>
-                      <Button 
-                        className={`w-full ${plan.popular ? 'bg-gradient-primary hover:opacity-90' : ''}`}
-                        variant={plan.popular ? 'default' : 'outline'}
-                        onClick={() => navigate('/auth')}
-                      >
-                        <Crown className="w-4 h-4 mr-2" />
-                        Get {plan.name}
-                      </Button>
+                      <PremiumLeadForm 
+                        planName={plan.name}
+                        planPrice={plan.price + plan.period}
+                        popular={plan.popular}
+                      />
                     </CardFooter>
                   </Card>
                 ))}
