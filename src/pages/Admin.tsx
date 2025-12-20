@@ -9,7 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
-import { AlertTriangle, Home, Plus, Pencil, Trash2, Eye, EyeOff, Users, FileText, Flag, Settings, Mail, Send, Clock, CheckCircle, XCircle, Ban, UserX } from "lucide-react";
+import { AlertTriangle, Home, Plus, Pencil, Trash2, Eye, EyeOff, Users, FileText, Flag, Settings, Mail, Send, Clock, CheckCircle, XCircle, Ban, UserX, MessageSquare } from "lucide-react";
 import { sendPremiumUpgradeEmail } from "@/utils/emailNotifications";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -34,6 +34,7 @@ import {
   BreadcrumbPage,
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
+import AdminLeads from "@/components/AdminLeads";
 
 interface User {
   id: string;
@@ -361,6 +362,7 @@ export default function Admin() {
   const [selectedUserForAction, setSelectedUserForAction] = useState<User | null>(null);
   const [banReason, setBanReason] = useState("");
   const [actionLoading, setActionLoading] = useState(false);
+  const [currentAdminId, setCurrentAdminId] = useState<string>("");
   
   const navigate = useNavigate();
   const { toast } = useToast();
@@ -395,6 +397,7 @@ export default function Admin() {
     }
 
     setIsAdmin(true);
+    setCurrentAdminId(user.id);
     fetchAllData();
   };
 
@@ -1067,10 +1070,14 @@ export default function Admin() {
           </div>
 
           <Tabs defaultValue="users" className="w-full">
-            <TabsList className="grid w-full grid-cols-5 max-w-3xl">
+            <TabsList className="grid w-full grid-cols-6 max-w-4xl">
               <TabsTrigger value="users" className="flex items-center gap-2">
                 <Users className="h-4 w-4" />
                 Users
+              </TabsTrigger>
+              <TabsTrigger value="leads" className="flex items-center gap-2">
+                <MessageSquare className="h-4 w-4" />
+                Leads
               </TabsTrigger>
               <TabsTrigger value="reports" className="flex items-center gap-2">
                 <Flag className="h-4 w-4" />
@@ -1094,6 +1101,24 @@ export default function Admin() {
                 Email
               </TabsTrigger>
             </TabsList>
+
+            {/* Leads Tab */}
+            <TabsContent value="leads">
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <MessageSquare className="h-5 w-5" />
+                    Leads & Inquiries
+                  </CardTitle>
+                  <CardDescription>
+                    Manage premium inquiries and contact form submissions. Chat with potential customers.
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <AdminLeads adminId={currentAdminId} />
+                </CardContent>
+              </Card>
+            </TabsContent>
 
             {/* Users Tab */}
             <TabsContent value="users">
