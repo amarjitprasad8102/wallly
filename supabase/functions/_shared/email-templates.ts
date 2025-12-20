@@ -11,15 +11,13 @@ export interface EmailTemplateParams {
   communityName?: string;
 }
 
-// Modern Wallly Logo with glassmorphism effect
+// Wallly Logo using uploaded image
 const wallyLogo = `
 <div style="text-align: center; padding: 40px 20px 30px;">
   <table cellpadding="0" cellspacing="0" border="0" align="center">
     <tr>
       <td style="background: linear-gradient(135deg, #6366f1 0%, #a855f7 50%, #ec4899 100%); padding: 20px; border-radius: 24px; box-shadow: 0 20px 60px rgba(99, 102, 241, 0.4);">
-        <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-          <path d="m3 21 1.9-5.7a8.5 8.5 0 1 1 3.8 3.8z"/>
-        </svg>
+        <img src="https://wallly.in/logo.png" alt="Wallly Logo" width="48" height="48" style="display: block; border: 0;">
       </td>
     </tr>
   </table>
@@ -67,8 +65,8 @@ const contactSupportSection = `
     </tr>
   </table>
   <p style="color: #64748b; font-size: 12px; margin: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; line-height: 1.6;">
-    This is an automated email. Please do not reply directly to this message.<br/>
-    For assistance, click the button above.
+    Need help? Email us at <a href="mailto:help@corevia.in" style="color: #818cf8; text-decoration: none; font-weight: 500;">help@corevia.in</a><br/>
+    This is an automated email. Please do not reply directly to this message.
   </p>
 </div>
 `;
@@ -198,6 +196,8 @@ export const EmailTemplates = {
         <h3>🚀 What you can do on Wallly:</h3>
         <ul>
           <li><strong>Video Chat</strong> — Connect face-to-face with strangers worldwide</li>
+          <li><strong>Text Chat</strong> — Real-time messaging with random people</li>
+          <li><strong>Image Sharing</strong> — Share photos during your conversations</li>
           <li><strong>Communities</strong> — Join groups based on your interests</li>
           <li><strong>Connections</strong> — Save and chat with people you meet</li>
           <li><strong>Premium</strong> — Unlock priority matching & more</li>
@@ -205,8 +205,6 @@ export const EmailTemplates = {
       </div>
       
       ${ctaButton('Start Exploring', 'https://wallly.in')}
-      
-      <p style="text-align: center; color: #64748b; font-size: 13px;">Questions? Just reply to this email — we're always here to help!</p>
     </div>
   `, 'Welcome to Wallly - Start connecting today!'),
 
@@ -317,8 +315,6 @@ export const EmailTemplates = {
       <p><strong style="color: #fca5a5;">Continued violations may result in account suspension or termination.</strong></p>
       
       ${ctaButton('Review Guidelines', 'https://wallly.in/terms', 'background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);')}
-      
-      <p style="color: #64748b; font-size: 13px; text-align: center;">Believe this was sent in error? Contact our support team.</p>
     </div>
   `, 'Important notice about your Wallly account'),
 
@@ -351,47 +347,47 @@ export const EmailTemplates = {
   newsletter: (params: EmailTemplateParams) => emailWrapper(`
     <div class="content">
       <div style="text-align: center; margin-bottom: 24px;">
-        <span class="emoji-icon">📰</span>
-        <h2>Wallly Weekly</h2>
-        <p style="color: #94a3b8; margin: 0;">Your weekly dose of updates</p>
+        <span class="emoji-icon">📬</span>
+        <h2>Wallly Newsletter</h2>
+        <p style="color: #94a3b8; margin: 0;">Your weekly dose of connections</p>
       </div>
       
       <p>Hey${params.userName ? ` <span class="highlight">${params.userName}</span>` : ' there'}! 👋</p>
-      <p>Here's what's happening at Wallly this week:</p>
       
-      ${params.customMessage || `
-      <div class="feature-card">
-        <h3>🚀 What's New</h3>
-        <ul>
-          <li>Improved video chat quality</li>
-          <li>New community features</li>
-          <li>Enhanced matching algorithm</li>
-        </ul>
-      </div>
-      `}
+      ${params.customMessage || '<p>Check out what\'s new on Wallly this week!</p>'}
       
-      ${ctaButton('Open Wallly', 'https://wallly.in')}
+      ${ctaButton('Explore Wallly', 'https://wallly.in')}
       
-      <p style="color: #64748b; font-size: 13px; text-align: center;">Don't want these emails? <a href="https://wallly.in/settings" style="color: #818cf8;">Unsubscribe</a></p>
+      <div class="divider"></div>
+      <p style="color: #64748b; font-size: 12px; text-align: center;">
+        You're receiving this because you subscribed to Wallly updates.<br/>
+        <a href="https://wallly.in/settings" style="color: #818cf8;">Manage preferences</a>
+      </p>
     </div>
   `, 'Your Wallly Weekly Update'),
 };
 
 export const getEmailTemplate = (
-  templateName: keyof typeof EmailTemplates, 
+  templateName: keyof typeof EmailTemplates,
   params: EmailTemplateParams
 ): string => {
   const template = EmailTemplates[templateName];
   if (!template) {
-    throw new Error(`Template "${templateName}" not found`);
+    throw new Error(`Email template "${templateName}" not found`);
   }
   return template(params);
 };
 
+// Plain text version generator
 export const getPlainTextVersion = (html: string): string => {
   return html
-    .replace(/<style[^>]*>[\s\S]*?<\/style>/gi, '')
+    .replace(/<style[^>]*>.*?<\/style>/gs, '')
+    .replace(/<script[^>]*>.*?<\/script>/gs, '')
     .replace(/<[^>]+>/g, '')
+    .replace(/&nbsp;/g, ' ')
+    .replace(/&amp;/g, '&')
+    .replace(/&lt;/g, '<')
+    .replace(/&gt;/g, '>')
     .replace(/\s+/g, ' ')
     .trim();
 };

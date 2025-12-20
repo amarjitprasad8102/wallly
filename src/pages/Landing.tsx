@@ -2,7 +2,8 @@ import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Helmet } from 'react-helmet';
 import { Button } from '@/components/ui/button';
-import { MessageCircle, Users, Shield, Zap, Globe, Lock, ArrowRight, Hash, ChevronDown, UserX, MessageSquare } from 'lucide-react';
+import { MessageCircle, Users, Shield, Zap, Globe, Lock, ArrowRight, Hash, ChevronDown, UserX, MessageSquare, Image } from 'lucide-react';
+import logo from '@/assets/logo.png';
 import { supabase } from '@/integrations/supabase/client';
 import Lenis from '@studio-freight/lenis';
 import {
@@ -62,21 +63,23 @@ const Landing = () => {
   return (
     <>
       <Helmet>
-        <title>Wallly - Connect With Strangers Worldwide | Free Random Video Chat</title>
-        <meta name="description" content="Connect instantly with people worldwide through Wallly. Free random video chat, text messaging, and communities. From India to the World - Join now!" />
-        <meta name="keywords" content="random chat, video chat, meet strangers, anonymous chat, online friends, global community, india chat, free chat" />
-        <link rel="canonical" href="https://wallly.corevia.in/" />
+        <title>Wallly - Free Random Video Chat & Image Sharing | Meet Strangers Worldwide</title>
+        <meta name="description" content="Connect instantly with people worldwide through Wallly. Free random video chat, text messaging, image sharing, and communities. From India to the World - Join now!" />
+        <meta name="keywords" content="random video chat, free video chat, meet strangers, image sharing, photo sharing, anonymous chat, online friends, global community, india chat, free chat, text chat, webcam chat, random matching, video calling strangers" />
+        <link rel="canonical" href="https://wallly.in/" />
         
         {/* Open Graph / Facebook */}
         <meta property="og:type" content="website" />
-        <meta property="og:url" content="https://wallly.corevia.in/" />
-        <meta property="og:title" content="Wallly - Connect With Strangers Worldwide" />
-        <meta property="og:description" content="Free random video chat connecting people from India to the World. Meet new friends instantly." />
+        <meta property="og:url" content="https://wallly.in/" />
+        <meta property="og:title" content="Wallly - Free Random Video Chat & Image Sharing" />
+        <meta property="og:description" content="Free random video chat with image sharing connecting people from India to the World. Meet new friends instantly." />
+        <meta property="og:image" content="https://wallly.in/logo.png" />
         
         {/* Twitter */}
         <meta name="twitter:card" content="summary_large_image" />
-        <meta name="twitter:title" content="Wallly - Connect With Strangers Worldwide" />
-        <meta name="twitter:description" content="Free random video chat connecting people from India to the World." />
+        <meta name="twitter:title" content="Wallly - Free Random Video Chat & Image Sharing" />
+        <meta name="twitter:description" content="Free random video chat with image sharing connecting people from India to the World." />
+        <meta name="twitter:image" content="https://wallly.in/logo.png" />
         
         {/* Structured Data */}
         <script type="application/ld+json">
@@ -84,15 +87,22 @@ const Landing = () => {
             "@context": "https://schema.org",
             "@type": "WebApplication",
             "name": "Wallly",
-            "description": "Connect instantly with people worldwide through random video chat and text messaging",
-            "url": "https://wallly.corevia.in",
+            "description": "Connect instantly with people worldwide through random video chat, text messaging, and image sharing",
+            "url": "https://wallly.in",
             "applicationCategory": "SocialNetworkingApplication",
             "operatingSystem": "Web Browser",
             "offers": {
               "@type": "Offer",
               "price": "0",
               "priceCurrency": "USD"
-            }
+            },
+            "featureList": [
+              "Random Video Chat",
+              "Random Text Chat",
+              "Image Sharing",
+              "Community Groups",
+              "Real-time Messaging"
+            ]
           })}
         </script>
       </Helmet>
@@ -103,9 +113,7 @@ const Landing = () => {
         <nav className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3 sm:py-4" aria-label="Main navigation">
           <div className="flex justify-between items-center">
             <div className="flex items-center space-x-2">
-              <div className="bg-gradient-primary p-1.5 sm:p-2 rounded-lg" aria-hidden="true">
-                <MessageCircle className="w-5 h-5 sm:w-6 sm:h-6 text-white" aria-label="Wallly logo" />
-              </div>
+              <img src={logo} alt="Wallly Logo" className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg" />
               <h2 className="text-lg sm:text-xl font-bold">Wallly</h2>
             </div>
             <div className="flex items-center gap-2 sm:gap-4">
@@ -140,12 +148,10 @@ const Landing = () => {
         {/* Hero Section */}
         <section className="px-4 py-16 sm:py-24 lg:py-32">
           <div className="max-w-5xl mx-auto text-center">
-            <div className="mb-6 sm:mb-8 flex justify-center">
+          <div className="mb-6 sm:mb-8 flex justify-center">
               <div className="relative">
                 <div className="absolute inset-0 bg-gradient-primary rounded-full blur-2xl opacity-30 animate-pulse-glow" aria-hidden="true"></div>
-                <div className="relative bg-gradient-primary p-6 sm:p-8 rounded-full">
-                  <MessageCircle className="w-12 h-12 sm:w-16 sm:h-16 lg:w-20 lg:h-20 text-white" aria-label="Chat icon" />
-                </div>
+                <img src={logo} alt="Wallly Logo" className="relative w-24 h-24 sm:w-32 sm:h-32 lg:w-40 lg:h-40 rounded-3xl shadow-2xl" />
               </div>
             </div>
             
@@ -156,7 +162,7 @@ const Landing = () => {
               "Where the walls end, you find a friend."
             </p>
             <p className="text-base sm:text-lg lg:text-xl text-muted-foreground mb-8 sm:mb-12 max-w-2xl mx-auto px-4">
-              From India to World - Connect instantly with people across the globe. Join communities, make new friends, and discover different cultures.
+              From India to World - Connect instantly with people across the globe. Video chat, text chat, share images, join communities, make new friends, and discover different cultures.
             </p>
             
             <div className="flex flex-col sm:flex-row gap-4 justify-center items-center px-4">
@@ -235,11 +241,11 @@ const Landing = () => {
 
               <article className="bg-card rounded-2xl p-6 sm:p-8 border border-border/50 hover:border-primary/50 transition-all hover:shadow-lg group">
                 <div className="bg-accent/10 w-12 h-12 sm:w-14 sm:h-14 rounded-xl flex items-center justify-center mb-4 sm:mb-6 group-hover:scale-110 transition-transform">
-                  <Users className="w-6 h-6 sm:w-7 sm:h-7 text-accent" />
+                  <Image className="w-6 h-6 sm:w-7 sm:h-7 text-accent" aria-label="Image sharing icon" />
                 </div>
-                <h3 className="text-xl sm:text-2xl font-semibold mb-3 sm:mb-4">Bharatiya Communities</h3>
+                <h3 className="text-xl sm:text-2xl font-semibold mb-3 sm:mb-4">Image Sharing</h3>
                 <p className="text-sm sm:text-base text-muted-foreground leading-relaxed">
-                  Join vibrant communities connecting India to the world. Share ideas, culture, and grow together.
+                  Share photos during video and text chats. Express yourself better with images and make conversations more engaging.
                 </p>
               </article>
 
