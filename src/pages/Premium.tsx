@@ -184,9 +184,9 @@ const Premium = () => {
   return (
     <>
       <Helmet>
-        <title>Wallly Premium - Unlock Advanced Random Chat Features | Gender Filter, HD Video</title>
-        <meta name="description" content="Upgrade to Wallly Premium for advanced random video chat features. Gender & age filters, priority matching, HD video quality, unlimited connections, and ad-free experience. Best Omegle alternative with premium features." />
-        <meta name="keywords" content="wallly premium, random video chat premium, omegle alternative premium, gender filter video chat, age filter random chat, priority matching, HD video chat, unlimited connections, ad-free chat, premium video chat, chatroulette premium, stranger chat premium, video chat subscription" />
+        <title>Wallly Premium - Gender Filter & HD Video Chat</title>
+        <meta name="description" content="Upgrade to Premium for gender filters, priority matching, HD video & more. Best Omegle alternative." />
+        <meta name="keywords" content="wallly premium, random video chat premium, gender filter video chat, priority matching, HD video chat" />
         <link rel="canonical" href="https://wallly.in/premium" />
         
         <meta property="og:title" content="Wallly Premium - Unlock Advanced Random Chat Features" />

@@ -71,10 +71,10 @@ const Blog = () => {
   return (
     <>
       <Helmet>
-        <title>Wallly Blog - From India to World | Connection, Culture & Community</title>
-        <meta name="description" content="Explore 100+ articles about online connections, cultural exchange, and community building. From India to World - insights on digital friendship and meaningful conversations." />
-        <meta name="keywords" content="online chat, random chat, Wallly blog, cultural exchange, Indian communities, Bharatiya Samudaay, online friendship, anonymous chat" />
-        <link rel="canonical" href="https://wallly.corevia.in/b" />
+        <title>Wallly Blog - Connection, Culture & Community</title>
+        <meta name="description" content="Explore articles on online connections, cultural exchange & community building. Tips for meaningful conversations." />
+        <meta name="keywords" content="online chat, random chat, Wallly blog, cultural exchange, Indian communities, online friendship" />
+        <link rel="canonical" href="https://wallly.in/blog" />
       </Helmet>
 
       <div className="min-h-screen bg-gradient-subtle">

@@ -85,8 +85,8 @@ const Connections = () => {
     <>
       <Helmet>
         <title>My Connections - Wallly</title>
-        <meta name="description" content="Manage your Wallly connections. View chat history, pending requests, and reconnect with friends from around the world." />
-        <link rel="canonical" href="https://wallly.corevia.in/connections" />
+        <meta name="description" content="Manage your Wallly connections. View chat history and reconnect with friends." />
+        <link rel="canonical" href="https://wallly.in/connections" />
         <meta name="robots" content="noindex, follow" />
       </Helmet>
       

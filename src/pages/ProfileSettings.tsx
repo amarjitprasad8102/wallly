@@ -121,6 +121,8 @@ const ProfileSettings = () => {
       <Helmet>
         <title>Profile Settings - Wallly</title>
         <meta name="description" content="Update your Wallly profile settings including name, age, and gender." />
+        <link rel="canonical" href="https://wallly.in/profile" />
+        <meta name="robots" content="noindex, follow" />
       </Helmet>
 
       <div className="min-h-screen bg-background">

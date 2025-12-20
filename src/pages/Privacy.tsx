@@ -18,9 +18,9 @@ const Privacy = () => {
     <>
       <Helmet>
         <title>Privacy Policy - Wallly</title>
-        <meta name="description" content="Read Wallly's Privacy Policy. Learn how we protect your data, handle encrypted conversations, and keep your random video chats safe and private." />
-        <meta name="keywords" content="privacy policy, data protection, chat privacy, encrypted messaging, user safety" />
-        <link rel="canonical" href="https://wallly.corevia.in/privacy" />
+        <meta name="description" content="Wallly Privacy Policy. Learn how we protect your data and keep your chats safe." />
+        <meta name="keywords" content="privacy policy, data protection, chat privacy, user safety" />
+        <link rel="canonical" href="https://wallly.in/privacy" />
       </Helmet>
       
       <div className="min-h-screen bg-gradient-subtle">
