@@ -64,6 +64,31 @@ const Auth = () => {
 
       if (type === 'signup' || type === 'email_change') {
         toast.success("Email confirmed successfully! You can now sign in.");
+        
+        // After email confirmation, update profile with age/gender from metadata
+        if (accessToken) {
+          try {
+            const { data: { user } } = await supabase.auth.getUser();
+            if (user && user.user_metadata) {
+              const { age, gender } = user.user_metadata;
+              if (age || gender) {
+                const { error: profileError } = await supabase
+                  .from('profiles')
+                  .update({ 
+                    age: age || null, 
+                    gender: gender || null 
+                  })
+                  .eq('id', user.id);
+                
+                if (profileError) {
+                  console.error('Error updating profile after confirmation:', profileError);
+                }
+              }
+            }
+          } catch (err) {
+            console.error('Error updating profile:', err);
+          }
+        }
       }
     };
 
@@ -74,14 +99,52 @@ const Auth = () => {
       await new Promise(resolve => setTimeout(resolve, 100));
       const { data: { session } } = await supabase.auth.getSession();
       if (session && !isPasswordReset) {
+        // Check if user profile has age/gender, if not update from metadata
+        const { age, gender } = session.user.user_metadata || {};
+        if (age || gender) {
+          const { data: profile } = await supabase
+            .from('profiles')
+            .select('age, gender')
+            .eq('id', session.user.id)
+            .single();
+          
+          if (profile && (!profile.age || !profile.gender)) {
+            await supabase
+              .from('profiles')
+              .update({ 
+                age: profile.age || age || null, 
+                gender: profile.gender || gender || null 
+              })
+              .eq('id', session.user.id);
+          }
+        }
         navigate("/app");
       }
     };
     
     checkSession();
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
       if (event === 'SIGNED_IN' && session && !isPasswordReset) {
+        // Update profile with age/gender from metadata if not already set
+        const { age, gender } = session.user.user_metadata || {};
+        if (age || gender) {
+          const { data: profile } = await supabase
+            .from('profiles')
+            .select('age, gender')
+            .eq('id', session.user.id)
+            .single();
+          
+          if (profile && (!profile.age || !profile.gender)) {
+            await supabase
+              .from('profiles')
+              .update({ 
+                age: profile.age || age || null, 
+                gender: profile.gender || gender || null 
+              })
+              .eq('id', session.user.id);
+          }
+        }
         navigate("/app");
       }
       if (event === 'PASSWORD_RECOVERY') {
