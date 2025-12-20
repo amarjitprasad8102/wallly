@@ -123,7 +123,7 @@ const BlogDetail = () => {
         <meta property="og:type" content="article" />
         <meta property="article:published_time" content={blog.date} />
         <meta property="article:author" content={blog.author} />
-        <link rel="canonical" href={`https://wallly.corevia.in/b/${blog.slug}`} />
+        <link rel="canonical" href={`https://wallly.in/b/${blog.slug}`} />
       </Helmet>
 
       <div className="min-h-screen bg-gradient-subtle">

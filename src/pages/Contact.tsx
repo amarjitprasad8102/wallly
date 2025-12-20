@@ -145,9 +145,9 @@ const Contact = () => {
   return (
     <>
       <Helmet>
-        <title>Contact Us - Wallly | Get Help & Support</title>
-        <meta name="description" content="Contact Wallly support team. Get help with your account, report issues, or send us feedback. We're here to help you connect better." />
-        <meta name="keywords" content="contact wallly, wallly support, help wallly, wallly customer service, report issue wallly" />
+        <title>Contact Us - Wallly Support</title>
+        <meta name="description" content="Contact Wallly support. Get help with your account, report issues, or send feedback." />
+        <meta name="keywords" content="contact wallly, wallly support, help wallly, customer service" />
         <link rel="canonical" href="https://wallly.in/contact" />
         
         <meta property="og:title" content="Contact Us - Wallly" />

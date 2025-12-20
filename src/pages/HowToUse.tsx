@@ -39,10 +39,10 @@ const HowToUse = () => {
   return (
     <>
       <Helmet>
-        <title>How to Use Wallly - Complete Guide to Random Video Chat</title>
-        <meta name="description" content="Learn how to use Wallly in 5 simple steps. Complete guide to random video chat, connecting with friends by ID, joining communities, and staying safe online." />
-        <meta name="keywords" content="how to use, user guide, random chat tutorial, video chat guide, connect by ID, join communities" />
-        <link rel="canonical" href="https://wallly.corevia.in/howtouse" />
+        <title>How to Use Wallly - Random Video Chat Guide</title>
+        <meta name="description" content="Learn how to use Wallly in 5 easy steps. Guide to random video chat, connecting by ID & communities." />
+        <meta name="keywords" content="how to use, user guide, random chat tutorial, video chat guide, connect by ID" />
+        <link rel="canonical" href="https://wallly.in/howtouse" />
         
         <script type="application/ld+json">
           {JSON.stringify({

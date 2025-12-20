@@ -61,16 +61,16 @@ const Landing = () => {
   return (
     <>
       <Helmet>
-        <title>Wallly - Free Random Video Chat & Image Sharing | Meet Strangers Worldwide</title>
-        <meta name="description" content="Connect instantly with people worldwide through Wallly. Free random video chat, text messaging, image sharing, and communities. From India to the World - Join now!" />
-        <meta name="keywords" content="random video chat, free video chat, meet strangers, image sharing, photo sharing, anonymous chat, online friends, global community, india chat, free chat, text chat, webcam chat, random matching, video calling strangers" />
+        <title>Wallly - Free Random Video Chat | Meet Strangers</title>
+        <meta name="description" content="Free random video chat to meet strangers worldwide. Video call, text chat & image sharing. Join now!" />
+        <meta name="keywords" content="random video chat, free video chat, meet strangers, image sharing, anonymous chat, global community, india chat" />
         <link rel="canonical" href="https://wallly.in/" />
         
         {/* Open Graph / Facebook */}
         <meta property="og:type" content="website" />
         <meta property="og:url" content="https://wallly.in/" />
-        <meta property="og:title" content="Wallly - Free Random Video Chat & Image Sharing" />
-        <meta property="og:description" content="Free random video chat with image sharing connecting people from India to the World. Meet new friends instantly." />
+        <meta property="og:title" content="Wallly - Free Random Video Chat" />
+        <meta property="og:description" content="Free random video chat with image sharing. Meet new friends from India to the World." />
         <meta property="og:image" content="https://wallly.in/logo.png" />
         
         {/* Twitter */}
@@ -392,28 +392,42 @@ const Landing = () => {
       </main>
 
       {/* Footer */}
-      <footer className="border-t border-border/50 py-6 sm:py-8 px-4 bg-muted/20">
+      <footer className="border-t border-border/50 py-8 sm:py-12 px-4 bg-muted/20">
         <div className="max-w-7xl mx-auto">
-          <div className="flex flex-wrap justify-center gap-4 mb-4 text-sm">
-            <button onClick={() => navigate('/privacy')} className="text-muted-foreground hover:text-primary transition-colors">
-              Privacy Policy
-            </button>
-            <button onClick={() => navigate('/howtouse')} className="text-muted-foreground hover:text-primary transition-colors">
-              How to Use
-            </button>
-            <button onClick={() => navigate('/contact')} className="text-muted-foreground hover:text-primary transition-colors">
-              Contact Us
-            </button>
-            <button onClick={() => navigate('/blog')} className="text-muted-foreground hover:text-primary transition-colors">
-              Blog
-            </button>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-8 mb-8">
+            <div>
+              <h3 className="font-semibold mb-4">Product</h3>
+              <ul className="space-y-2 text-sm text-muted-foreground">
+                <li><button onClick={() => navigate('/auth')} className="hover:text-primary transition-colors">Video Chat</button></li>
+                <li><button onClick={() => navigate('/auth')} className="hover:text-primary transition-colors">Text Chat</button></li>
+                <li><button onClick={() => navigate('/premium')} className="hover:text-primary transition-colors">Premium</button></li>
+                <li><button onClick={() => navigate('/c')} className="hover:text-primary transition-colors">Communities</button></li>
+              </ul>
+            </div>
+            <div>
+              <h3 className="font-semibold mb-4">Resources</h3>
+              <ul className="space-y-2 text-sm text-muted-foreground">
+                <li><button onClick={() => navigate('/howtouse')} className="hover:text-primary transition-colors">How to Use</button></li>
+                <li><button onClick={() => navigate('/blog')} className="hover:text-primary transition-colors">Blog</button></li>
+                <li><button onClick={() => navigate('/contact')} className="hover:text-primary transition-colors">Contact Us</button></li>
+              </ul>
+            </div>
+            <div>
+              <h3 className="font-semibold mb-4">Legal</h3>
+              <ul className="space-y-2 text-sm text-muted-foreground">
+                <li><button onClick={() => navigate('/privacy')} className="hover:text-primary transition-colors">Privacy Policy</button></li>
+              </ul>
+            </div>
+            <div>
+              <h3 className="font-semibold mb-4">Connect</h3>
+              <ul className="space-y-2 text-sm text-muted-foreground">
+                <li><a href="mailto:help@corevia.in" className="hover:text-primary transition-colors">help@corevia.in</a></li>
+              </ul>
+            </div>
           </div>
-          <div className="text-center text-xs sm:text-sm text-muted-foreground">
-            <p className="mb-3 sm:mb-4 leading-relaxed px-4">
-              By using Wallly, you agree to be respectful and follow our community guidelines. Users must be 16 years or older.
-            </p>
+          <div className="text-center text-xs sm:text-sm text-muted-foreground border-t border-border/50 pt-6">
             <p className="mb-2">
-              Need help? <a href="mailto:help@corevia.in" className="text-primary hover:underline">help@corevia.in</a>
+              By using Wallly, you agree to be respectful and follow our community guidelines. Users must be 16+.
             </p>
             <p>&copy; 2025 Wallly. All rights reserved.</p>
           </div>
