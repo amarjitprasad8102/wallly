@@ -1,15 +1,18 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, useCallback } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { PhoneOff, SkipForward, Send, Image as ImageIcon, X } from 'lucide-react';
+import { PhoneOff, SkipForward, Send, Image as ImageIcon, X, Crown } from 'lucide-react';
 import { useWebRTC } from '@/hooks/useWebRTC';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { soundEffects } from '@/utils/sounds';
 import { haptics } from '@/utils/haptics';
 import EncryptionBadge from './EncryptionBadge';
 import SecureImage from './SecureImage';
+import TypingIndicator from './TypingIndicator';
+import MessageStatus from './MessageStatus';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+import { Badge } from '@/components/ui/badge';
 
 interface TextChatProps {
   currentUserId: string;
@@ -19,13 +22,16 @@ interface TextChatProps {
   onLeave: () => void;
   onEndCall: () => void;
   onOtherUserDisconnected: () => void;
+  isPremium?: boolean;
 }
 
 interface ChatMessage {
+  id: string;
   text?: string;
   imageUrl?: string;
   sender: 'me' | 'them';
   timestamp: Date;
+  status: 'sending' | 'sent' | 'delivered' | 'read';
 }
 
 const TextChat = ({
@@ -36,6 +42,7 @@ const TextChat = ({
   onLeave,
   onEndCall,
   onOtherUserDisconnected,
+  isPremium = false,
 }: TextChatProps) => {
   const [connectionStatus, setConnectionStatus] = useState<string>('connecting');
   const [duration, setDuration] = useState(0);
@@ -44,10 +51,13 @@ const TextChat = ({
   const [selectedImage, setSelectedImage] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [isUploading, setIsUploading] = useState(false);
+  const [isTyping, setIsTyping] = useState(false);
   const hasInitiatedOffer = useRef(false);
   const dataChannel = useRef<RTCDataChannel | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const lastTypingSentRef = useRef<number>(0);
   const [isChannelReady, setIsChannelReady] = useState(false);
   const uploadedImagesRef = useRef<string[]>([]);
 
@@ -173,13 +183,38 @@ const TextChat = ({
         const data = JSON.parse(event.data);
         
         if (data.type === 'message') {
-          setMessages(prev => [...prev, { text: data.text, sender: 'them', timestamp: new Date() }]);
+          const msgId = `msg-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+          setMessages(prev => [...prev, { id: msgId, text: data.text, sender: 'them', timestamp: new Date(), status: 'delivered' }]);
           soundEffects.playNotification();
           haptics.light();
+          // Send read receipt if premium
+          if (isPremium && dataChannel.current?.readyState === 'open') {
+            dataChannel.current.send(JSON.stringify({ type: 'read_receipt', msgId }));
+          }
         } else if (data.type === 'image') {
-          setMessages(prev => [...prev, { imageUrl: data.imageUrl, sender: 'them', timestamp: new Date() }]);
+          const msgId = `msg-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+          setMessages(prev => [...prev, { id: msgId, imageUrl: data.imageUrl, sender: 'them', timestamp: new Date(), status: 'delivered' }]);
           soundEffects.playNotification();
           haptics.light();
+          if (isPremium && dataChannel.current?.readyState === 'open') {
+            dataChannel.current.send(JSON.stringify({ type: 'read_receipt', msgId }));
+          }
+        } else if (data.type === 'typing') {
+          setIsTyping(true);
+          // Clear typing after 3 seconds
+          if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current);
+          typingTimeoutRef.current = setTimeout(() => setIsTyping(false), 3000);
+        } else if (data.type === 'stop_typing') {
+          setIsTyping(false);
+        } else if (data.type === 'read_receipt') {
+          // Mark message as read
+          setMessages(prev => prev.map(m => 
+            m.id === data.msgId ? { ...m, status: 'read' } : m
+          ));
+        } else if (data.type === 'delivered_receipt') {
+          setMessages(prev => prev.map(m => 
+            m.id === data.msgId ? { ...m, status: 'delivered' } : m
+          ));
         }
       } catch (error) {
         console.error('[TEXT] Error processing message:', error);
@@ -261,16 +296,23 @@ const TextChat = ({
       soundEffects.playClick();
       haptics.light();
 
+      // Stop typing indicator
+      if (isPremium && dataChannel.current?.readyState === 'open') {
+        dataChannel.current.send(JSON.stringify({ type: 'stop_typing' }));
+      }
+
       if (selectedImage) {
         setIsUploading(true);
         const imageUrl = await uploadImage(selectedImage);
         
         if (imageUrl) {
+          const msgId = `msg-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
           dataChannel.current.send(JSON.stringify({ 
             type: 'image', 
-            imageUrl: imageUrl 
+            imageUrl: imageUrl,
+            msgId,
           }));
-          setMessages(prev => [...prev, { imageUrl, sender: 'me', timestamp: new Date() }]);
+          setMessages(prev => [...prev, { id: msgId, imageUrl, sender: 'me', timestamp: new Date(), status: 'sent' }]);
         } else {
           toast.error('Failed to upload image');
         }
@@ -281,11 +323,13 @@ const TextChat = ({
       }
 
       if (newMessage.trim()) {
+        const msgId = `msg-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
         dataChannel.current.send(JSON.stringify({ 
           type: 'message', 
-          text: newMessage 
+          text: newMessage,
+          msgId,
         }));
-        setMessages(prev => [...prev, { text: newMessage, sender: 'me', timestamp: new Date() }]);
+        setMessages(prev => [...prev, { id: msgId, text: newMessage, sender: 'me', timestamp: new Date(), status: 'sent' }]);
         setNewMessage('');
       }
     } catch (error) {
@@ -293,6 +337,17 @@ const TextChat = ({
       setIsUploading(false);
     }
   };
+
+  // Send typing indicator
+  const handleTyping = useCallback(() => {
+    if (!isPremium || !dataChannel.current || dataChannel.current.readyState !== 'open') return;
+    
+    const now = Date.now();
+    if (now - lastTypingSentRef.current > 2000) {
+      dataChannel.current.send(JSON.stringify({ type: 'typing' }));
+      lastTypingSentRef.current = now;
+    }
+  }, [isPremium]);
 
   const handleSkip = async () => {
     soundEffects.playClick();
@@ -338,6 +393,12 @@ const TextChat = ({
              'Disconnected'}
           </span>
           <EncryptionBadge encrypted={isChannelReady} variant="chat" />
+          {isPremium && (
+            <Badge className="bg-gradient-to-r from-amber-500 to-orange-500 text-white text-[10px] px-1.5 py-0 h-4">
+              <Crown className="w-2.5 h-2.5 mr-0.5" />
+              PREMIUM
+            </Badge>
+          )}
         </div>
         <div className="flex gap-1 sm:gap-2">
           <Button variant="outline" size="sm" onClick={handleSkip} className="h-8 px-2 sm:px-3 text-xs sm:text-sm">
@@ -376,7 +437,7 @@ const TextChat = ({
           
           {messages.map((msg, idx) => (
             <div
-              key={idx}
+              key={msg.id || idx}
               className={`flex ${msg.sender === 'me' ? 'justify-end' : 'justify-start'}`}
             >
               <div
@@ -396,11 +457,31 @@ const TextChat = ({
                   </div>
                 )}
                 {msg.text && (
-                  <p className="px-4 py-2">{msg.text}</p>
+                  <div className="px-4 py-2 flex items-end gap-1">
+                    <p className="flex-1">{msg.text}</p>
+                    {msg.sender === 'me' && (
+                      <MessageStatus status={msg.status} isPremium={isPremium} />
+                    )}
+                  </div>
+                )}
+                {msg.imageUrl && msg.sender === 'me' && (
+                  <div className="px-2 pb-1 flex justify-end">
+                    <MessageStatus status={msg.status} isPremium={isPremium} />
+                  </div>
                 )}
               </div>
             </div>
           ))}
+          
+          {/* Typing Indicator */}
+          {isPremium && isTyping && (
+            <div className="flex justify-start">
+              <div className="bg-muted rounded-2xl">
+                <TypingIndicator />
+              </div>
+            </div>
+          )}
+          
           <div ref={messagesEndRef} />
         </div>
       </ScrollArea>
@@ -458,7 +539,10 @@ const TextChat = ({
           </Button>
           <Input
             value={newMessage}
-            onChange={(e) => setNewMessage(e.target.value)}
+            onChange={(e) => {
+              setNewMessage(e.target.value);
+              handleTyping();
+            }}
             placeholder="Type a message..."
             className="flex-1"
             disabled={!isChannelReady}

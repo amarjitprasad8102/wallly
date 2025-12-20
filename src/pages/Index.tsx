@@ -1,7 +1,7 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { MessageCircle, Users, Shield, Zap, LogOut, UserCheck, Home, Crown, MessageSquare } from 'lucide-react';
+import { MessageCircle, Users, Shield, Zap, LogOut, UserCheck, Home, Crown, MessageSquare, Settings2 } from 'lucide-react';
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -13,7 +13,7 @@ import {
 import VideoChat from '@/components/VideoChat';
 import TextChat from '@/components/TextChat';
 import WaitingScreen from '@/components/WaitingScreen';
-import { useMatch } from '@/hooks/useMatch';
+import { useMatch, PremiumMatchFilters } from '@/hooks/useMatch';
 import { useConnectionRequests } from '@/hooks/useConnectionRequests';
 import { usePremiumStatus } from '@/hooks/usePremiumStatus';
 import { supabase } from '@/integrations/supabase/client';
@@ -25,6 +25,8 @@ import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { Card } from '@/components/ui/card';
 import { soundEffects } from '@/utils/sounds';
+import PremiumFilters, { PremiumFilterSettings } from '@/components/PremiumFilters';
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
 import { haptics } from '@/utils/haptics';
 
 const Index = () => {
@@ -38,6 +40,8 @@ const Index = () => {
   const [isSigningOut, setIsSigningOut] = useState(false);
   const [disconnectMessage, setDisconnectMessage] = useState<string | null>(null);
   const [isStrangerMode, setIsStrangerMode] = useState(false);
+  const [premiumFilters, setPremiumFilters] = useState<PremiumMatchFilters>({});
+  const [filtersOpen, setFiltersOpen] = useState(false);
   const premiumWelcomeShown = useRef(false);
   
   // For stranger mode, use a generated ID; for authenticated, use actual user ID
@@ -48,7 +52,17 @@ const Index = () => {
   // Check premium status
   const { isPremium, loading: premiumLoading } = usePremiumStatus(isStrangerMode ? undefined : user?.id);
   
-  const { isSearching, matchedUserId, searchingUsersCount, joinMatchmaking, connectDirectly, leaveMatchmaking, sendSignal, onSignal } = useMatch(effectiveUserId, chatMode, isPremium);
+  const { isSearching, matchedUserId, searchingUsersCount, joinMatchmaking, connectDirectly, leaveMatchmaking, sendSignal, onSignal } = useMatch(effectiveUserId, chatMode, isPremium, premiumFilters);
+  
+  // Handle filter changes from PremiumFilters component
+  const handleFiltersChange = useCallback((filters: PremiumFilterSettings) => {
+    setPremiumFilters({
+      genderFilter: filters.genderFilter,
+      ageRange: filters.ageRange,
+      priorityMatching: filters.priorityMatching,
+      interestPriority: filters.interestPriority,
+    });
+  }, []);
   const {
     pendingRequests,
     acceptedRequest,
@@ -341,6 +355,7 @@ const Index = () => {
           onLeave={handleSkipToNext}
           onEndCall={handleEndChat}
           onOtherUserDisconnected={handleOtherUserDisconnected}
+          isPremium={isPremium}
         />
       </>
     );
@@ -362,6 +377,7 @@ const Index = () => {
           onLeave={handleSkipToNext}
           onEndCall={handleEndChat}
           onOtherUserDisconnected={handleOtherUserDisconnected}
+          isPremium={isPremium}
         />
       </>
     );
@@ -424,6 +440,36 @@ const Index = () => {
             )}
           </div>
           <div className="flex gap-2 w-full sm:w-auto">
+            {/* Premium Filters Button */}
+            {!isStrangerMode && (
+              <Sheet open={filtersOpen} onOpenChange={setFiltersOpen}>
+                <SheetTrigger asChild>
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    className={`flex-1 sm:flex-none text-xs sm:text-sm h-8 sm:h-9 ${isPremium ? 'border-yellow-500/30 text-yellow-600 dark:text-yellow-400' : ''}`}
+                  >
+                    <Settings2 className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
+                    Filters
+                    {isPremium && <Crown className="w-3 h-3 ml-1 text-yellow-500" />}
+                  </Button>
+                </SheetTrigger>
+                <SheetContent side="right" className="w-[320px] sm:w-[400px]">
+                  <SheetHeader>
+                    <SheetTitle className="flex items-center gap-2">
+                      <Settings2 className="w-5 h-5" />
+                      Match Filters
+                    </SheetTitle>
+                  </SheetHeader>
+                  <div className="mt-6">
+                    <PremiumFilters 
+                      isPremium={isPremium} 
+                      onFiltersChange={handleFiltersChange}
+                    />
+                  </div>
+                </SheetContent>
+              </Sheet>
+            )}
             {!isStrangerMode && (
               <Button variant="outline" size="sm" onClick={() => navigate('/connections')} className="flex-1 sm:flex-none text-xs sm:text-sm h-8 sm:h-9">
                 <UserCheck className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
