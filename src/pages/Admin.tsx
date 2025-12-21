@@ -572,8 +572,22 @@ export default function Admin() {
       return;
     }
 
+    // Use edge function to update premium status (bypasses RLS)
     const isPremium = newRole === "premium_user";
-    await supabase.from("profiles").update({ is_premium: isPremium }).eq("id", userId);
+    try {
+      const { data, error: premiumError } = await supabase.functions.invoke('admin-user-action', {
+        body: { action: 'update-premium', userId, isPremium },
+      });
+
+      if (premiumError) {
+        console.error('Failed to update premium status:', premiumError);
+      }
+      if (data?.error) {
+        console.error('Premium update error:', data.error);
+      }
+    } catch (err) {
+      console.error('Error updating premium status:', err);
+    }
 
     if (newRole === "premium_user" && previousRole !== "premium_user") {
       const user = users.find(u => u.id === userId);
