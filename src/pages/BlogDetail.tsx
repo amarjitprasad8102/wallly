@@ -13,6 +13,7 @@ import {
 import { blogPosts as staticBlogPosts } from '@/data/blogPosts';
 import { supabase } from '@/integrations/supabase/client';
 import { Helmet } from 'react-helmet';
+import DOMPurify from 'dompurify';
 
 interface BlogPost {
   slug: string;
@@ -230,7 +231,12 @@ const BlogDetail = () => {
             {/* Blog Content */}
             <div 
               className="prose prose-lg max-w-none [&>h2]:text-3xl [&>h2]:font-bold [&>h2]:mb-4 [&>h2]:mt-8 [&>h2]:text-foreground [&>p]:text-muted-foreground [&>p]:leading-relaxed [&>p]:mb-4"
-              dangerouslySetInnerHTML={{ __html: blog.content }}
+              dangerouslySetInnerHTML={{ 
+                __html: DOMPurify.sanitize(blog.content, {
+                  ALLOWED_TAGS: ['h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'p', 'a', 'ul', 'ol', 'li', 'strong', 'em', 'br', 'span', 'div', 'blockquote', 'code', 'pre', 'img'],
+                  ALLOWED_ATTR: ['href', 'title', 'target', 'rel', 'src', 'alt', 'class', 'id']
+                })
+              }}
             />
 
             {/* Call to Action */}
