@@ -9,7 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
-import { AlertTriangle, Plus, Pencil, Trash2, Eye, EyeOff, Users, FileText, Flag, Settings, Mail, Send, Clock, CheckCircle, XCircle, Ban, UserX, MessageSquare } from "lucide-react";
+import { AlertTriangle, Plus, Pencil, Trash2, Eye, EyeOff, Users, FileText, Flag, Settings, Mail, Send, Clock, CheckCircle, XCircle, Ban, UserX, MessageSquare, Upload, Image as ImageIcon } from "lucide-react";
 import { sendPremiumUpgradeEmail } from "@/utils/emailNotifications";
 import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
@@ -462,6 +462,7 @@ export default function Admin() {
   const [blogDialogOpen, setBlogDialogOpen] = useState(false);
   const [editingBlog, setEditingBlog] = useState<BlogPost | null>(null);
   const [blogForm, setBlogForm] = useState(defaultBlogPost);
+  const [uploadingImage, setUploadingImage] = useState(false);
   
   // Email state
   const [emailDialogOpen, setEmailDialogOpen] = useState(false);
@@ -643,6 +644,49 @@ export default function Admin() {
   const fetchEmailLogs = async () => {
     const { data } = await supabase.from("email_logs").select("*").order("created_at", { ascending: false }).limit(100);
     setEmailLogs(data || []);
+  };
+
+  const handleBlogImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    // Validate file type
+    const allowedTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
+    if (!allowedTypes.includes(file.type)) {
+      toast({ title: "Error", description: "Please upload a valid image (JPEG, PNG, GIF, or WebP)", variant: "destructive" });
+      return;
+    }
+
+    // Validate file size (max 5MB)
+    if (file.size > 5 * 1024 * 1024) {
+      toast({ title: "Error", description: "Image must be less than 5MB", variant: "destructive" });
+      return;
+    }
+
+    setUploadingImage(true);
+    try {
+      const fileExt = file.name.split('.').pop();
+      const fileName = `${Date.now()}-${Math.random().toString(36).substring(2)}.${fileExt}`;
+      const filePath = `blog/${fileName}`;
+
+      const { error: uploadError } = await supabase.storage
+        .from('blog-images')
+        .upload(filePath, file);
+
+      if (uploadError) throw uploadError;
+
+      const { data: { publicUrl } } = supabase.storage
+        .from('blog-images')
+        .getPublicUrl(filePath);
+
+      setBlogForm({ ...blogForm, image_url: publicUrl });
+      toast({ title: "Success", description: "Image uploaded successfully" });
+    } catch (error: any) {
+      console.error('Upload error:', error);
+      toast({ title: "Error", description: error.message || "Failed to upload image", variant: "destructive" });
+    } finally {
+      setUploadingImage(false);
+    }
   };
 
   const openBlogDialog = (blog?: BlogPost) => {
@@ -1332,7 +1376,7 @@ export default function Admin() {
               <Label htmlFor="meta_description">Meta Description *</Label>
               <Textarea id="meta_description" value={blogForm.meta_description} onChange={(e) => setBlogForm({ ...blogForm, meta_description: e.target.value })} maxLength={160} />
             </div>
-            <div className="grid grid-cols-3 gap-4">
+            <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="author">Author</Label>
                 <Input id="author" value={blogForm.author} onChange={(e) => setBlogForm({ ...blogForm, author: e.target.value })} />
@@ -1341,10 +1385,54 @@ export default function Admin() {
                 <Label htmlFor="category">Category</Label>
                 <Input id="category" value={blogForm.category} onChange={(e) => setBlogForm({ ...blogForm, category: e.target.value })} />
               </div>
-              <div className="space-y-2">
-                <Label htmlFor="image_url">Image URL</Label>
-                <Input id="image_url" value={blogForm.image_url} onChange={(e) => setBlogForm({ ...blogForm, image_url: e.target.value })} />
+            </div>
+            <div className="space-y-2">
+              <Label>Featured Image</Label>
+              <div className="flex items-center gap-4">
+                <div className="flex-1">
+                  <label htmlFor="blog-image-upload" className="cursor-pointer">
+                    <div className="border-2 border-dashed border-border rounded-lg p-4 hover:border-primary/50 transition-colors">
+                      <div className="flex items-center justify-center gap-2 text-muted-foreground">
+                        {uploadingImage ? (
+                          <>
+                            <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-primary"></div>
+                            <span>Uploading...</span>
+                          </>
+                        ) : (
+                          <>
+                            <Upload className="h-5 w-5" />
+                            <span>Click to upload image (max 5MB)</span>
+                          </>
+                        )}
+                      </div>
+                    </div>
+                    <input
+                      id="blog-image-upload"
+                      type="file"
+                      accept="image/jpeg,image/png,image/gif,image/webp"
+                      className="hidden"
+                      onChange={handleBlogImageUpload}
+                      disabled={uploadingImage}
+                    />
+                  </label>
+                </div>
+                {blogForm.image_url && blogForm.image_url !== '/placeholder.svg' && (
+                  <div className="relative w-24 h-24 rounded-lg overflow-hidden border border-border">
+                    <img src={blogForm.image_url} alt="Preview" className="w-full h-full object-cover" />
+                    <Button
+                      variant="destructive"
+                      size="icon"
+                      className="absolute top-1 right-1 h-6 w-6"
+                      onClick={() => setBlogForm({ ...blogForm, image_url: '/placeholder.svg' })}
+                    >
+                      <Trash2 className="h-3 w-3" />
+                    </Button>
+                  </div>
+                )}
               </div>
+              {blogForm.image_url && blogForm.image_url !== '/placeholder.svg' && (
+                <p className="text-xs text-muted-foreground truncate">{blogForm.image_url}</p>
+              )}
             </div>
             <div className="space-y-2">
               <Label htmlFor="content">Content * (HTML)</Label>

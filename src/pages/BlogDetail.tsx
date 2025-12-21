@@ -206,7 +206,7 @@ const BlogDetail = () => {
                 </span>
               </div>
               
-              <h1 className="text-4xl md:text-5xl font-bold mb-4 bg-gradient-primary bg-clip-text text-transparent">
+              <h1 className="text-4xl md:text-5xl font-bold mb-4 text-foreground">
                 {blog.title}
               </h1>
               
