@@ -80,7 +80,7 @@ const Communities = () => {
     // Format community name (lowercase, no spaces, only alphanumeric)
     const formattedName = newCommunity.name.toLowerCase().replace(/[^a-z0-9]/g, '');
     
-    const { error } = await supabase
+    const { data: newCommunityData, error } = await supabase
       .from('communities')
       .insert([
         {
@@ -90,7 +90,9 @@ const Communities = () => {
           tagline: newCommunity.tagline,
           creator_id: user.id,
         },
-      ]);
+      ])
+      .select('id')
+      .single();
 
     if (error) {
       if (error.code === '23505') {
@@ -104,7 +106,7 @@ const Communities = () => {
     // Auto-join the creator as a member
     await supabase.from('community_members').insert([
       {
-        community_id: formattedName,
+        community_id: newCommunityData.id,
         user_id: user.id,
         role: 'admin',
       },
@@ -114,6 +116,9 @@ const Communities = () => {
     setCreateDialogOpen(false);
     setNewCommunity({ name: '', display_name: '', description: '', tagline: '' });
     fetchCommunities();
+    
+    // Navigate to the new community
+    navigate(`/c/${formattedName}`);
   };
 
   const filteredCommunities = communities.filter((c) =>
