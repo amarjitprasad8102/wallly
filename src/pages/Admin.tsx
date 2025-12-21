@@ -483,6 +483,7 @@ export default function Admin() {
   const [banReason, setBanReason] = useState("");
   const [actionLoading, setActionLoading] = useState(false);
   const [currentAdminId, setCurrentAdminId] = useState<string>("");
+  const [previewingTemplate, setPreviewingTemplate] = useState<EmailTemplate | null>(null);
   
   const navigate = useNavigate();
   const { toast } = useToast();
@@ -1162,17 +1163,40 @@ export default function Admin() {
                 </div>
               </CardHeader>
               <CardContent>
-                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
+                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
                   {emailTemplates.map((template) => (
-                    <Button
-                      key={template.id}
-                      variant="outline"
-                      className="h-auto py-3 px-4 flex flex-col items-center gap-2"
-                      onClick={() => { handleTemplateSelect(template.id); setEmailDialogOpen(true); }}
-                    >
-                      <Mail className="h-5 w-5" />
-                      <span className="text-xs text-center">{template.name}</span>
-                    </Button>
+                    <Card key={template.id} className="overflow-hidden">
+                      <CardContent className="p-4">
+                        <div className="flex items-center gap-3 mb-3">
+                          <div className="p-2 rounded-lg bg-primary/10">
+                            <Mail className="h-4 w-4 text-primary" />
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <h4 className="font-medium text-sm truncate">{template.name}</h4>
+                            <p className="text-xs text-muted-foreground truncate">{template.subject}</p>
+                          </div>
+                        </div>
+                        <div className="flex gap-2">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            className="flex-1"
+                            onClick={() => setPreviewingTemplate(template)}
+                          >
+                            <Eye className="h-3 w-3 mr-1" />
+                            Preview
+                          </Button>
+                          <Button
+                            size="sm"
+                            className="flex-1"
+                            onClick={() => { handleTemplateSelect(template.id); setEmailDialogOpen(true); }}
+                          >
+                            <Send className="h-3 w-3 mr-1" />
+                            Use
+                          </Button>
+                        </div>
+                      </CardContent>
+                    </Card>
                   ))}
                 </div>
               </CardContent>
@@ -1507,6 +1531,43 @@ export default function Admin() {
             <Button variant="outline" onClick={() => setDeleteDialogOpen(false)} disabled={actionLoading}>Cancel</Button>
             <Button variant="destructive" onClick={deleteUser} disabled={actionLoading}>
               {actionLoading ? "Deleting..." : "Delete User Permanently"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Email Template Preview Dialog */}
+      <Dialog open={!!previewingTemplate} onOpenChange={(open) => !open && setPreviewingTemplate(null)}>
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-hidden flex flex-col">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Eye className="h-5 w-5" />
+              Email Preview: {previewingTemplate?.name}
+            </DialogTitle>
+            <DialogDescription>Subject: {previewingTemplate?.subject}</DialogDescription>
+          </DialogHeader>
+          <div className="flex-1 overflow-auto border rounded-lg bg-white">
+            {previewingTemplate && (
+              <iframe
+                srcDoc={previewingTemplate.content}
+                className="w-full h-[600px] border-0"
+                title="Email Preview"
+              />
+            )}
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setPreviewingTemplate(null)}>
+              Close
+            </Button>
+            <Button onClick={() => {
+              if (previewingTemplate) {
+                handleTemplateSelect(previewingTemplate.id);
+                setPreviewingTemplate(null);
+                setEmailDialogOpen(true);
+              }
+            }}>
+              <Send className="h-4 w-4 mr-2" />
+              Use This Template
             </Button>
           </DialogFooter>
         </DialogContent>
