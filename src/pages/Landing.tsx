@@ -61,22 +61,22 @@ const Landing = () => {
   return (
     <>
       <Helmet>
-        <title>Wallly - Free Random Video Chat | Meet Strangers</title>
-        <meta name="description" content="Free random video chat to meet strangers worldwide. Video call, text chat & image sharing. Join now!" />
-        <meta name="keywords" content="random video chat, free video chat, meet strangers, image sharing, anonymous chat, global community, india chat" />
+        <title>Wallly - Talk to Strangers, Make Friends | Free Random Video Chat</title>
+        <meta name="description" content="Experience a random chat alternative to find friends, connect with people, and chat with strangers from all over the world! Free video chat, text chat & image sharing. The best Omegle alternative." />
+        <meta name="keywords" content="random video chat, talk to strangers, make friends online, free video chat, omegle alternative, ometv alternative, anonymous chat, stranger chat, video chat app, webcam chat, text chat, random chat, chat with strangers, meet people online, india chat" />
         <link rel="canonical" href="https://wallly.in/" />
         
         {/* Open Graph / Facebook */}
         <meta property="og:type" content="website" />
         <meta property="og:url" content="https://wallly.in/" />
-        <meta property="og:title" content="Wallly - Free Random Video Chat" />
-        <meta property="og:description" content="Free random video chat with image sharing. Meet new friends from India to the World." />
+        <meta property="og:title" content="Wallly - Talk to Strangers, Make Friends | Free Random Video Chat" />
+        <meta property="og:description" content="Experience a random chat alternative to find friends, connect with people, and chat with strangers from all over the world! The best Omegle alternative." />
         <meta property="og:image" content="https://wallly.in/logo.png" />
         
         {/* Twitter */}
         <meta name="twitter:card" content="summary_large_image" />
-        <meta name="twitter:title" content="Wallly - Free Random Video Chat & Image Sharing" />
-        <meta name="twitter:description" content="Free random video chat with image sharing connecting people from India to the World." />
+        <meta name="twitter:title" content="Wallly - Talk to Strangers, Make Friends" />
+        <meta name="twitter:description" content="Experience a random chat alternative to find friends, connect with people, and chat with strangers from all over the world!" />
         <meta name="twitter:image" content="https://wallly.in/logo.png" />
         
         {/* Structured Data */}
@@ -85,7 +85,7 @@ const Landing = () => {
             "@context": "https://schema.org",
             "@type": "WebApplication",
             "name": "Wallly",
-            "description": "Connect instantly with people worldwide through random video chat, text messaging, and image sharing",
+            "description": "Experience a random chat alternative to find friends, connect with people, and chat with strangers from all over the world. The modern Omegle and OmeTV alternative.",
             "url": "https://wallly.in",
             "applicationCategory": "SocialNetworkingApplication",
             "operatingSystem": "Web Browser",
@@ -98,8 +98,11 @@ const Landing = () => {
               "Random Video Chat",
               "Random Text Chat",
               "Image Sharing",
-              "Community Groups",
-              "Real-time Messaging"
+              "Interest-based Matching",
+              "Friends & Chat History",
+              "Search Filters",
+              "Safety & Moderation",
+              "Community Groups"
             ]
           })}
         </script>
@@ -154,13 +157,10 @@ const Landing = () => {
             </div>
             
             <h1 className="text-4xl sm:text-5xl lg:text-7xl font-bold mb-4 sm:mb-6 gradient-text leading-tight">
-              Connect With Strangers Worldwide
+              Talk to Strangers,<br className="hidden sm:block" /> Make Friends!
             </h1>
-            <p className="text-lg sm:text-xl lg:text-2xl text-primary/80 font-medium mb-4 max-w-2xl mx-auto px-4 italic">
-              "Where the walls end, you find a friend."
-            </p>
             <p className="text-base sm:text-lg lg:text-xl text-muted-foreground mb-8 sm:mb-12 max-w-2xl mx-auto px-4">
-              From India to World - Connect instantly with people across the globe. Video chat, text chat, share images, join communities, make new friends, and discover different cultures.
+              Experience a random chat alternative to find friends, connect with people, and chat with strangers from all over the world!
             </p>
             
             <div className="flex flex-col sm:flex-row gap-4 justify-center items-center px-4">
@@ -184,7 +184,21 @@ const Landing = () => {
                 Text Chat
               </Button>
             </div>
-            <p className="text-xs sm:text-sm text-muted-foreground mt-4">Free • No Download • Ages 16+</p>
+            <p className="text-xs sm:text-sm text-muted-foreground mt-4">Free • No Download • No Bots • Ages 16+</p>
+          </div>
+        </section>
+
+        {/* Anonymous Chat Section */}
+        <section className="px-4 py-16 sm:py-20 lg:py-24 bg-muted/30">
+          <div className="max-w-5xl mx-auto text-center">
+            <span className="inline-flex text-sm font-semibold py-1 px-3 m-2 text-primary bg-primary/10 rounded-full mb-4">
+              Reach people like you
+            </span>
+            <h2 className="text-3xl sm:text-4xl font-bold mb-3 sm:mb-4">Anonymous Chat, Meet New People</h2>
+            <p className="text-base sm:text-lg lg:text-xl text-muted-foreground max-w-3xl mx-auto">
+              Find strangers worldwide, the new modern Omegle and OmeTV alternative.
+              Connect with real people, enjoy ad free text and video chats, and build genuine friendships.
+            </p>
           </div>
         </section>
 
@@ -192,68 +206,68 @@ const Landing = () => {
         <section className="px-4 py-16 sm:py-20 lg:py-24">
           <div className="max-w-6xl mx-auto">
             <div className="text-center mb-12 sm:mb-16">
-              <h2 className="text-3xl sm:text-4xl font-bold mb-3 sm:mb-4">Why Choose Wallly?</h2>
-              <p className="text-base sm:text-lg lg:text-xl text-muted-foreground">Connecting India to the world, one chat at a time</p>
+              <h2 className="text-3xl sm:text-4xl font-bold mb-3 sm:mb-4">The Best Site to Chat with Strangers</h2>
+              <p className="text-base sm:text-lg lg:text-xl text-muted-foreground">Modern, secure and feature rich with diverse, interesting people from around the globe</p>
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
               <article className="bg-card rounded-2xl p-6 sm:p-8 border border-border/50 hover:border-primary/50 transition-all hover:shadow-lg group">
                 <div className="bg-primary/10 w-12 h-12 sm:w-14 sm:h-14 rounded-xl flex items-center justify-center mb-4 sm:mb-6 group-hover:scale-110 transition-transform" aria-hidden="true">
-                  <Users className="w-6 h-6 sm:w-7 sm:h-7 text-primary" aria-label="Random matching icon" />
+                  <MessageCircle className="w-6 h-6 sm:w-7 sm:h-7 text-primary" aria-label="Video chat icon" />
                 </div>
-                <h3 className="text-xl sm:text-2xl font-semibold mb-3 sm:mb-4">Random Matching</h3>
+                <h3 className="text-xl sm:text-2xl font-semibold mb-3 sm:mb-4">Video Chat</h3>
                 <p className="text-sm sm:text-base text-muted-foreground leading-relaxed">
-                  Connect instantly with random people from around the world. Every conversation is a new adventure.
+                  Experience authentic face to face encounters with real people from all over the world.
                 </p>
               </article>
 
               <article className="bg-card rounded-2xl p-6 sm:p-8 border border-border/50 hover:border-primary/50 transition-all hover:shadow-lg group">
                 <div className="bg-accent/10 w-12 h-12 sm:w-14 sm:h-14 rounded-xl flex items-center justify-center mb-4 sm:mb-6 group-hover:scale-110 transition-transform" aria-hidden="true">
-                  <Zap className="w-6 h-6 sm:w-7 sm:h-7 text-accent" aria-label="Lightning fast icon" />
+                  <Users className="w-6 h-6 sm:w-7 sm:h-7 text-accent" aria-label="Friends icon" />
                 </div>
-                <h3 className="text-xl sm:text-2xl font-semibold mb-3 sm:mb-4">Lightning Fast</h3>
+                <h3 className="text-xl sm:text-2xl font-semibold mb-3 sm:mb-4">Friends & History</h3>
                 <p className="text-sm sm:text-base text-muted-foreground leading-relaxed">
-                  Experience instant connections with optimized peer-to-peer messaging. No delays, just real conversations.
+                  Had a fun chat but skipped by accident? Find them in your chat history and add them as a friend.
                 </p>
               </article>
 
               <article className="bg-card rounded-2xl p-6 sm:p-8 border border-border/50 hover:border-primary/50 transition-all hover:shadow-lg group">
                 <div className="bg-destructive/10 w-12 h-12 sm:w-14 sm:h-14 rounded-xl flex items-center justify-center mb-4 sm:mb-6 group-hover:scale-110 transition-transform" aria-hidden="true">
-                  <Shield className="w-6 h-6 sm:w-7 sm:h-7 text-destructive" aria-label="Safe and secure icon" />
+                  <Hash className="w-6 h-6 sm:w-7 sm:h-7 text-destructive" aria-label="Search filters icon" />
                 </div>
-                <h3 className="text-xl sm:text-2xl font-semibold mb-3 sm:mb-4">Safe & Secure</h3>
+                <h3 className="text-xl sm:text-2xl font-semibold mb-3 sm:mb-4">Interest Matching</h3>
                 <p className="text-sm sm:text-base text-muted-foreground leading-relaxed">
-                  Age-verified users with unique IDs. Skip inappropriate content anytime. Your safety is our priority.
+                  Talk to online strangers who love what you love. Chat about hobbies and enjoy fun conversations.
                 </p>
               </article>
 
               <article className="bg-card rounded-2xl p-6 sm:p-8 border border-border/50 hover:border-primary/50 transition-all hover:shadow-lg group">
                 <div className="bg-primary/10 w-12 h-12 sm:w-14 sm:h-14 rounded-xl flex items-center justify-center mb-4 sm:mb-6 group-hover:scale-110 transition-transform" aria-hidden="true">
-                  <Globe className="w-6 h-6 sm:w-7 sm:h-7 text-primary" aria-label="Global community icon" />
+                  <MessageSquare className="w-6 h-6 sm:w-7 sm:h-7 text-primary" aria-label="Text chat icon" />
                 </div>
-                <h3 className="text-xl sm:text-2xl font-semibold mb-3 sm:mb-4">Global Community</h3>
+                <h3 className="text-xl sm:text-2xl font-semibold mb-3 sm:mb-4">Text Chat</h3>
                 <p className="text-sm sm:text-base text-muted-foreground leading-relaxed">
-                  Meet people from every corner of the world. Discover new cultures and perspectives in real-time.
+                  Not in the mood for video? No problem! You can also chat with strangers via text messages. Full of features.
                 </p>
               </article>
 
               <article className="bg-card rounded-2xl p-6 sm:p-8 border border-border/50 hover:border-primary/50 transition-all hover:shadow-lg group">
                 <div className="bg-accent/10 w-12 h-12 sm:w-14 sm:h-14 rounded-xl flex items-center justify-center mb-4 sm:mb-6 group-hover:scale-110 transition-transform">
-                  <Image className="w-6 h-6 sm:w-7 sm:h-7 text-accent" aria-label="Image sharing icon" />
+                  <Shield className="w-6 h-6 sm:w-7 sm:h-7 text-accent" aria-label="Safety icon" />
                 </div>
-                <h3 className="text-xl sm:text-2xl font-semibold mb-3 sm:mb-4">Image Sharing</h3>
+                <h3 className="text-xl sm:text-2xl font-semibold mb-3 sm:mb-4">Safety & Moderation</h3>
                 <p className="text-sm sm:text-base text-muted-foreground leading-relaxed">
-                  Share photos during video and text chats. Express yourself better with images and make conversations more engaging.
+                  We make use of advanced AI technologies and enhanced spam protection to keep your chats clean.
                 </p>
               </article>
 
               <article className="bg-card rounded-2xl p-6 sm:p-8 border border-border/50 hover:border-primary/50 transition-all hover:shadow-lg group">
                 <div className="bg-destructive/10 w-12 h-12 sm:w-14 sm:h-14 rounded-xl flex items-center justify-center mb-4 sm:mb-6 group-hover:scale-110 transition-transform" aria-hidden="true">
-                  <MessageCircle className="w-6 h-6 sm:w-7 sm:h-7 text-destructive" aria-label="No download required icon" />
+                  <Image className="w-6 h-6 sm:w-7 sm:h-7 text-destructive" aria-label="Feature rich icon" />
                 </div>
-                <h3 className="text-xl sm:text-2xl font-semibold mb-3 sm:mb-4">No Download</h3>
+                <h3 className="text-xl sm:text-2xl font-semibold mb-3 sm:mb-4">Feature Rich</h3>
                 <p className="text-sm sm:text-base text-muted-foreground leading-relaxed">
-                  Start chatting instantly in your browser. No apps to download, no setup. Just click and connect.
+                  From sending photos, having voice calls, to sharing images and joining communities, we have it all.
                 </p>
               </article>
             </div>
@@ -313,46 +327,46 @@ const Landing = () => {
             <Accordion type="single" collapsible className="w-full space-y-4">
               <AccordionItem value="item-1" className="border border-border/50 rounded-2xl px-6 bg-card">
                 <AccordionTrigger className="text-left hover:no-underline">
-                  <span className="text-base sm:text-lg font-semibold">How does random matching work?</span>
+                  <span className="text-base sm:text-lg font-semibold">Is Wallly a good Omegle alternative?</span>
                 </AccordionTrigger>
                 <AccordionContent className="text-sm sm:text-base text-muted-foreground leading-relaxed">
-                  When you click "Start Chat", our system instantly pairs you with another available user from anywhere in the world. The matching is completely random to ensure diverse and interesting conversations.
+                  Yes! Wallly is the best Omegle and OmeTV alternative. Find strangers worldwide with our modern, secure and feature rich platform. Connect with diverse, interesting people from around the globe through both video and text chat.
                 </AccordionContent>
               </AccordionItem>
 
               <AccordionItem value="item-2" className="border border-border/50 rounded-2xl px-6 bg-card">
                 <AccordionTrigger className="text-left hover:no-underline">
-                  <span className="text-base sm:text-lg font-semibold">Is Wallly really free?</span>
+                  <span className="text-base sm:text-lg font-semibold">Is Wallly free to use?</span>
                 </AccordionTrigger>
                 <AccordionContent className="text-sm sm:text-base text-muted-foreground leading-relaxed">
-                  Yes! Wallly is completely free to use. You can chat with unlimited people without any cost. We believe in connecting people without barriers.
+                  Yes! Wallly is completely free to use. Connect with real people, enjoy ad free text and video chats, and build genuine friendships. Premium features are available for enhanced experience.
                 </AccordionContent>
               </AccordionItem>
 
               <AccordionItem value="item-3" className="border border-border/50 rounded-2xl px-6 bg-card">
                 <AccordionTrigger className="text-left hover:no-underline">
-                  <span className="text-base sm:text-lg font-semibold">How do I reconnect with someone using their ID?</span>
+                  <span className="text-base sm:text-lg font-semibold">Can I chat with strangers based on interests?</span>
                 </AccordionTrigger>
                 <AccordionContent className="text-sm sm:text-base text-muted-foreground leading-relaxed">
-                  Every user has a unique ID. If you had a great conversation, save their ID! You can use the "Connect with ID" feature to send them a connection request and chat again anytime.
+                  Yes! Talk to online strangers who love what you love. Chat about hobbies and enjoy fun conversations - all from one place! Making new friends based on interests is made easy with our interest-based matching feature.
                 </AccordionContent>
               </AccordionItem>
 
               <AccordionItem value="item-4" className="border border-border/50 rounded-2xl px-6 bg-card">
                 <AccordionTrigger className="text-left hover:no-underline">
-                  <span className="text-base sm:text-lg font-semibold">Is my chat private and secure?</span>
+                  <span className="text-base sm:text-lg font-semibold">Can I add strangers as friends?</span>
                 </AccordionTrigger>
                 <AccordionContent className="text-sm sm:text-base text-muted-foreground leading-relaxed">
-                  Absolutely! All chats are encrypted and anonymous. We don't store your personal information, and you can end any conversation at any time. Your safety and privacy are our top priorities.
+                  Absolutely! Had a fun chat but skipped by accident? Find them in your chat history and add them as a friend. Turn strangers into friends and stay connected for future conversations.
                 </AccordionContent>
               </AccordionItem>
 
               <AccordionItem value="item-5" className="border border-border/50 rounded-2xl px-6 bg-card">
                 <AccordionTrigger className="text-left hover:no-underline">
-                  <span className="text-base sm:text-lg font-semibold">What if I encounter inappropriate behavior?</span>
+                  <span className="text-base sm:text-lg font-semibold">Is Wallly safe and moderated?</span>
                 </AccordionTrigger>
                 <AccordionContent className="text-sm sm:text-base text-muted-foreground leading-relaxed">
-                  You can skip any chat instantly and report users who violate our community guidelines. We have age verification and moderation in place to keep the platform safe for everyone.
+                  We make use of advanced AI technologies and enhanced spam protection to keep your chats clean. Age verification (16+), reporting features, and moderation keep the platform safe. You can skip any conversation instantly.
                 </AccordionContent>
               </AccordionItem>
 
@@ -361,7 +375,7 @@ const Landing = () => {
                   <span className="text-base sm:text-lg font-semibold">Do I need to download an app?</span>
                 </AccordionTrigger>
                 <AccordionContent className="text-sm sm:text-base text-muted-foreground leading-relaxed">
-                  No! Wallly works directly in your web browser on any device. No downloads, no installations, no hassle. Just visit our website and start chatting.
+                  No! Wallly works directly in your web browser on any device. No downloads, no installations, no bots. Just visit our website and start chatting with strangers worldwide.
                 </AccordionContent>
               </AccordionItem>
             </Accordion>
@@ -372,19 +386,19 @@ const Landing = () => {
         <section className="px-4 py-16 sm:py-20 lg:py-24 bg-gradient-primary text-white">
           <div className="max-w-3xl mx-auto text-center">
             <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold mb-4 sm:mb-6">
-              Ready to Meet Someone New?
+              From Strangers to Friends
             </h2>
             <p className="text-base sm:text-lg lg:text-xl mb-6 sm:mb-8 opacity-90 px-4">
-              Join thousands of people already chatting on Wallly. Your next conversation could change everything.
+              Discover new people, make real and genuine connections, learn new languages or just have casual text or video chats. Your next conversation could change everything.
             </p>
             <Button
               size="lg"
               variant="secondary"
               className="w-full sm:w-auto text-base sm:text-lg px-6 sm:px-8 py-5 sm:py-6 rounded-full hover:scale-105 transition-all group"
               onClick={() => navigate('/auth')}
-              aria-label="Get started free"
+              aria-label="Start chatting now"
             >
-              Get Started Free
+              Start Chatting Now
               <ArrowRight className="w-5 h-5 ml-2 group-hover:translate-x-1 transition-transform" />
             </Button>
           </div>
