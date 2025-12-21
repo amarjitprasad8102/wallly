@@ -64,8 +64,9 @@ serve(async (req) => {
 
     console.log('Admin verified, processing request');
 
-    const { action, userId, banReason } = await req.json();
-    console.log('Action:', action, 'Target user:', userId);
+    const body = await req.json();
+    const { action, userId, banReason, isPremium } = body;
+    console.log('Action:', action, 'Target user:', userId, 'isPremium:', isPremium);
 
     if (!action || !userId) {
       return new Response(
@@ -178,6 +179,26 @@ serve(async (req) => {
       console.log('User deleted successfully');
       return new Response(
         JSON.stringify({ success: true, message: 'User deleted successfully', email: targetUser.email }),
+        { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+
+    } else if (action === 'update-premium') {
+      console.log('Updating premium status to:', isPremium);
+
+      // Update profile premium status
+      const { error: updateError } = await adminClient
+        .from('profiles')
+        .update({ is_premium: isPremium })
+        .eq('id', userId);
+
+      if (updateError) {
+        console.error('Failed to update premium status:', updateError);
+        throw updateError;
+      }
+
+      console.log('Premium status updated successfully');
+      return new Response(
+        JSON.stringify({ success: true, message: 'Premium status updated successfully' }),
         { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
 
