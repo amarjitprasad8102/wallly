@@ -783,6 +783,7 @@ export default function Admin() {
     
     setActionLoading(true);
     try {
+      // Send ban notification email first
       const banTemplate = emailTemplates.find(t => t.id === "account-banned");
       if (banTemplate) {
         const emailContent = banTemplate.content.replace("[BAN_REASON]", banReason || "Violation of community guidelines");
@@ -791,25 +792,20 @@ export default function Admin() {
         });
       }
 
-      await Promise.all([
-        supabase.from("connections").delete().eq("user_id", selectedUserForAction.id),
-        supabase.from("connections").delete().eq("connected_user_id", selectedUserForAction.id),
-        supabase.from("connection_requests").delete().eq("from_user_id", selectedUserForAction.id),
-        supabase.from("connection_requests").delete().eq("to_user_id", selectedUserForAction.id),
-        supabase.from("messages").delete().eq("sender_id", selectedUserForAction.id),
-        supabase.from("messages").delete().eq("receiver_id", selectedUserForAction.id),
-        supabase.from("user_interests").delete().eq("user_id", selectedUserForAction.id),
-        supabase.from("matchmaking_queue").delete().eq("user_id", selectedUserForAction.id),
-        supabase.from("community_members").delete().eq("user_id", selectedUserForAction.id),
-      ]);
-      
-      await supabase.from("profiles").update({ name: "[BANNED]", age: null, gender: null }).eq("id", selectedUserForAction.id);
+      // Use admin edge function to bypass RLS
+      const { data, error } = await supabase.functions.invoke('admin-user-action', {
+        body: { action: 'ban', userId: selectedUserForAction.id, banReason: banReason || "Violation of community guidelines" },
+      });
+
+      if (error) throw error;
+      if (data?.error) throw new Error(data.error);
 
       toast({ title: "User Banned", description: `${selectedUserForAction.email} has been banned.` });
       setBanDialogOpen(false);
       setSelectedUserForAction(null);
       fetchUsers();
     } catch (error: any) {
+      console.error("Ban user error:", error);
       toast({ title: "Error", description: error.message || "Failed to ban user", variant: "destructive" });
     } finally {
       setActionLoading(false);
@@ -827,6 +823,7 @@ export default function Admin() {
     
     setActionLoading(true);
     try {
+      // Send deletion notification email first
       const deleteTemplate = emailTemplates.find(t => t.id === "account-deleted");
       if (deleteTemplate) {
         await supabase.functions.invoke('send-ses-email', {
@@ -834,25 +831,20 @@ export default function Admin() {
         });
       }
 
-      await Promise.all([
-        supabase.from("connections").delete().eq("user_id", selectedUserForAction.id),
-        supabase.from("connections").delete().eq("connected_user_id", selectedUserForAction.id),
-        supabase.from("connection_requests").delete().eq("from_user_id", selectedUserForAction.id),
-        supabase.from("connection_requests").delete().eq("to_user_id", selectedUserForAction.id),
-        supabase.from("messages").delete().eq("sender_id", selectedUserForAction.id),
-        supabase.from("messages").delete().eq("receiver_id", selectedUserForAction.id),
-        supabase.from("user_interests").delete().eq("user_id", selectedUserForAction.id),
-        supabase.from("matchmaking_queue").delete().eq("user_id", selectedUserForAction.id),
-        supabase.from("community_members").delete().eq("user_id", selectedUserForAction.id),
-        supabase.from("user_roles").delete().eq("user_id", selectedUserForAction.id),
-        supabase.from("profiles").delete().eq("id", selectedUserForAction.id),
-      ]);
+      // Use admin edge function to bypass RLS
+      const { data, error } = await supabase.functions.invoke('admin-user-action', {
+        body: { action: 'delete', userId: selectedUserForAction.id },
+      });
+
+      if (error) throw error;
+      if (data?.error) throw new Error(data.error);
 
       toast({ title: "User Deleted", description: `${selectedUserForAction.email} has been permanently deleted.` });
       setDeleteDialogOpen(false);
       setSelectedUserForAction(null);
       fetchUsers();
     } catch (error: any) {
+      console.error("Delete user error:", error);
       toast({ title: "Error", description: error.message || "Failed to delete user", variant: "destructive" });
     } finally {
       setActionLoading(false);
