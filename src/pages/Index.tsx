@@ -273,13 +273,9 @@ const Index = () => {
     console.log('[INDEX] Other user disconnected');
     soundEffects.playDisconnect();
     haptics.warning();
-    setDisconnectMessage('Other user disconnected');
+    setDisconnectMessage('Other user disconnected. Tap "Find Next" to continue.');
     leaveMatchmaking();
-    // Automatically search for new user after short delay
-    setTimeout(() => {
-      setDisconnectMessage(null);
-      joinMatchmaking();
-    }, 2000);
+    setAppState('home');
   };
 
   const handleConnectById = async () => {

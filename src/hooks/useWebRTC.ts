@@ -43,11 +43,35 @@ export const useWebRTC = (
 
     pc.oniceconnectionstatechange = () => {
       console.log('ICE connection state:', pc.iceConnectionState);
+      // Handle ICE connection failures - attempt restart for recoverable states
+      if (pc.iceConnectionState === 'failed') {
+        console.log('ICE connection failed, attempting ICE restart...');
+        pc.restartIce();
+      }
     };
 
     pc.onconnectionstatechange = () => {
       console.log('Connection state:', pc.connectionState);
-      onConnectionStateChange?.(pc.connectionState);
+      // Only notify on stable states, not transient ones
+      // 'disconnected' is often temporary and can recover
+      if (pc.connectionState === 'connected' || 
+          pc.connectionState === 'failed' || 
+          pc.connectionState === 'closed') {
+        onConnectionStateChange?.(pc.connectionState);
+      } else if (pc.connectionState === 'connecting') {
+        onConnectionStateChange?.(pc.connectionState);
+      }
+      // For 'disconnected', wait to see if it recovers
+      if (pc.connectionState === 'disconnected') {
+        console.log('Connection temporarily disconnected, waiting for recovery...');
+        // Set a timeout - if not recovered in 5 seconds, notify as failed
+        setTimeout(() => {
+          if (pc.connectionState === 'disconnected' || pc.connectionState === 'failed') {
+            console.log('Connection did not recover, notifying as failed');
+            onConnectionStateChange?.('failed');
+          }
+        }, 5000);
+      }
     };
 
     pc.ontrack = (event) => {
