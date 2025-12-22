@@ -10,7 +10,7 @@ import { useIsMobile } from '@/hooks/use-mobile';
 import { soundEffects } from '@/utils/sounds';
 import { haptics } from '@/utils/haptics';
 import { ResizablePanelGroup, ResizablePanel, ResizableHandle } from '@/components/ui/resizable';
-import EncryptionBadge from './EncryptionBadge';
+
 import SecureImage from './SecureImage';
 import TypingIndicator from './TypingIndicator';
 import MessageStatus from './MessageStatus';
@@ -438,10 +438,8 @@ const VideoChat = ({
           <span className="text-xs sm:text-sm font-medium">
             {connectionStatus === 'connected' ? `${formatDuration(duration)}` : 
              connectionStatus === 'connecting' ? 'Connecting...' : 
-             'Disconnected'}
+          'Disconnected'}
           </span>
-          <EncryptionBadge encrypted={connectionStatus === 'connected'} variant="video" />
-          <EncryptionBadge encrypted={isChannelReady} variant="chat" />
         </div>
         <div className="flex gap-1 sm:gap-2">
           <Button variant="outline" size="sm" onClick={handleSkip} className="h-8 px-2 sm:px-3 text-xs sm:text-sm">
