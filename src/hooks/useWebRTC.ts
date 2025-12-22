@@ -11,6 +11,13 @@ export const useWebRTC = (
   const localStream = useRef<MediaStream | null>(null);
 
   const createPeerConnection = useCallback(() => {
+    // Cleanup existing connection if any
+    if (peerConnection.current) {
+      peerConnection.current.close();
+      peerConnection.current = null;
+    }
+    pendingIceCandidates.current = [];
+
     const pc = new RTCPeerConnection({
       iceServers: [
         { urls: 'stun:stun.l.google.com:19302' },
@@ -41,42 +48,51 @@ export const useWebRTC = (
       iceTransportPolicy: 'all',
     });
 
+    let disconnectedTimeout: NodeJS.Timeout | null = null;
+
     pc.oniceconnectionstatechange = () => {
-      console.log('ICE connection state:', pc.iceConnectionState);
+      console.log('[WebRTC] ICE connection state:', pc.iceConnectionState);
       // Handle ICE connection failures - attempt restart for recoverable states
       if (pc.iceConnectionState === 'failed') {
-        console.log('ICE connection failed, attempting ICE restart...');
+        console.log('[WebRTC] ICE connection failed, attempting ICE restart...');
         pc.restartIce();
       }
     };
 
     pc.onconnectionstatechange = () => {
-      console.log('Connection state:', pc.connectionState);
-      // Only notify on stable states, not transient ones
-      // 'disconnected' is often temporary and can recover
-      if (pc.connectionState === 'connected' || 
-          pc.connectionState === 'failed' || 
-          pc.connectionState === 'closed') {
+      console.log('[WebRTC] Connection state:', pc.connectionState);
+      
+      // Clear any pending timeout
+      if (disconnectedTimeout) {
+        clearTimeout(disconnectedTimeout);
+        disconnectedTimeout = null;
+      }
+
+      if (pc.connectionState === 'connected') {
+        console.log('[WebRTC] Connection established successfully');
         onConnectionStateChange?.(pc.connectionState);
       } else if (pc.connectionState === 'connecting') {
         onConnectionStateChange?.(pc.connectionState);
-      }
-      // For 'disconnected', wait to see if it recovers
-      if (pc.connectionState === 'disconnected') {
-        console.log('Connection temporarily disconnected, waiting for recovery...');
-        // Set a timeout - if not recovered in 5 seconds, notify as failed
-        setTimeout(() => {
+      } else if (pc.connectionState === 'failed' || pc.connectionState === 'closed') {
+        console.log('[WebRTC] Connection ended:', pc.connectionState);
+        onConnectionStateChange?.(pc.connectionState);
+      } else if (pc.connectionState === 'disconnected') {
+        console.log('[WebRTC] Connection temporarily disconnected, waiting for recovery...');
+        // Set a timeout - if not recovered in 8 seconds, notify as failed
+        disconnectedTimeout = setTimeout(() => {
           if (pc.connectionState === 'disconnected' || pc.connectionState === 'failed') {
-            console.log('Connection did not recover, notifying as failed');
+            console.log('[WebRTC] Connection did not recover, notifying as failed');
             onConnectionStateChange?.('failed');
           }
-        }, 5000);
+        }, 8000);
       }
     };
 
     pc.ontrack = (event) => {
-      console.log('Received remote track:', event.streams[0]);
-      onRemoteStream?.(event.streams[0]);
+      console.log('[WebRTC] Received remote track:', event.track.kind, event.streams[0]);
+      if (event.streams[0]) {
+        onRemoteStream?.(event.streams[0]);
+      }
     };
 
     peerConnection.current = pc;
@@ -84,55 +100,94 @@ export const useWebRTC = (
   }, [onConnectionStateChange, onRemoteStream]);
 
   const createOffer = useCallback(async () => {
-    if (!peerConnection.current) return null;
-    const offer = await peerConnection.current.createOffer({
-      offerToReceiveAudio: true,
-      offerToReceiveVideo: true
-    });
-    await peerConnection.current.setLocalDescription(offer);
-    return offer;
+    if (!peerConnection.current) {
+      console.error('[WebRTC] No peer connection for createOffer');
+      return null;
+    }
+    try {
+      console.log('[WebRTC] Creating offer...');
+      const offer = await peerConnection.current.createOffer({
+        offerToReceiveAudio: true,
+        offerToReceiveVideo: true
+      });
+      console.log('[WebRTC] Setting local description (offer)...');
+      await peerConnection.current.setLocalDescription(offer);
+      console.log('[WebRTC] Offer created and set');
+      return offer;
+    } catch (error) {
+      console.error('[WebRTC] Error creating offer:', error);
+      return null;
+    }
   }, []);
 
   const createAnswer = useCallback(async () => {
-    if (!peerConnection.current) return null;
-    const answer = await peerConnection.current.createAnswer();
-    await peerConnection.current.setLocalDescription(answer);
-    return answer;
+    if (!peerConnection.current) {
+      console.error('[WebRTC] No peer connection for createAnswer');
+      return null;
+    }
+    try {
+      console.log('[WebRTC] Creating answer...');
+      const answer = await peerConnection.current.createAnswer();
+      console.log('[WebRTC] Setting local description (answer)...');
+      await peerConnection.current.setLocalDescription(answer);
+      console.log('[WebRTC] Answer created and set');
+      return answer;
+    } catch (error) {
+      console.error('[WebRTC] Error creating answer:', error);
+      return null;
+    }
   }, []);
 
   const setRemoteDescription = useCallback(async (description: RTCSessionDescriptionInit) => {
-    if (!peerConnection.current) return;
-    const pc = peerConnection.current;
-    await pc.setRemoteDescription(new RTCSessionDescription(description));
-    // Flush any queued ICE candidates now that remote description is set
-    if (pendingIceCandidates.current.length) {
-      for (const c of pendingIceCandidates.current) {
-        try {
-          await pc.addIceCandidate(new RTCIceCandidate(c));
-        } catch (err) {
-          console.error('Error flushing ICE candidate:', err);
+    if (!peerConnection.current) {
+      console.error('[WebRTC] No peer connection for setRemoteDescription');
+      return;
+    }
+    try {
+      const pc = peerConnection.current;
+      console.log('[WebRTC] Setting remote description, type:', description.type);
+      await pc.setRemoteDescription(new RTCSessionDescription(description));
+      console.log('[WebRTC] Remote description set successfully');
+      
+      // Flush any queued ICE candidates now that remote description is set
+      if (pendingIceCandidates.current.length > 0) {
+        console.log('[WebRTC] Flushing', pendingIceCandidates.current.length, 'queued ICE candidates');
+        for (const c of pendingIceCandidates.current) {
+          try {
+            await pc.addIceCandidate(new RTCIceCandidate(c));
+          } catch (err) {
+            console.error('[WebRTC] Error flushing ICE candidate:', err);
+          }
         }
+        pendingIceCandidates.current = [];
       }
-      pendingIceCandidates.current = [];
+    } catch (error) {
+      console.error('[WebRTC] Error setting remote description:', error);
     }
   }, []);
 
   const addIceCandidate = useCallback(async (candidate: RTCIceCandidateInit) => {
-    if (!peerConnection.current) return;
+    if (!peerConnection.current) {
+      console.warn('[WebRTC] No peer connection for addIceCandidate');
+      return;
+    }
     try {
-      if (!candidate || !candidate.candidate) return;
+      if (!candidate || !candidate.candidate) {
+        console.log('[WebRTC] Empty ICE candidate received (end of candidates)');
+        return;
+      }
       const pc = peerConnection.current;
       
       if (!pc.remoteDescription || !pc.remoteDescription.type) {
-        console.log('Queueing ICE candidate (no remote description yet)');
+        console.log('[WebRTC] Queueing ICE candidate (no remote description yet)');
         pendingIceCandidates.current.push(candidate);
         return;
       }
       
-      console.log('Adding ICE candidate');
+      console.log('[WebRTC] Adding ICE candidate');
       await pc.addIceCandidate(new RTCIceCandidate(candidate));
     } catch (error) {
-      console.error('Error adding ICE candidate:', error);
+      console.error('[WebRTC] Error adding ICE candidate:', error);
     }
   }, []);
 
