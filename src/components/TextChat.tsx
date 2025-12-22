@@ -6,7 +6,7 @@ import { useWebRTC } from '@/hooks/useWebRTC';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { soundEffects } from '@/utils/sounds';
 import { haptics } from '@/utils/haptics';
-import EncryptionBadge from './EncryptionBadge';
+
 import SecureImage from './SecureImage';
 import TypingIndicator from './TypingIndicator';
 import MessageStatus from './MessageStatus';
@@ -392,7 +392,6 @@ const TextChat = ({
              connectionStatus === 'connecting' ? 'Connecting...' : 
              'Disconnected'}
           </span>
-          <EncryptionBadge encrypted={isChannelReady} variant="chat" />
           {isPremium && (
             <Badge className="bg-gradient-to-r from-amber-500 to-orange-500 text-white text-[10px] px-1.5 py-0 h-4">
               <Crown className="w-2.5 h-2.5 mr-0.5" />
