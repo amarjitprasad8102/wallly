@@ -40,25 +40,38 @@ const Chat = ({ userId, matchedUserId, sendSignal, onSignal, leaveMatchmaking, o
   useEffect(() => {
     if (!matchedUserId || hasSetupConnection.current) return;
 
-    console.log(`Setting up connection. I am ${isInitiator ? 'INITIATOR' : 'RECEIVER'}`);
+    console.log(`[CHAT] Setting up connection. I am ${isInitiator ? 'INITIATOR' : 'RECEIVER'}`);
     hasSetupConnection.current = true;
 
     const setupConnection = async () => {
       try {
         const pc = createPeerConnection();
 
-        // Handle ICE candidates
+        // Handle ICE candidates - MUST be set before creating offer/answer
         pc.onicecandidate = (event) => {
           if (event.candidate) {
-            console.log('Sending ICE candidate');
+            console.log('[CHAT] Sending ICE candidate:', event.candidate.candidate?.substring(0, 50));
             sendSignal(matchedUserId, 'ice-candidate', event.candidate.toJSON());
+          } else {
+            console.log('[CHAT] ICE gathering complete');
           }
+        };
+
+        pc.onicegatheringstatechange = () => {
+          console.log('[CHAT] ICE gathering state:', pc.iceGatheringState);
         };
 
         // Create data channel for chat (only initiator creates it)
         if (isInitiator) {
-          const dc = pc.createDataChannel('chat');
-          dc.onopen = () => console.log('Data channel opened (initiator)');
+          console.log('[CHAT] Creating data channel as initiator');
+          const dc = pc.createDataChannel('chat', {
+            ordered: true,
+          });
+          dc.onopen = () => {
+            console.log('[CHAT] Data channel opened (initiator)');
+          };
+          dc.onclose = () => console.log('[CHAT] Data channel closed (initiator)');
+          dc.onerror = (e) => console.error('[CHAT] Data channel error (initiator):', e);
           dc.onmessage = (event) => {
             const message = JSON.parse(event.data);
             setChatMessages((prev) => [...prev, { from: 'them', text: message.text }]);
@@ -67,9 +80,13 @@ const Chat = ({ userId, matchedUserId, sendSignal, onSignal, leaveMatchmaking, o
         } else {
           // Receiver waits for data channel
           pc.ondatachannel = (event) => {
-            console.log('Data channel received');
+            console.log('[CHAT] Data channel received');
             const dc = event.channel;
-            dc.onopen = () => console.log('Data channel opened (receiver)');
+            dc.onopen = () => {
+              console.log('[CHAT] Data channel opened (receiver)');
+            };
+            dc.onclose = () => console.log('[CHAT] Data channel closed (receiver)');
+            dc.onerror = (e) => console.error('[CHAT] Data channel error (receiver):', e);
             dc.onmessage = (event) => {
               const message = JSON.parse(event.data);
               setChatMessages((prev) => [...prev, { from: 'them', text: message.text }]);
@@ -78,23 +95,27 @@ const Chat = ({ userId, matchedUserId, sendSignal, onSignal, leaveMatchmaking, o
           };
         }
 
+        // Small delay to ensure event handlers are attached
+        await new Promise(resolve => setTimeout(resolve, 100));
+
         // Send ready signal
         if (!hasSentReady.current) {
           hasSentReady.current = true;
-          console.log('Sending ready signal');
+          console.log('[CHAT] Sending ready signal');
           sendSignal(matchedUserId, 'ready', {});
         }
 
         // If initiator and already received ready, start negotiation
         if (isInitiator && hasReceivedReady.current) {
-          console.log('Creating offer (already received ready)');
+          console.log('[CHAT] Creating offer (already received ready)');
           const offer = await createOffer();
           if (offer) {
+            console.log('[CHAT] Sending offer');
             sendSignal(matchedUserId, 'offer', offer);
           }
         }
       } catch (error) {
-        console.error('Error setting up connection:', error);
+        console.error('[CHAT] Error setting up connection:', error);
         toast({
           title: "Connection Failed",
           description: "Could not establish connection. Please try again.",
@@ -111,37 +132,45 @@ const Chat = ({ userId, matchedUserId, sendSignal, onSignal, leaveMatchmaking, o
     onSignal(async (message) => {
       // Security: Only process signals from our matched user
       if (message.from !== matchedUserId) {
-        console.warn('Ignoring signal from unauthorized sender:', message.from);
+        console.warn('[CHAT] Ignoring signal from unauthorized sender:', message.from);
         return;
       }
 
-      console.log('Handling signal:', message.type);
+      console.log('[CHAT] Handling signal:', message.type);
 
-      if (message.type === 'ready') {
-        hasReceivedReady.current = true;
-        console.log('Received ready signal');
-        
-        // If initiator and connection is setup, create offer
-        if (isInitiator && hasSetupConnection.current) {
-          console.log('Creating offer after ready');
-          const offer = await createOffer();
-          if (offer) {
-            sendSignal(matchedUserId, 'offer', offer);
+      try {
+        if (message.type === 'ready') {
+          hasReceivedReady.current = true;
+          console.log('[CHAT] Received ready signal from:', message.from);
+          
+          // If initiator and connection is setup, create offer
+          if (isInitiator && hasSetupConnection.current) {
+            // Small delay to ensure peer connection is fully ready
+            await new Promise(resolve => setTimeout(resolve, 200));
+            console.log('[CHAT] Creating offer after ready signal');
+            const offer = await createOffer();
+            if (offer) {
+              console.log('[CHAT] Sending offer');
+              sendSignal(matchedUserId, 'offer', offer);
+            }
           }
+        } else if (message.type === 'offer') {
+          console.log('[CHAT] Received offer, creating answer');
+          await setRemoteDescription(message.data);
+          const answer = await createAnswer();
+          if (answer) {
+            console.log('[CHAT] Sending answer');
+            sendSignal(message.from, 'answer', answer);
+          }
+        } else if (message.type === 'answer') {
+          console.log('[CHAT] Received answer, setting remote description');
+          await setRemoteDescription(message.data);
+        } else if (message.type === 'ice-candidate') {
+          console.log('[CHAT] Adding ICE candidate');
+          await addIceCandidate(message.data);
         }
-      } else if (message.type === 'offer') {
-        console.log('Received offer');
-        await setRemoteDescription(message.data);
-        const answer = await createAnswer();
-        if (answer) {
-          console.log('Sending answer');
-          sendSignal(message.from, 'answer', answer);
-        }
-      } else if (message.type === 'answer') {
-        console.log('Received answer');
-        await setRemoteDescription(message.data);
-      } else if (message.type === 'ice-candidate') {
-        await addIceCandidate(message.data);
+      } catch (error) {
+        console.error('[CHAT] Error handling signal:', message.type, error);
       }
     });
   }, [onSignal, isInitiator, matchedUserId, sendSignal, createOffer, createAnswer, setRemoteDescription, addIceCandidate]);
