@@ -17,6 +17,7 @@ import MessageStatus from './MessageStatus';
 import { Badge } from '@/components/ui/badge';
 import { toast } from 'sonner';
 import VirtualBackgrounds, { BackgroundOption } from './VirtualBackgrounds';
+import ConnectionQualityIndicator from './ConnectionQualityIndicator';
 
 interface ChatMessage {
   id: string;
@@ -440,6 +441,10 @@ const VideoChat = ({
              connectionStatus === 'connecting' ? 'Connecting...' : 
           'Disconnected'}
           </span>
+          <ConnectionQualityIndicator 
+            peerConnection={peerConnection.current} 
+            isConnected={connectionStatus === 'connected'} 
+          />
         </div>
         <div className="flex gap-1 sm:gap-2">
           <Button variant="outline" size="sm" onClick={handleSkip} className="h-8 px-2 sm:px-3 text-xs sm:text-sm">
