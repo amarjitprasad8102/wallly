@@ -9,12 +9,17 @@ export const useWebRTC = (
   const peerConnection = useRef<RTCPeerConnection | null>(null);
   const pendingIceCandidates = useRef<RTCIceCandidateInit[]>([]);
   const localStream = useRef<MediaStream | null>(null);
+  const connectionTimeout = useRef<NodeJS.Timeout | null>(null);
 
   const createPeerConnection = useCallback(() => {
     // Cleanup existing connection if any
     if (peerConnection.current) {
       peerConnection.current.close();
       peerConnection.current = null;
+    }
+    if (connectionTimeout.current) {
+      clearTimeout(connectionTimeout.current);
+      connectionTimeout.current = null;
     }
     pendingIceCandidates.current = [];
 
@@ -50,6 +55,14 @@ export const useWebRTC = (
 
     let disconnectedTimeout: NodeJS.Timeout | null = null;
 
+    // Set a connection timeout - if not connected in 15 seconds, fail
+    connectionTimeout.current = setTimeout(() => {
+      if (pc.connectionState !== 'connected') {
+        console.log('[WebRTC] Connection timeout after 15 seconds');
+        onConnectionStateChange?.('failed');
+      }
+    }, 15000);
+
     pc.oniceconnectionstatechange = () => {
       console.log('[WebRTC] ICE connection state:', pc.iceConnectionState);
       // Handle ICE connection failures - attempt restart for recoverable states
@@ -57,6 +70,22 @@ export const useWebRTC = (
         console.log('[WebRTC] ICE connection failed, attempting ICE restart...');
         pc.restartIce();
       }
+      // If checking takes too long, the gathering might be stuck
+      if (pc.iceConnectionState === 'checking') {
+        setTimeout(() => {
+          if (pc.iceConnectionState === 'checking') {
+            console.log('[WebRTC] ICE checking timeout, may need TURN server');
+          }
+        }, 5000);
+      }
+    };
+
+    pc.onicegatheringstatechange = () => {
+      console.log('[WebRTC] ICE gathering state:', pc.iceGatheringState);
+    };
+
+    pc.onsignalingstatechange = () => {
+      console.log('[WebRTC] Signaling state:', pc.signalingState);
     };
 
     pc.onconnectionstatechange = () => {
@@ -70,11 +99,19 @@ export const useWebRTC = (
 
       if (pc.connectionState === 'connected') {
         console.log('[WebRTC] Connection established successfully');
+        if (connectionTimeout.current) {
+          clearTimeout(connectionTimeout.current);
+          connectionTimeout.current = null;
+        }
         onConnectionStateChange?.(pc.connectionState);
       } else if (pc.connectionState === 'connecting') {
         onConnectionStateChange?.(pc.connectionState);
       } else if (pc.connectionState === 'failed' || pc.connectionState === 'closed') {
         console.log('[WebRTC] Connection ended:', pc.connectionState);
+        if (connectionTimeout.current) {
+          clearTimeout(connectionTimeout.current);
+          connectionTimeout.current = null;
+        }
         onConnectionStateChange?.(pc.connectionState);
       } else if (pc.connectionState === 'disconnected') {
         console.log('[WebRTC] Connection temporarily disconnected, waiting for recovery...');
@@ -263,6 +300,10 @@ export const useWebRTC = (
   }, [toast]);
 
   const cleanup = useCallback(() => {
+    if (connectionTimeout.current) {
+      clearTimeout(connectionTimeout.current);
+      connectionTimeout.current = null;
+    }
     if (localStream.current) {
       localStream.current.getTracks().forEach(track => track.stop());
       localStream.current = null;
@@ -271,6 +312,7 @@ export const useWebRTC = (
       peerConnection.current.close();
       peerConnection.current = null;
     }
+    pendingIceCandidates.current = [];
   }, []);
 
   useEffect(() => {
@@ -278,6 +320,9 @@ export const useWebRTC = (
       cleanup();
     };
   }, [cleanup]);
+
+  // Expose peerConnection for stats access
+  const getPeerConnection = useCallback(() => peerConnection.current, []);
 
   return {
     peerConnection,
@@ -289,5 +334,6 @@ export const useWebRTC = (
     addIceCandidate,
     addLocalStream,
     cleanup,
+    getPeerConnection,
   };
 };

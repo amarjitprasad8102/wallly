@@ -5,6 +5,7 @@ import { useWebRTC } from '@/hooks/useWebRTC';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import ReportDialog from '@/components/ReportDialog';
+import ConnectionQualityIndicator from '@/components/ConnectionQualityIndicator';
 
 interface ChatProps {
   userId: string;
@@ -28,6 +29,7 @@ const Chat = ({ userId, matchedUserId, sendSignal, onSignal, leaveMatchmaking, o
   const isInitiator = userId < matchedUserId;
 
   const {
+    peerConnection,
     createPeerConnection,
     createOffer,
     createAnswer,
@@ -259,15 +261,21 @@ const Chat = ({ userId, matchedUserId, sendSignal, onSignal, leaveMatchmaking, o
       {/* Header */}
       <div className="px-6 py-4 bg-card/50 backdrop-blur border-b border-border">
         <div className="max-w-4xl mx-auto flex justify-between items-center">
-          <div>
-            <h2 className="text-xl font-semibold">Chat Room</h2>
-            <p className="text-sm text-muted-foreground">
-              {connectionState === 'connected' ? (
-                <span className="text-green-500">● Connected - {formatDuration(chatDuration)}</span>
-              ) : (
-                'Connecting...'
-              )}
-            </p>
+          <div className="flex items-center gap-3">
+            <div>
+              <h2 className="text-xl font-semibold">Chat Room</h2>
+              <p className="text-sm text-muted-foreground">
+                {connectionState === 'connected' ? (
+                  <span className="text-green-500">● Connected - {formatDuration(chatDuration)}</span>
+                ) : (
+                  'Connecting...'
+                )}
+              </p>
+            </div>
+            <ConnectionQualityIndicator 
+              peerConnection={peerConnection.current} 
+              isConnected={connectionState === 'connected'} 
+            />
           </div>
           <div className="flex gap-2">
             <ReportDialog reportedUserId={matchedUserId} />
