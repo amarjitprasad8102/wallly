@@ -165,21 +165,30 @@ const VideoChat = ({
 
         pc.onicecandidate = (event) => {
           if (event.candidate) {
-            console.log('Sending ICE candidate');
-            sendSignal(matchedUserId, 'ice-candidate', event.candidate);
+            console.log('[VIDEO] Sending ICE candidate');
+            // Use toJSON() for proper serialization across the wire
+            sendSignal(matchedUserId, 'ice-candidate', event.candidate.toJSON());
+          } else {
+            console.log('[VIDEO] ICE gathering complete');
           }
         };
 
-        console.log('Is initiator:', isInitiator);
-        
+        console.log('[VIDEO] Is initiator:', isInitiator);
+
+        // Small delay to ensure all event handlers are attached
+        await new Promise(resolve => setTimeout(resolve, 100));
+
         if (isInitiator && !hasInitiatedOffer.current) {
           hasInitiatedOffer.current = true;
           sendSignal(matchedUserId, 'ready', {});
+          // Wait for peer to be ready before sending offer
           setTimeout(async () => {
-            console.log('Creating and sending offer');
+            console.log('[VIDEO] Creating and sending offer');
             const offer = await createOffer();
-            sendSignal(matchedUserId, 'offer', offer);
-          }, 1000);
+            if (offer) {
+              sendSignal(matchedUserId, 'offer', offer);
+            }
+          }, 1500);
         } else {
           sendSignal(matchedUserId, 'ready', {});
         }
@@ -210,11 +219,13 @@ const VideoChat = ({
             break;
 
           case 'offer':
-            console.log('Received offer, creating answer');
+            console.log('[VIDEO] Received offer, creating answer');
             await setRemoteDescription(message.data);
             const answer = await createAnswer();
-            sendSignal(matchedUserId, 'answer', answer);
-            console.log('Answer sent');
+            if (answer) {
+              sendSignal(matchedUserId, 'answer', answer);
+              console.log('[VIDEO] Answer sent');
+            }
             break;
 
           case 'answer':
