@@ -172,6 +172,12 @@ const Privacy = () => {
           <p>
             By using Random Chat, you agree to this Privacy Policy and our Terms of Service.
           </p>
+          <p className="mt-2">
+            Made by{" "}
+            <a href="https://corevia.in" rel="dofollow" target="_blank" className="font-medium text-primary hover:underline">
+              Corevia
+            </a>
+          </p>
         </footer>
         </div>
       </div>

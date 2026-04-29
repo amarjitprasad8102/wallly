@@ -596,6 +596,12 @@ const Premium = () => {
                 Need help? <a href="mailto:help@corevia.in" className="text-primary hover:underline">help@corevia.in</a>
               </p>
               <p>&copy; 2025 Wallly. All rights reserved.</p>
+              <p className="mt-2">
+                Made by{" "}
+                <a href="https://corevia.in" rel="dofollow" target="_blank" className="font-medium text-primary hover:underline">
+                  Corevia
+                </a>
+              </p>
             </div>
           </div>
         </footer>
