@@ -444,6 +444,12 @@ const Landing = () => {
               By using Wallly, you agree to be respectful and follow our community guidelines. Users must be 16+.
             </p>
             <p>&copy; 2025 Wallly. All rights reserved.</p>
+            <p className="mt-2">
+              Made by{" "}
+              <a href="https://corevia.in" rel="dofollow" target="_blank" className="font-medium text-primary hover:underline">
+                Corevia
+              </a>
+            </p>
           </div>
         </div>
       </footer>

@@ -723,6 +723,12 @@ const Index = () => {
         >
           Privacy Policy
         </Button>
+        <p className="mt-1 px-4">
+          Made by{" "}
+          <a href="https://corevia.in" rel="dofollow" target="_blank" className="font-medium text-primary hover:underline">
+            Corevia
+          </a>
+        </p>
       </footer>
     </div>
   );
