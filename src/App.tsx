@@ -18,6 +18,7 @@ import ProfileSettings from "./pages/ProfileSettings";
 import Contact from "./pages/Contact";
 import Premium from "./pages/Premium";
 import NotFound from "./pages/NotFound";
+import RequireAgeGate from "./components/RequireAgeGate";
 
 const queryClient = new QueryClient();
 
@@ -27,6 +28,7 @@ const App = () => (
       <Toaster />
       <Sonner />
       <BrowserRouter>
+        <RequireAgeGate />
         <Routes>
           <Route path="/" element={<Landing />} />
           <Route path="/app" element={<Index />} />
