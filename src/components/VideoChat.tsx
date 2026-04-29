@@ -219,11 +219,13 @@ const VideoChat = ({
             break;
 
           case 'offer':
-            console.log('Received offer, creating answer');
+            console.log('[VIDEO] Received offer, creating answer');
             await setRemoteDescription(message.data);
             const answer = await createAnswer();
-            sendSignal(matchedUserId, 'answer', answer);
-            console.log('Answer sent');
+            if (answer) {
+              sendSignal(matchedUserId, 'answer', answer);
+              console.log('[VIDEO] Answer sent');
+            }
             break;
 
           case 'answer':
