@@ -384,6 +384,12 @@ const HowToUse = () => {
       <footer className="border-t border-border/50 py-6 sm:py-8 px-4 bg-muted/20">
         <div className="max-w-7xl mx-auto text-center text-xs sm:text-sm text-muted-foreground">
           <p>&copy; 2025 Wallly. All rights reserved.</p>
+          <p className="mt-2">
+            Made by{" "}
+            <a href="https://corevia.in" rel="dofollow" target="_blank" className="font-medium text-primary hover:underline">
+              Corevia
+            </a>
+          </p>
         </div>
       </footer>
       </div>

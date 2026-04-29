@@ -310,6 +310,12 @@ const BlogDetail = () => {
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="text-center text-muted-foreground">
               <p>&copy; 2025 Wallly. From India to World - Connecting Hearts and Minds.</p>
+              <p className="mt-2">
+                Made by{" "}
+                <a href="https://corevia.in" rel="dofollow" target="_blank" className="font-medium text-primary hover:underline">
+                  Corevia
+                </a>
+              </p>
               <div className="mt-4 space-x-6">
                 <button onClick={() => navigate('/privacy')} className="hover:text-primary transition-colors">
                   Privacy Policy
