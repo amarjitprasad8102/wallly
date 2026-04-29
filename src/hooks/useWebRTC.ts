@@ -9,7 +9,7 @@ export const useWebRTC = (
   const peerConnection = useRef<RTCPeerConnection | null>(null);
   const pendingIceCandidates = useRef<RTCIceCandidateInit[]>([]);
   const localStream = useRef<MediaStream | null>(null);
-  const connectionTimeout = useRef<NodeJS.Timeout | null>(null);
+  const connectionTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const createPeerConnection = useCallback(() => {
     // Cleanup existing connection if any
@@ -53,7 +53,7 @@ export const useWebRTC = (
       iceTransportPolicy: 'all',
     });
 
-    let disconnectedTimeout: NodeJS.Timeout | null = null;
+    let disconnectedTimeout: ReturnType<typeof setTimeout> | null = null;
 
     // Set a connection timeout - if not connected in 15 seconds, fail
     connectionTimeout.current = setTimeout(() => {
