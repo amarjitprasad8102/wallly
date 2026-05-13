@@ -275,6 +275,83 @@ export type Database = {
         }
         Relationships: []
       }
+      email_blast_recipients: {
+        Row: {
+          blast_id: string
+          created_at: string
+          email: string
+          id: string
+          open_count: number
+          opened_at: string | null
+          send_error: string | null
+          send_status: string
+          sent_at: string | null
+          tracking_token: string
+          user_id: string | null
+        }
+        Insert: {
+          blast_id: string
+          created_at?: string
+          email: string
+          id?: string
+          open_count?: number
+          opened_at?: string | null
+          send_error?: string | null
+          send_status?: string
+          sent_at?: string | null
+          tracking_token?: string
+          user_id?: string | null
+        }
+        Update: {
+          blast_id?: string
+          created_at?: string
+          email?: string
+          id?: string
+          open_count?: number
+          opened_at?: string | null
+          send_error?: string | null
+          send_status?: string
+          sent_at?: string | null
+          tracking_token?: string
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "email_blast_recipients_blast_id_fkey"
+            columns: ["blast_id"]
+            isOneToOne: false
+            referencedRelation: "email_blasts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      email_blasts: {
+        Row: {
+          body_html: string
+          id: string
+          sent_at: string
+          subject: string
+          total_recipients: number
+          triggered_by: string
+        }
+        Insert: {
+          body_html: string
+          id?: string
+          sent_at?: string
+          subject: string
+          total_recipients?: number
+          triggered_by?: string
+        }
+        Update: {
+          body_html?: string
+          id?: string
+          sent_at?: string
+          subject?: string
+          total_recipients?: number
+          triggered_by?: string
+        }
+        Relationships: []
+      }
       email_logs: {
         Row: {
           content: string

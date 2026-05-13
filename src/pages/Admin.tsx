@@ -31,6 +31,7 @@ import { AdminSidebar } from "@/components/admin/AdminSidebar";
 import { AdminDashboard } from "@/components/admin/AdminDashboard";
 import { AdminAnalytics } from "@/components/admin/AdminAnalytics";
 import { AdminSystemHealth } from "@/components/admin/AdminSystemHealth";
+import { AdminEmailBlasts } from "@/components/admin/AdminEmailBlasts";
 
 interface User {
   id: string;
@@ -945,6 +946,8 @@ export default function Admin() {
         return <AdminAnalytics />;
       case "health":
         return <AdminSystemHealth />;
+      case "blasts":
+        return <AdminEmailBlasts />;
       case "users":
         return (
           <Card>
