@@ -113,7 +113,11 @@ If no adult content, return the original text as moderatedText.`
           { status: 402, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
         );
       }
-      throw new Error(`AI Gateway error: ${response.status}`);
+      console.error(`AI Gateway error: ${response.status}`);
+      return new Response(
+        JSON.stringify({ error: 'Moderation unavailable' }),
+        { status: 502, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
     }
 
     const data = await response.json();
@@ -140,7 +144,7 @@ If no adult content, return the original text as moderatedText.`
   } catch (error) {
     console.error('Error in moderate-content function:', error);
     return new Response(
-      JSON.stringify({ error: error instanceof Error ? error.message : 'Unknown error' }),
+      JSON.stringify({ error: 'Operation failed. Please try again.' }),
       { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
   }

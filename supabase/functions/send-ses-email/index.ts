@@ -1,6 +1,7 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { AwsClient } from "https://esm.sh/aws4fetch@1.0.20";
+import DOMPurify from "https://esm.sh/isomorphic-dompurify@2.16.0";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -22,6 +23,9 @@ interface EmailResult {
   error?: string;
 }
 
+const ALLOWED_TAGS = ["h1","h2","h3","h4","p","a","strong","em","b","i","u","br","hr","ul","ol","li","div","span","img","table","thead","tbody","tr","td","th","blockquote","pre","code"];
+const ALLOWED_ATTR = ["href","src","alt","title","style","class","width","height","target","rel"];
+
 serve(async (req: Request): Promise<Response> => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
@@ -33,61 +37,76 @@ serve(async (req: Request): Promise<Response> => {
     const region = Deno.env.get("AWS_SES_REGION")?.trim() || "us-east-1";
     const fromEmail = Deno.env.get("SES_FROM_EMAIL")?.trim();
 
-    console.log("AWS Config - Region:", region);
-    console.log("AWS Config - From Email:", fromEmail);
-    console.log("AWS Config - Access Key ID length:", accessKeyId?.length || 0);
-    console.log("AWS Config - Secret Key length:", secretAccessKey?.length || 0);
-
     if (!accessKeyId || !secretAccessKey || !fromEmail) {
       console.error("AWS SES credentials not configured");
-      throw new Error("AWS SES credentials not configured");
+      return new Response(
+        JSON.stringify({ error: "Email service unavailable" }),
+        { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
     }
 
-    // Get auth token to identify admin
+    // Authenticate caller and require admin role
     const authHeader = req.headers.get("authorization");
+    if (!authHeader) {
+      return new Response(
+        JSON.stringify({ error: "Unauthorized" }),
+        { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
     const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const supabase = createClient(supabaseUrl, supabaseKey);
 
-    let sentByUserId: string | null = null;
-    if (authHeader) {
-      const token = authHeader.replace("Bearer ", "");
-      const { data: { user } } = await supabase.auth.getUser(token);
-      sentByUserId = user?.id || null;
+    const token = authHeader.replace("Bearer ", "");
+    const { data: { user }, error: authErr } = await supabase.auth.getUser(token);
+    if (authErr || !user) {
+      return new Response(
+        JSON.stringify({ error: "Unauthorized" }),
+        { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
     }
+    const { data: roleRow } = await supabase
+      .from("user_roles")
+      .select("role")
+      .eq("user_id", user.id)
+      .eq("role", "admin")
+      .maybeSingle();
+    if (!roleRow) {
+      return new Response(
+        JSON.stringify({ error: "Forbidden" }),
+        { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+    const sentByUserId = user.id;
 
     const { to, subject, html, text, templateUsed }: EmailRequest = await req.json();
 
     if (!to || !subject || !html) {
-      throw new Error("Missing required fields: to, subject, html");
+      return new Response(
+        JSON.stringify({ error: "Missing required fields" }),
+        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
     }
 
+    // Sanitize HTML on the server before sending
+    const safeHtml = DOMPurify.sanitize(html, { ALLOWED_TAGS, ALLOWED_ATTR });
+
     const recipients = Array.isArray(to) ? to : [to];
-    console.log(`Sending emails to ${recipients.length} recipient(s) individually`);
 
-    // Initialize AWS client
-    const aws = new AwsClient({
-      accessKeyId: accessKeyId,
-      secretAccessKey: secretAccessKey,
-    });
-
+    const aws = new AwsClient({ accessKeyId, secretAccessKey });
     const endpoint = `https://email.${region}.amazonaws.com/`;
     const results: EmailResult[] = [];
 
-    // Send emails one by one to each recipient
     for (const recipient of recipients) {
       try {
-        console.log(`Sending email to: ${recipient}`);
-
         const params = new URLSearchParams();
         params.append("Action", "SendEmail");
         params.append("Version", "2010-12-01");
         params.append("Source", fromEmail);
-        // Only ONE recipient per email - they won't see other recipients
         params.append("Destination.ToAddresses.member.1", recipient);
         params.append("Message.Subject.Data", subject);
         params.append("Message.Subject.Charset", "UTF-8");
-        params.append("Message.Body.Html.Data", html);
+        params.append("Message.Body.Html.Data", safeHtml);
         params.append("Message.Body.Html.Charset", "UTF-8");
 
         if (text) {
@@ -97,102 +116,70 @@ serve(async (req: Request): Promise<Response> => {
 
         const response = await aws.fetch(endpoint, {
           method: "POST",
-          headers: {
-            "Content-Type": "application/x-www-form-urlencoded",
-          },
+          headers: { "Content-Type": "application/x-www-form-urlencoded" },
           body: params.toString(),
         });
 
         const responseText = await response.text();
-        console.log(`SES Response for ${recipient}: status ${response.status}`);
 
         if (!response.ok) {
-          console.error(`Failed to send to ${recipient}:`, responseText);
-          results.push({
-            email: recipient,
-            success: false,
-            error: responseText,
-          });
+          console.error(`SES send failure for ${recipient}: status ${response.status}`, responseText);
+          results.push({ email: recipient, success: false, error: "Send failed" });
 
-          // Log failed email individually
-          if (sentByUserId) {
-            await supabase.from('email_logs').insert([{
-              sent_by: sentByUserId,
-              recipients: [recipient],
-              subject: subject,
-              content: html,
-              template_used: templateUsed || null,
-              status: 'failed',
-              message_id: null,
-              error_message: responseText,
-            }]);
-          }
+          await supabase.from("email_logs").insert([{
+            sent_by: sentByUserId,
+            recipients: [recipient],
+            subject,
+            content: safeHtml,
+            template_used: templateUsed || null,
+            status: "failed",
+            message_id: null,
+            error_message: "Send failed",
+          }]);
         } else {
-          // Extract MessageId from response
           const messageIdMatch = responseText.match(/<MessageId>([^<]+)<\/MessageId>/);
           const messageId = messageIdMatch ? messageIdMatch[1] : null;
 
-          console.log(`Email sent successfully to ${recipient}, messageId: ${messageId}`);
-          results.push({
-            email: recipient,
-            success: true,
-            messageId: messageId || undefined,
-          });
+          results.push({ email: recipient, success: true, messageId: messageId || undefined });
 
-          // Log successful email individually
-          if (sentByUserId) {
-            await supabase.from('email_logs').insert([{
-              sent_by: sentByUserId,
-              recipients: [recipient],
-              subject: subject,
-              content: html,
-              template_used: templateUsed || null,
-              status: 'sent',
-              message_id: messageId,
-              error_message: null,
-            }]);
-          }
+          await supabase.from("email_logs").insert([{
+            sent_by: sentByUserId,
+            recipients: [recipient],
+            subject,
+            content: safeHtml,
+            template_used: templateUsed || null,
+            status: "sent",
+            message_id: messageId,
+            error_message: null,
+          }]);
         }
 
-        // Small delay between emails to avoid rate limiting
         if (recipients.length > 1) {
           await new Promise(resolve => setTimeout(resolve, 100));
         }
       } catch (emailError: any) {
-        console.error(`Error sending to ${recipient}:`, emailError.message);
-        results.push({
-          email: recipient,
-          success: false,
-          error: emailError.message,
-        });
+        console.error(`Error sending to ${recipient}:`, emailError?.message);
+        results.push({ email: recipient, success: false, error: "Send failed" });
       }
     }
 
     const successCount = results.filter(r => r.success).length;
     const failCount = results.filter(r => !r.success).length;
 
-    console.log(`Bulk email complete: ${successCount} sent, ${failCount} failed`);
-
     return new Response(
-      JSON.stringify({ 
-        success: failCount === 0, 
+      JSON.stringify({
+        success: failCount === 0,
         totalSent: successCount,
         totalFailed: failCount,
-        results: results,
+        results,
       }),
-      {
-        status: 200,
-        headers: { "Content-Type": "application/json", ...corsHeaders },
-      }
+      { status: 200, headers: { "Content-Type": "application/json", ...corsHeaders } }
     );
   } catch (error: any) {
     console.error("Error in send-ses-email function:", error);
     return new Response(
-      JSON.stringify({ error: error.message }),
-      {
-        status: 500,
-        headers: { "Content-Type": "application/json", ...corsHeaders },
-      }
+      JSON.stringify({ error: "Operation failed. Please try again." }),
+      { status: 500, headers: { "Content-Type": "application/json", ...corsHeaders } }
     );
   }
 });
