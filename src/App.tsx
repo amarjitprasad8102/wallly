@@ -17,6 +17,11 @@ import CommunityDetail from "./pages/CommunityDetail";
 import ProfileSettings from "./pages/ProfileSettings";
 import Contact from "./pages/Contact";
 import Premium from "./pages/Premium";
+import Terms from "./pages/Terms";
+import Refund from "./pages/Refund";
+import AcceptableUse from "./pages/AcceptableUse";
+import Cookies from "./pages/Cookies";
+import Disclaimer from "./pages/Disclaimer";
 import NotFound from "./pages/NotFound";
 import RequireAgeGate from "./components/RequireAgeGate";
 
@@ -44,6 +49,11 @@ const App = () => (
           <Route path="/profile" element={<ProfileSettings />} />
           <Route path="/contact" element={<Contact />} />
           <Route path="/premium" element={<Premium />} />
+          <Route path="/terms" element={<Terms />} />
+          <Route path="/refund" element={<Refund />} />
+          <Route path="/acceptable-use" element={<AcceptableUse />} />
+          <Route path="/cookies" element={<Cookies />} />
+          <Route path="/disclaimer" element={<Disclaimer />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>
