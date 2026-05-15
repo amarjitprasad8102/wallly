@@ -89,7 +89,7 @@ const Blog = () => {
             "name": "Wallly",
             "logo": { "@type": "ImageObject", "url": "https://wallly.in/logo.png" }
           },
-          "blogPost": (blogs || []).slice(0, 20).map((p: any) => ({
+          "blogPost": (allBlogPosts || []).slice(0, 20).map((p: any) => ({
             "@type": "BlogPosting",
             "headline": p.title,
             "url": `https://wallly.in/b/${p.slug}`,
