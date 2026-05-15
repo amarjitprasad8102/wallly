@@ -361,7 +361,7 @@ const Premium = () => {
                     </CardContent>
                     
                     <CardFooter>
-                      <PremiumLeadForm 
+                      <RazorpayCheckoutButton
                         planName={plan.name}
                         planPrice={plan.price + plan.period}
                         popular={plan.popular}
