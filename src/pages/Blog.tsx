@@ -75,6 +75,28 @@ const Blog = () => {
         <meta name="description" content="Explore articles on online connections, cultural exchange & community building. Tips for meaningful conversations." />
         <meta name="keywords" content="online chat, random chat, Wallly blog, cultural exchange, Indian communities, online friendship" />
         <link rel="canonical" href="https://wallly.in/blog" />
+        <meta property="og:title" content="Wallly Blog - Connection, Culture & Community" />
+        <meta property="og:description" content="Articles on online connection, safety, dating, and culture from the Wallly team." />
+        <meta property="og:url" content="https://wallly.in/blog" />
+        <script type="application/ld+json">{JSON.stringify({
+          "@context": "https://schema.org",
+          "@type": "Blog",
+          "name": "Wallly Blog",
+          "url": "https://wallly.in/blog",
+          "description": "Articles on online connection, safety, dating, and community building from the Wallly team.",
+          "publisher": {
+            "@type": "Organization",
+            "name": "Wallly",
+            "logo": { "@type": "ImageObject", "url": "https://wallly.in/logo.png" }
+          },
+          "blogPost": (allBlogPosts || []).slice(0, 20).map((p: any) => ({
+            "@type": "BlogPosting",
+            "headline": p.title,
+            "url": `https://wallly.in/b/${p.slug}`,
+            "datePublished": p.date,
+            "author": { "@type": "Person", "name": p.author || "Wallly Team" }
+          }))
+        })}</script>
       </Helmet>
 
       <div className="min-h-screen bg-gradient-subtle">

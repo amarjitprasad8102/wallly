@@ -1,0 +1,30 @@
+# Wallly
+
+> Free random video and text chat that connects strangers worldwide. Where the walls end, you find a friend.
+
+Wallly is a modern Omegle/OmeTV alternative offering anonymous video chat, text chat, image sharing, interest-based matching, and community groups. Min age 16. Premium plans add gender/age filters, priority matching, virtual backgrounds, and more.
+
+## Pages
+
+- [Home](/): Landing page with product overview and how it works.
+- [App](/app): The live random chat application (video + text).
+- [Premium](/premium): Subscription tiers — Weekly ₹99, Monthly ₹299, Yearly ₹1999.
+- [Blog](/blog): Articles on online connection, safety, dating, and culture.
+- [Communities](/c): Topic-based community groups.
+- [Connections](/connections): Saved friends and chat history.
+- [How To Use](/howtouse): Step-by-step usage guide.
+- [Contact](/contact): Get in touch with the team.
+- [Auth](/auth): Sign up and log in.
+
+## Legal
+
+- [Privacy Policy](/privacy)
+- [Terms of Service](/terms)
+- [Refund & Cancellation](/refund)
+- [Acceptable Use](/acceptable-use)
+- [Cookies](/cookies)
+- [Disclaimer](/disclaimer)
+
+## Optional
+
+- [Profile](/profile): User profile management (auth required).
