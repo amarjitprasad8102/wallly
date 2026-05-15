@@ -175,7 +175,7 @@ const CommunityDetail = () => {
         <title>{community.display_name} - Bharatiya Samudaay on Wallly</title>
         <meta name="description" content={community.description || `Join ${community.display_name} community on Wallly. ${community.tagline || 'Connect, share, and grow together.'}`} />
         <meta name="keywords" content={`${community.display_name}, community, bharatiya samudaay, indian community, online forum`} />
-        <link rel="canonical" href={`https://wallly.corevia.in/c/${community.name}`} />
+        <link rel="canonical" href={`https://wallly.in/c/${community.name}`} />
       </Helmet>
       
       <div className="min-h-screen bg-gradient-subtle">
