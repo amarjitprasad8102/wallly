@@ -122,9 +122,27 @@ const BlogDetail = () => {
         <meta property="og:title" content={blog.title} />
         <meta property="og:description" content={blog.metaDescription} />
         <meta property="og:type" content="article" />
+        <meta property="og:url" content={`https://wallly.in/b/${blog.slug}`} />
         <meta property="article:published_time" content={blog.date} />
         <meta property="article:author" content={blog.author} />
         <link rel="canonical" href={`https://wallly.in/b/${blog.slug}`} />
+        <script type="application/ld+json">{JSON.stringify({
+          "@context": "https://schema.org",
+          "@type": "Article",
+          "headline": blog.title,
+          "description": blog.metaDescription,
+          "image": blog.imageUrl?.startsWith("http") ? blog.imageUrl : `https://wallly.in${blog.imageUrl || "/logo.png"}`,
+          "author": { "@type": "Person", "name": blog.author },
+          "publisher": {
+            "@type": "Organization",
+            "name": "Wallly",
+            "logo": { "@type": "ImageObject", "url": "https://wallly.in/logo.png" }
+          },
+          "datePublished": blog.date,
+          "dateModified": blog.date,
+          "mainEntityOfPage": { "@type": "WebPage", "@id": `https://wallly.in/b/${blog.slug}` },
+          "articleSection": blog.category
+        })}</script>
       </Helmet>
 
       <div className="min-h-screen bg-gradient-subtle">
