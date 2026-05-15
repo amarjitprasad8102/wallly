@@ -29,6 +29,7 @@ import {
 } from 'lucide-react';
 import logo from '@/assets/logo.png';
 import PremiumLeadForm from '@/components/PremiumLeadForm';
+import RazorpayCheckoutButton from '@/components/RazorpayCheckoutButton';
 
 const Premium = () => {
   const navigate = useNavigate();
