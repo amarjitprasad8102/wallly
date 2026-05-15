@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { Helmet } from 'react-helmet';
 import { Button } from '@/components/ui/button';
 import { MessageCircle, Users, Shield, Zap, LogOut, UserCheck, Home, Crown, MessageSquare, Settings2 } from 'lucide-react';
 import {
