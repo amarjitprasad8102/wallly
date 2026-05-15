@@ -432,6 +432,14 @@ const Index = () => {
 
   return (
     <div className="min-h-screen bg-gradient-subtle flex flex-col">
+      <Helmet>
+        <title>Wallly App — Start a Random Video or Text Chat</title>
+        <meta name="description" content="Jump into a random video or text chat in one click. Match with strangers worldwide, share images, and add friends on Wallly." />
+        <link rel="canonical" href="https://wallly.in/app" />
+        <meta property="og:title" content="Wallly App — Start a Random Video or Text Chat" />
+        <meta property="og:description" content="Jump into a random video or text chat in one click. Match with strangers worldwide on Wallly." />
+        <meta property="og:url" content="https://wallly.in/app" />
+      </Helmet>
       {/* Header with User Info - Mobile Optimized */}
       <div className="px-3 sm:px-4 py-3 sm:py-4 border-b border-border">
         <div className="max-w-4xl mx-auto space-y-3">
