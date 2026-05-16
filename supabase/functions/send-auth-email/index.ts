@@ -40,8 +40,37 @@ serve(async (req: Request): Promise<Response> => {
       throw new Error("AWS SES credentials not configured");
     }
 
-    const payload: AuthEmailPayload = await req.json();
+    // Verify Supabase Auth webhook secret (Standard Webhooks format)
+    const hookSecret = Deno.env.get("SEND_EMAIL_HOOK_SECRET");
+    const rawBody = await req.text();
+    if (hookSecret) {
+      const wh_id = req.headers.get("webhook-id");
+      const wh_timestamp = req.headers.get("webhook-timestamp");
+      const wh_signature = req.headers.get("webhook-signature");
+      if (!wh_id || !wh_timestamp || !wh_signature) {
+        return new Response(JSON.stringify({ error: "Missing webhook signature" }), { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+      }
+      const secretBytes = Uint8Array.from(atob(hookSecret.replace(/^v1,whsec_/, "").replace(/^whsec_/, "")), (c) => c.charCodeAt(0));
+      const toSign = `${wh_id}.${wh_timestamp}.${rawBody}`;
+      const key = await crypto.subtle.importKey("raw", secretBytes, { name: "HMAC", hash: "SHA-256" }, false, ["sign"]);
+      const sig = await crypto.subtle.sign("HMAC", key, new TextEncoder().encode(toSign));
+      const expected = btoa(String.fromCharCode(...new Uint8Array(sig)));
+      const provided = wh_signature.split(" ").map(s => s.split(",")[1]).filter(Boolean);
+      if (!provided.includes(expected)) {
+        return new Response(JSON.stringify({ error: "Invalid webhook signature" }), { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+      }
+    } else {
+      console.warn("SEND_EMAIL_HOOK_SECRET not set — webhook signature verification disabled");
+    }
+
+    const payload: AuthEmailPayload = JSON.parse(rawBody);
     const { user, email_data } = payload;
+
+    // Validate email_action_type strictly
+    const allowedActions = ["signup", "email_change", "recovery", "reset_password", "magic_link", "invite"];
+    if (!allowedActions.includes(email_data.email_action_type)) {
+      return new Response(JSON.stringify({ error: "Invalid email_action_type" }), { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+    }
 
     console.log(`Processing auth email for: ${user.email}, type: ${email_data.email_action_type}`);
 

@@ -41,10 +41,14 @@ serve(async (req: Request): Promise<Response> => {
     try { body = await req.json(); } catch (_) {}
     const subject: string = body.subject || DEFAULT_SUBJECT;
     const bodyHtml: string = body.bodyHtml || DEFAULT_BODY;
-    const triggeredBy: string = body.triggeredBy || "cron";
+    const triggeredBy: string = body.triggeredBy || "manual";
 
-    // Verify admin caller if not cron
-    if (triggeredBy !== "cron") {
+    // Require either valid CRON_SECRET header OR authenticated admin
+    const cronSecret = Deno.env.get("CRON_SECRET");
+    const providedCronSecret = req.headers.get("x-cron-secret");
+    const isCron = triggeredBy === "cron" && cronSecret && providedCronSecret === cronSecret;
+
+    if (!isCron) {
       const authHeader = req.headers.get("authorization");
       if (!authHeader) return new Response(JSON.stringify({ error: "Unauthorized" }), { status: 401, headers: corsHeaders });
       const token = authHeader.replace("Bearer ", "");
