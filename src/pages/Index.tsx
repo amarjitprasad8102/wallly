@@ -642,7 +642,7 @@ const Index = () => {
       {/* Footer - Mobile Optimized */}
       <footer className="py-4 sm:py-6 text-center text-xs sm:text-sm text-muted-foreground border-t border-border">
         <p className="px-4">
-          By using this service, you agree to be respectful and follow community guidelines.
+          be cool, stay kind, don't be weird. that's the whole rulebook.
         </p>
         <Button
           variant="link"
