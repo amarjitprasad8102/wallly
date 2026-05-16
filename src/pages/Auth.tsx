@@ -421,12 +421,12 @@ const Auth = () => {
             /* Login/Signup Form */
             <>
               <h1 className="text-3xl font-bold text-center mb-2">
-                {isLogin ? "Welcome Back" : "Create Account"}
+                {isLogin ? "wb, stranger 👋" : "let's get you in"}
               </h1>
               <p className="text-center text-muted-foreground mb-6">
                 {isLogin
-                  ? "Sign in to start chatting"
-                  : "Sign up to get your unique ID"}
+                  ? "log in and slide into a chat"
+                  : "20 seconds and you're vibing"}
               </p>
 
               <form onSubmit={handleSubmit} className="space-y-4">
