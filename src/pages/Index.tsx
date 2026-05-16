@@ -590,7 +590,7 @@ const Index = () => {
                 className="bg-gradient-to-r from-yellow-500/10 to-orange-500/10 border-yellow-500/30 hover:border-yellow-500/50 text-yellow-600 dark:text-yellow-400"
               >
                 <Crown className="w-4 h-4 mr-2" />
-                Upgrade to Premium for Gender Filters & Priority Matching
+                Go Premium — unlock gender filters & front-of-queue energy
               </Button>
             </div>
           )}
