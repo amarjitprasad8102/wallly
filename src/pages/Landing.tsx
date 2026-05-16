@@ -91,10 +91,10 @@ const Landing = () => {
           }}
         />
 
-        {/* Floating chrome blobs */}
-        <div aria-hidden className="pointer-events-none absolute -top-24 -left-24 w-[420px] h-[420px] rounded-full blur-3xl opacity-40"
+        {/* Floating chrome blobs — hidden on mobile to save GPU */}
+        <div aria-hidden className="hidden md:block pointer-events-none absolute -top-24 -left-24 w-[420px] h-[420px] rounded-full blur-3xl opacity-40"
           style={{ background: 'conic-gradient(from 180deg, #60a5fa, #ffffff, #1e3a8a, #000000, #60a5fa)' }} />
-        <div aria-hidden className="pointer-events-none absolute top-[40%] -right-32 w-[520px] h-[520px] rounded-full blur-3xl opacity-30"
+        <div aria-hidden className="hidden md:block pointer-events-none absolute top-[40%] -right-32 w-[520px] h-[520px] rounded-full blur-3xl opacity-30"
           style={{ background: 'conic-gradient(from 0deg, #ffffff, #3b82f6, #0b1437, #ffffff)' }} />
 
         {/* NAV */}
