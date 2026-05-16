@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, lazy, Suspense } from "react";
 import { Helmet } from "react-helmet";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
@@ -26,13 +26,19 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import AdminLeads from "@/components/AdminLeads";
 import { AdminSidebar } from "@/components/admin/AdminSidebar";
-import { AdminDashboard } from "@/components/admin/AdminDashboard";
-import { AdminAnalytics } from "@/components/admin/AdminAnalytics";
-import { AdminSystemHealth } from "@/components/admin/AdminSystemHealth";
-import { AdminEmailBlasts } from "@/components/admin/AdminEmailBlasts";
-import { AdminBlogGenerator } from "@/components/admin/AdminBlogGenerator";
+const AdminLeads = lazy(() => import("@/components/AdminLeads"));
+const AdminDashboard = lazy(() => import("@/components/admin/AdminDashboard").then(m => ({ default: m.AdminDashboard })));
+const AdminAnalytics = lazy(() => import("@/components/admin/AdminAnalytics").then(m => ({ default: m.AdminAnalytics })));
+const AdminSystemHealth = lazy(() => import("@/components/admin/AdminSystemHealth").then(m => ({ default: m.AdminSystemHealth })));
+const AdminEmailBlasts = lazy(() => import("@/components/admin/AdminEmailBlasts").then(m => ({ default: m.AdminEmailBlasts })));
+const AdminBlogGenerator = lazy(() => import("@/components/admin/AdminBlogGenerator").then(m => ({ default: m.AdminBlogGenerator })));
+
+const AdminSectionFallback = () => (
+  <div className="flex items-center justify-center py-12">
+    <div className="w-6 h-6 rounded-full border-2 border-black/20 border-t-black animate-spin" />
+  </div>
+);
 
 interface User {
   id: string;
@@ -1361,7 +1367,9 @@ export default function Admin() {
             </header>
             
             <main className="flex-1 p-6">
-              {renderContent()}
+              <Suspense fallback={<AdminSectionFallback />}>
+                {renderContent()}
+              </Suspense>
             </main>
           </SidebarInset>
         </div>
