@@ -113,7 +113,7 @@ export function AdminBlogGenerator({ onSaved }: { onSaved?: () => void }) {
     setLoading(true);
     try {
       // Inject hero image at top of HTML if uploaded
-      const finalHtml = post.html.replaceAll("[IMAGE_PLACEHOLDER]", heroImageUrl);
+      const finalHtml = post.html.split("[IMAGE_PLACEHOLDER]").join(heroImageUrl);
       const { error } = await supabase.from("blog_posts").insert([{
         slug: post.slug,
         title: post.title,
@@ -302,7 +302,7 @@ export function AdminBlogGenerator({ onSaved }: { onSaved?: () => void }) {
               <summary className="cursor-pointer font-medium">Live preview</summary>
               <div
                 className="mt-3 prose prose-sm max-w-none dark:prose-invert"
-                dangerouslySetInnerHTML={{ __html: post.html.replaceAll("[IMAGE_PLACEHOLDER]", heroImageUrl) }}
+                dangerouslySetInnerHTML={{ __html: post.html.split("[IMAGE_PLACEHOLDER]").join(heroImageUrl) }}
               />
             </details>
 
