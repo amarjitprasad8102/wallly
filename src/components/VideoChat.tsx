@@ -17,6 +17,7 @@ import MessageStatus from './MessageStatus';
 import { Badge } from '@/components/ui/badge';
 import { toast } from 'sonner';
 import VirtualBackgrounds, { BackgroundOption } from './VirtualBackgrounds';
+import { useVirtualBackground } from '@/hooks/useVirtualBackground';
 import ConnectionQualityIndicator from './ConnectionQualityIndicator';
 
 interface ChatMessage {
