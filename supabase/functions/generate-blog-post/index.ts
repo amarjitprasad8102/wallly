@@ -103,11 +103,11 @@ Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
   try {
-    if (!GEMINI_API_KEY) throw new Error("GEMINI_API_KEY not configured");
     await assertAdmin(req);
 
     const body = await req.json();
     const { action, topic, niche, post: inputPost } = body;
+    if (action !== "image" && !GEMINI_API_KEY) throw new Error("GEMINI_API_KEY not configured");
 
     if (action === "research") {
       const userPrompt = `PHASE 1 — TOPIC & KEYWORD RESEARCH
