@@ -507,11 +507,10 @@ const Index = () => {
 
           {/* Heading */}
           <h1 className="text-3xl sm:text-5xl md:text-7xl font-bold mb-4 sm:mb-6 gradient-text">
-            Random Video Chat
+            tap in. say hi.
           </h1>
           <p className="text-base sm:text-xl md:text-2xl text-muted-foreground mb-8 sm:mb-12 max-w-2xl mx-auto px-2">
-            Connect face-to-face with strangers worldwide through instant video chat. Start conversations, make
-            friends, and explore new perspectives.
+            real faces, zero pressure. get matched with someone new in seconds and see where the vibe takes you.
           </p>
 
           {/* CTA Buttons - Mobile Stacked */}
