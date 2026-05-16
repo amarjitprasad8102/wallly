@@ -1,7 +1,7 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Helmet } from 'react-helmet';
-import { ArrowUpRight, MessageCircle, MessageSquare, Sparkles, Shield, Users, Hash, Image as ImageIcon, Zap } from 'lucide-react';
+import { ArrowUpRight, MessageCircle, MessageSquare, Sparkles, Shield, Users, Hash, Image as ImageIcon, Zap, Menu, X } from 'lucide-react';
 import logo from '@/assets/logo.png';
 import { supabase } from '@/integrations/supabase/client';
 import Lenis from '@studio-freight/lenis';
@@ -21,6 +21,14 @@ const body = { fontFamily: '"Hind", system-ui, sans-serif' };
 
 const Landing = () => {
   const navigate = useNavigate();
+  const [menuOpen, setMenuOpen] = useState(false);
+
+  const navItems = [
+    { l: 'How to use', p: '/howtouse' },
+    { l: 'Communities', p: '/c' },
+    { l: 'Blog', p: '/blog' },
+    { l: 'Premium', p: '/premium' },
+  ];
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
@@ -65,32 +73,56 @@ const Landing = () => {
         style={body}
       >
         {/* NAV — floating pill with chunky shadow */}
-        <nav className="fixed top-4 sm:top-6 left-1/2 -translate-x-1/2 z-50 w-[94%] max-w-5xl bg-white border-[3px] sm:border-4 border-black px-4 sm:px-6 py-2.5 sm:py-3 flex justify-between items-center shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] sm:shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] rounded-none">
+        <nav className="fixed top-3 sm:top-6 left-1/2 -translate-x-1/2 z-50 w-[94%] max-w-5xl bg-white border-[3px] sm:border-4 border-black px-3 sm:px-6 py-2 sm:py-3 flex justify-between items-center shadow-[5px_5px_0px_0px_rgba(0,0,0,1)] sm:shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] rounded-none">
           <button onClick={() => navigate('/')} className="flex items-center gap-2">
             <img src={logo} alt="Wallly" width="28" height="28" className="w-7 h-7 border-2 border-black" />
-            <span style={heading} className="text-xl sm:text-2xl uppercase tracking-tighter italic">Wallly</span>
+            <span style={heading} className="text-lg sm:text-2xl uppercase tracking-tighter italic">Wallly</span>
           </button>
           <div className="hidden md:flex gap-7 font-semibold text-sm">
-            {[
-              { l: 'How to use', p: '/howtouse' },
-              { l: 'Communities', p: '/c' },
-              { l: 'Blog', p: '/blog' },
-              { l: 'Premium', p: '/premium' },
-            ].map((i) => (
+            {navItems.map((i) => (
               <button key={i.p} onClick={() => navigate(i.p)} className="hover:underline decoration-4 underline-offset-4 decoration-[#FF72C0]">{i.l}</button>
             ))}
           </div>
-          <button
-            onClick={() => navigate('/auth')}
-            className="bg-[#E4FF00] border-2 border-black px-3 sm:px-4 py-1 font-bold text-sm shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] active:shadow-none active:translate-x-[2px] active:translate-y-[2px] transition-all"
-          >
-            Log In
-          </button>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => navigate('/auth')}
+              className="bg-[#E4FF00] border-2 border-black px-3 sm:px-4 py-1.5 font-bold text-xs sm:text-sm shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] active:shadow-none active:translate-x-[2px] active:translate-y-[2px] transition-all"
+            >
+              Log In
+            </button>
+            <button
+              onClick={() => setMenuOpen((v) => !v)}
+              aria-label="Toggle menu"
+              aria-expanded={menuOpen}
+              className="md:hidden w-9 h-9 flex items-center justify-center bg-white border-2 border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] active:shadow-none active:translate-x-[2px] active:translate-y-[2px] transition-all"
+            >
+              {menuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+            </button>
+          </div>
         </nav>
+
+        {/* Mobile menu panel */}
+        {menuOpen && (
+          <div className="fixed top-[68px] left-1/2 -translate-x-1/2 z-40 w-[94%] max-w-5xl bg-white border-[3px] border-black shadow-[5px_5px_0px_0px_rgba(0,0,0,1)] md:hidden">
+            <ul className="flex flex-col">
+              {navItems.map((i) => (
+                <li key={i.p} className="border-b-2 border-black last:border-b-0">
+                  <button
+                    onClick={() => { setMenuOpen(false); navigate(i.p); }}
+                    className="w-full text-left px-5 py-4 font-bold uppercase tracking-tight text-base active:bg-[#E4FF00]"
+                    style={heading}
+                  >
+                    {i.l}
+                  </button>
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
 
         <main>
           {/* HERO */}
-          <section className="relative pt-28 sm:pt-36 pb-16 sm:pb-20 px-4 sm:px-6 flex flex-col items-center text-center">
+          <section className="relative pt-24 sm:pt-36 pb-14 sm:pb-20 px-4 sm:px-6 flex flex-col items-center text-center">
             {/* Floating sticker decors */}
             <div className="absolute top-32 left-[6%] -rotate-12 hidden lg:flex items-center bg-[#FF72C0] border-4 border-black px-4 py-3 shadow-[6px_6px_0px_0px_rgba(0,0,0,1)]">
               <span style={heading} className="text-white uppercase">No Limits</span>
@@ -109,8 +141,8 @@ const Landing = () => {
                 ● Now Live Worldwide
               </div>
 
-              <h1 style={heading} className="text-[2.75rem] sm:text-7xl lg:text-[7.5rem] uppercase leading-[0.88] tracking-tighter mb-8">
-                Where the <span className="outline-text text-[#5D5DFF]">walls</span> end, you find a <span className="text-[#FF72C0] italic underline decoration-[8px] sm:decoration-[12px] underline-offset-[6px] sm:underline-offset-8 decoration-black">friend</span>
+              <h1 style={heading} className="text-[2.25rem] xs:text-[2.75rem] sm:text-7xl lg:text-[7.5rem] uppercase leading-[0.9] sm:leading-[0.88] tracking-tighter mb-6 sm:mb-8 break-words">
+                Where the <span className="outline-text text-[#5D5DFF]">walls</span> end, you find a <span className="text-[#FF72C0] italic underline decoration-[6px] sm:decoration-[12px] underline-offset-[4px] sm:underline-offset-8 decoration-black">friend</span>
               </h1>
 
               <p className="text-lg sm:text-2xl max-w-2xl mx-auto mb-10 font-medium text-[#1A1A1A]/80">
