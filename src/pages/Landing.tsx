@@ -57,8 +57,8 @@ const Landing = () => {
     <>
       <Helmet>
         <title>Wallly — Talk to Strangers, Make Friends | Free Random Video Chat</title>
-        <meta name="description" content="Wallly is a Gen-Z random video & text chat. Meet strangers, make friends, vibe worldwide. Free, no download, ages 16+." />
-        <meta name="keywords" content="random video chat, talk to strangers, omegle alternative, ometv alternative, text chat, gen z chat, wallly" />
+        <meta name="description" content="Wallly is an LGBTQ+ friendly Gen-Z random video & text chat. Meet gay, lesbian, bi, trans, non-binary, queer & straight strangers worldwide. Free, no download, 16+." />
+        <meta name="keywords" content="random video chat, lgbtq chat, gay video chat, lesbian chat, bisexual chat, trans chat, non-binary chat, queer chat, top bottom chat, talk to strangers, omegle alternative, ometv alternative, wallly" />
         <link rel="canonical" href="https://wallly.in/" />
         <meta property="og:type" content="website" />
         <meta property="og:url" content="https://wallly.in/" />
