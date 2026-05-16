@@ -17,6 +17,7 @@ import MessageStatus from './MessageStatus';
 import { Badge } from '@/components/ui/badge';
 import { toast } from 'sonner';
 import VirtualBackgrounds, { BackgroundOption } from './VirtualBackgrounds';
+import { useVirtualBackground } from '@/hooks/useVirtualBackground';
 import ConnectionQualityIndicator from './ConnectionQualityIndicator';
 
 interface ChatMessage {
@@ -71,38 +72,11 @@ const VideoChat = ({
   const isMobile = useIsMobile();
   const [isChannelReady, setIsChannelReady] = useState(false);
   const [virtualBackground, setVirtualBackground] = useState<BackgroundOption | null>(null);
-
-  // Get background style for local video overlay
-  const getBackgroundStyle = (): React.CSSProperties => {
-    if (!virtualBackground) return {};
-    
-    if (virtualBackground.type === 'blur') {
-      return {
-        backdropFilter: `blur(${virtualBackground.value}px)`,
-        WebkitBackdropFilter: `blur(${virtualBackground.value}px)`,
-      };
-    }
-    
-    if (virtualBackground.type === 'color') {
-      return {
-        background: virtualBackground.value,
-        opacity: 0.85,
-        mixBlendMode: 'multiply' as const,
-      };
-    }
-    
-    if (virtualBackground.type === 'image') {
-      return {
-        backgroundImage: `url(${virtualBackground.value})`,
-        backgroundSize: 'cover',
-        backgroundPosition: 'center',
-        opacity: 0.9,
-        mixBlendMode: 'multiply' as const,
-      };
-    }
-    
-    return {};
-  };
+  const { canvasRef: bgCanvasRef, ready: bgReady } = useVirtualBackground(
+    localVideoRef.current,
+    virtualBackground,
+    isPremium && !!virtualBackground,
+  );
 
   const {
     peerConnection,
@@ -497,13 +471,16 @@ const VideoChat = ({
                   playsInline
                   muted
                   className="w-full h-full object-cover"
-                  style={{ transform: 'translateZ(0) scaleX(-1)' }}
+                  style={{
+                    transform: 'translateZ(0) scaleX(-1)',
+                    opacity: virtualBackground && bgReady ? 0 : 1,
+                  }}
                 />
-                {/* Virtual Background Overlay */}
                 {virtualBackground && (
-                  <div 
-                    className="absolute inset-0 pointer-events-none"
-                    style={getBackgroundStyle()}
+                  <canvas
+                    ref={bgCanvasRef}
+                    className="absolute inset-0 w-full h-full object-cover pointer-events-none"
+                    style={{ transform: 'translateZ(0) scaleX(-1)' }}
                   />
                 )}
                 <div className="absolute bottom-2 left-2 bg-black/60 px-2 py-1 rounded text-xs text-white flex items-center gap-1">
@@ -542,13 +519,16 @@ const VideoChat = ({
                     playsInline
                     muted
                     className="w-full h-full object-cover"
-                    style={{ transform: 'translateZ(0) scaleX(-1)' }}
+                    style={{
+                      transform: 'translateZ(0) scaleX(-1)',
+                      opacity: virtualBackground && bgReady ? 0 : 1,
+                    }}
                   />
-                  {/* Virtual Background Overlay */}
                   {virtualBackground && (
-                    <div 
-                      className="absolute inset-0 pointer-events-none"
-                      style={getBackgroundStyle()}
+                    <canvas
+                      ref={bgCanvasRef}
+                      className="absolute inset-0 w-full h-full object-cover pointer-events-none"
+                      style={{ transform: 'translateZ(0) scaleX(-1)' }}
                     />
                   )}
                   <div className="absolute bottom-2 left-2 bg-black/60 px-2 py-1 rounded text-xs text-white flex items-center gap-1">
