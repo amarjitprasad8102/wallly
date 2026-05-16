@@ -195,6 +195,7 @@ Total HTML body must be >= 1500 words. Return only JSON, no fences.`;
         0.6,
       );
       const post = extractJson(raw);
+      if (post?.html) post.html = enforceDofollowInternal(post.html);
       return new Response(JSON.stringify({ post }), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
