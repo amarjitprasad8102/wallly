@@ -27,17 +27,25 @@ const Landing = () => {
       if (session) navigate('/app');
     });
 
+    // Lenis smooth-scroll is heavy on mobile — only enable on pointer:fine (desktop)
+    const isDesktop = window.matchMedia('(pointer: fine) and (min-width: 1024px)').matches;
+    if (!isDesktop) return;
+
     const lenis = new Lenis({
       duration: 1.2,
       easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
       smoothWheel: true,
     });
+    let rafId = 0;
     function raf(time: number) {
       lenis.raf(time);
-      requestAnimationFrame(raf);
+      rafId = requestAnimationFrame(raf);
     }
-    requestAnimationFrame(raf);
-    return () => lenis.destroy();
+    rafId = requestAnimationFrame(raf);
+    return () => {
+      cancelAnimationFrame(rafId);
+      lenis.destroy();
+    };
   }, [navigate]);
 
   return (
