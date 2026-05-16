@@ -42,6 +42,33 @@ interface GeneratedPost {
 
 type Step = "research" | "ideas" | "writing" | "review";
 
+interface AuditDimension {
+  name: string;
+  score: number;
+  status: string;
+  notes?: string;
+  fix?: string;
+  density_percent?: number;
+  occurrences?: number;
+  word_count?: number;
+  banned_phrases_found?: string[];
+  corrected_slug?: string;
+}
+interface AuditReport {
+  total_score: number;
+  verdict: string;
+  dimensions: AuditDimension[];
+  critical_issues: string[];
+  recommended_improvements: string[];
+  exact_rewrites: {
+    h1?: string;
+    meta_description?: string;
+    slug?: string;
+    failing_faqs?: { old: string; new_q: string; new_a: string }[];
+    anchor_text_fixes?: { old: string; new: string }[];
+  };
+}
+
 export function AdminBlogGenerator({ onSaved }: { onSaved?: () => void }) {
   const { toast } = useToast();
   const [step, setStep] = useState<Step>("research");
@@ -50,6 +77,11 @@ export function AdminBlogGenerator({ onSaved }: { onSaved?: () => void }) {
   const [ideas, setIdeas] = useState<TopicIdea[]>([]);
   const [selectedIdea, setSelectedIdea] = useState<TopicIdea | null>(null);
   const [post, setPost] = useState<GeneratedPost | null>(null);
+  const [heroImageUrl, setHeroImageUrl] = useState("/placeholder.svg");
+  const [publishOnSave, setPublishOnSave] = useState(false);
+  const [audit, setAudit] = useState<AuditReport | null>(null);
+  const [auditing, setAuditing] = useState(false);
+  const [previousAudit, setPreviousAudit] = useState<AuditReport | null>(null);
   const [heroImageUrl, setHeroImageUrl] = useState("/placeholder.svg");
   const [publishOnSave, setPublishOnSave] = useState(false);
 
