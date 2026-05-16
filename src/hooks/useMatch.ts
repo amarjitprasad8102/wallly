@@ -227,13 +227,13 @@ export const useMatch = (
       .subscribe(async (status) => {
         console.log('[MATCH] Channel subscription status:', status);
         if (status === 'SUBSCRIBED') {
-          console.log('[MATCH] Tracking presence for user:', userId, 'isPremium:', isPremium, 'gender:', userGender);
+          console.log('[MATCH] Tracking presence for user:', userId, 'isPremium:', isPremiumRef.current, 'gender:', genderRef.current, 'filters:', filtersRef.current);
           await channel.track({
             user_id: userId,
             timestamp: Date.now(),
-            is_premium: isPremium,
-            gender: userGender ?? null,
-            filters: filters || {},
+            is_premium: isPremiumRef.current,
+            gender: genderRef.current ?? null,
+            filters: filtersRef.current || {},
           });
         }
       });
