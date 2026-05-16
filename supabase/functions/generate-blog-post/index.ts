@@ -44,7 +44,7 @@ ABSOLUTE RULES:
 - 5–7 schema-friendly FAQs. Each answer 60–100 words.
 - Output clean semantic HTML (article, section, h1, h2, h3, p, a, ul, div).`;
 
-async function callAI(messages: { role: string; content: string }[], temperature = 0.7) {
+async function callAI(messages: { role: string; content: string }[], temperature = 0.7, maxTokens = 32768) {
   // Convert OpenAI-style messages to Gemini format
   const systemMsg = messages.find((m) => m.role === "system")?.content ?? "";
   const userParts = messages
@@ -61,7 +61,7 @@ async function callAI(messages: { role: string; content: string }[], temperature
       generationConfig: {
         temperature,
         responseMimeType: "application/json",
-        maxOutputTokens: 8192,
+        maxOutputTokens: maxTokens,
       },
     }),
   });
@@ -73,7 +73,42 @@ async function callAI(messages: { role: string; content: string }[], temperature
     throw new Error(`Gemini API error ${res.status}: ${text}`);
   }
   const data = await res.json();
-  return data.candidates?.[0]?.content?.parts?.[0]?.text ?? "";
+  const candidate = data.candidates?.[0];
+  const text = candidate?.content?.parts?.[0]?.text ?? "";
+  const finishReason = candidate?.finishReason;
+  if (finishReason === "MAX_TOKENS") {
+    console.warn("[generate-blog-post] Gemini hit MAX_TOKENS — output likely truncated. Length:", text.length);
+    throw new Error("AI response was truncated (hit token limit). Try again — the model will produce a shorter, valid result.");
+  }
+  if (!text) {
+    throw new Error(`AI returned empty response (finishReason=${finishReason || "unknown"}). Try again.`);
+  }
+  return text;
+}
+
+function tryRepairJson(text: string): string {
+  // Attempt to repair common truncation issues: unclosed strings / arrays / objects
+  let s = text.replace(/```json|```/g, "").trim();
+  const firstBrace = s.search(/[\[{]/);
+  if (firstBrace < 0) return s;
+  s = s.slice(firstBrace);
+  // If ends mid-string, close it
+  let inStr = false, esc = false, opens: string[] = [];
+  for (let i = 0; i < s.length; i++) {
+    const c = s[i];
+    if (esc) { esc = false; continue; }
+    if (c === "\\") { esc = true; continue; }
+    if (c === '"') { inStr = !inStr; continue; }
+    if (inStr) continue;
+    if (c === "{" || c === "[") opens.push(c);
+    else if (c === "}" || c === "]") opens.pop();
+  }
+  if (inStr) s += '"';
+  while (opens.length) {
+    const o = opens.pop();
+    s += o === "{" ? "}" : "]";
+  }
+  return s;
 }
 
 function extractJson(text: string): any {
@@ -83,7 +118,17 @@ function extractJson(text: string): any {
   if (firstBrace < 0) throw new Error("Model returned no JSON");
   const lastBrace = Math.max(cleaned.lastIndexOf("}"), cleaned.lastIndexOf("]"));
   const slice = cleaned.slice(firstBrace, lastBrace + 1);
-  return JSON.parse(slice);
+  try {
+    return JSON.parse(slice);
+  } catch (e) {
+    // Fallback: attempt to repair common truncation/quote issues
+    try {
+      return JSON.parse(tryRepairJson(text));
+    } catch (e2) {
+      console.error("[generate-blog-post] JSON parse failed. Raw length:", text.length, "Tail:", text.slice(-300));
+      throw new Error("AI returned malformed JSON. Try again.");
+    }
+  }
 }
 
 // Strip rel="nofollow|ugc|sponsored" from any <a> pointing to wallly.in so internal links are dofollow
