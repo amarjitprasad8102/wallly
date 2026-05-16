@@ -357,14 +357,25 @@ export function AdminBlogGenerator({ onSaved }: { onSaved?: () => void }) {
               <Label className="flex items-center gap-2">
                 <ImageIcon className="h-4 w-4" /> Hero image
               </Label>
-              <div className="flex items-center gap-3">
+              <div className="flex items-center gap-3 flex-wrap">
                 <img src={heroImageUrl} alt="hero preview" className="h-20 w-32 object-cover rounded border" />
                 <Input
                   type="file"
                   accept="image/*"
                   onChange={(e) => e.target.files?.[0] && uploadHeroImage(e.target.files[0])}
-                  className="max-w-sm"
+                  className="max-w-xs"
                 />
+                <Button
+                  type="button"
+                  size="sm"
+                  variant="secondary"
+                  onClick={generateHeroImage}
+                  disabled={generatingImage}
+                  className="gap-1"
+                >
+                  {generatingImage ? <Loader2 className="h-4 w-4 animate-spin" /> : <Sparkles className="h-4 w-4" />}
+                  {generatingImage ? "Generating..." : "Generate with AI"}
+                </Button>
               </div>
               <details className="text-xs text-muted-foreground">
                 <summary className="cursor-pointer">Suggested hero prompt</summary>
