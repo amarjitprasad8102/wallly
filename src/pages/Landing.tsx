@@ -1,7 +1,7 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Helmet } from 'react-helmet';
-import { ArrowUpRight, MessageCircle, MessageSquare, Sparkles, Shield, Users, Hash, Image as ImageIcon, Zap } from 'lucide-react';
+import { ArrowUpRight, MessageCircle, MessageSquare, Sparkles, Shield, Users, Hash, Image as ImageIcon, Zap, Menu, X } from 'lucide-react';
 import logo from '@/assets/logo.png';
 import { supabase } from '@/integrations/supabase/client';
 import Lenis from '@studio-freight/lenis';
