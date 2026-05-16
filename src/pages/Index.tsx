@@ -604,9 +604,9 @@ const Index = () => {
               <div className="bg-primary/10 w-10 h-10 sm:w-12 sm:h-12 rounded-lg flex items-center justify-center mb-3 sm:mb-4" aria-hidden="true">
                 <Users className="w-5 h-5 sm:w-6 sm:h-6 text-primary" aria-label="Users icon" />
               </div>
-              <h3 className="text-lg sm:text-xl font-semibold mb-2">Random Matching</h3>
+              <h3 className="text-lg sm:text-xl font-semibold mb-2">Random AF</h3>
               <p className="text-sm sm:text-base text-muted-foreground">
-                Instantly connect with random people from around the world
+                no algorithm, no for-you bubble. just real humans from everywhere, dropped into your screen.
               </p>
             </div>
 
@@ -617,9 +617,9 @@ const Index = () => {
               <div className="bg-accent/10 w-10 h-10 sm:w-12 sm:h-12 rounded-lg flex items-center justify-center mb-3 sm:mb-4" aria-hidden="true">
                 <Zap className="w-5 h-5 sm:w-6 sm:h-6 text-accent" aria-label="Lightning icon" />
               </div>
-              <h3 className="text-lg sm:text-xl font-semibold mb-2">Lightning Fast</h3>
+              <h3 className="text-lg sm:text-xl font-semibold mb-2">No Lag, All Talk</h3>
               <p className="text-sm sm:text-base text-muted-foreground">
-                Instant peer-to-peer video with minimal latency for smooth conversations
+                peer-to-peer video that actually keeps up. zero buffering vibes only.
               </p>
             </div>
 
@@ -630,9 +630,9 @@ const Index = () => {
               <div className="bg-destructive/10 w-10 h-10 sm:w-12 sm:h-12 rounded-lg flex items-center justify-center mb-3 sm:mb-4" aria-hidden="true">
                 <Shield className="w-5 h-5 sm:w-6 sm:h-6 text-destructive" aria-label="Shield icon" />
               </div>
-              <h3 className="text-lg sm:text-xl font-semibold mb-2">Safe & Private</h3>
+              <h3 className="text-lg sm:text-xl font-semibold mb-2">Your Space, Your Rules</h3>
               <p className="text-sm sm:text-base text-muted-foreground">
-                Secure connections. No data stored. Your privacy is our priority
+                skip whenever, report anything sus. nothing saved, nothing leaked.
               </p>
             </div>
           </div>
