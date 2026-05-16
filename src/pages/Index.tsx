@@ -354,7 +354,8 @@ const Index = () => {
     <div className="min-h-screen bg-gradient-subtle flex flex-col">
       <Helmet>
         <title>Wallly App — Start a Random Video or Text Chat</title>
-        <meta name="description" content="Jump into a random video or text chat in one click. Match with strangers worldwide, share images, and add friends on Wallly." />
+        <meta name="description" content="LGBTQ+ friendly random video & text chat. Match with gay, lesbian, bi, trans, non-binary, queer, top, bottom or straight strangers worldwide on Wallly." />
+        <meta name="keywords" content="lgbtq video chat, gay random chat, lesbian chat, bisexual chat, trans chat, non-binary chat, queer video chat, top bottom chat, wallly" />
         <link rel="canonical" href="https://wallly.in/app" />
         <meta property="og:title" content="Wallly App — Start a Random Video or Text Chat" />
         <meta property="og:description" content="Jump into a random video or text chat in one click. Match with strangers worldwide on Wallly." />
