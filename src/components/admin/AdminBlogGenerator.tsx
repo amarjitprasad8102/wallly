@@ -7,7 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
-import { Loader2, Sparkles, FileText, Save, ArrowLeft, Wand2, Image as ImageIcon } from "lucide-react";
+import { Loader2, Sparkles, FileText, Save, ArrowLeft, Wand2, Image as ImageIcon, ShieldCheck, AlertTriangle, CheckCircle2 } from "lucide-react";
 
 interface TopicIdea {
   primary_keyword: string;
@@ -42,6 +42,33 @@ interface GeneratedPost {
 
 type Step = "research" | "ideas" | "writing" | "review";
 
+interface AuditDimension {
+  name: string;
+  score: number;
+  status: string;
+  notes?: string;
+  fix?: string;
+  density_percent?: number;
+  occurrences?: number;
+  word_count?: number;
+  banned_phrases_found?: string[];
+  corrected_slug?: string;
+}
+interface AuditReport {
+  total_score: number;
+  verdict: string;
+  dimensions: AuditDimension[];
+  critical_issues: string[];
+  recommended_improvements: string[];
+  exact_rewrites: {
+    h1?: string;
+    meta_description?: string;
+    slug?: string;
+    failing_faqs?: { old: string; new_q: string; new_a: string }[];
+    anchor_text_fixes?: { old: string; new: string }[];
+  };
+}
+
 export function AdminBlogGenerator({ onSaved }: { onSaved?: () => void }) {
   const { toast } = useToast();
   const [step, setStep] = useState<Step>("research");
@@ -52,6 +79,10 @@ export function AdminBlogGenerator({ onSaved }: { onSaved?: () => void }) {
   const [post, setPost] = useState<GeneratedPost | null>(null);
   const [heroImageUrl, setHeroImageUrl] = useState("/placeholder.svg");
   const [publishOnSave, setPublishOnSave] = useState(false);
+  const [audit, setAudit] = useState<AuditReport | null>(null);
+  const [auditing, setAuditing] = useState(false);
+  const [previousAudit, setPreviousAudit] = useState<AuditReport | null>(null);
+
 
   const runResearch = async () => {
     setLoading(true);
@@ -81,7 +112,11 @@ export function AdminBlogGenerator({ onSaved }: { onSaved?: () => void }) {
       if (error) throw error;
       if (data?.error) throw new Error(data.error);
       setPost(data.post);
+      setAudit(null);
+      setPreviousAudit(null);
       setStep("review");
+      // auto-run SEO audit
+      setTimeout(() => runAudit(data.post), 50);
     } catch (e: any) {
       toast({ title: "Generation failed", description: e.message, variant: "destructive" });
       setStep("ideas");
@@ -138,6 +173,45 @@ export function AdminBlogGenerator({ onSaved }: { onSaved?: () => void }) {
       toast({ title: "Save failed", description: e.message, variant: "destructive" });
     } finally {
       setLoading(false);
+    }
+  };
+
+  const runAudit = async (target?: GeneratedPost) => {
+    const p = target || post;
+    if (!p) return;
+    setAuditing(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("generate-blog-post", {
+        body: { action: "audit", post: p },
+      });
+      if (error) throw error;
+      if (data?.error) throw new Error(data.error);
+      setAudit(data.audit);
+    } catch (e: any) {
+      toast({ title: "Audit failed", description: e.message, variant: "destructive" });
+    } finally {
+      setAuditing(false);
+    }
+  };
+
+  const autoFix = async () => {
+    if (!post) return;
+    setAuditing(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("generate-blog-post", {
+        body: { action: "autofix", post },
+      });
+      if (error) throw error;
+      if (data?.error) throw new Error(data.error);
+      setPreviousAudit(audit);
+      setPost(data.post);
+      setAudit(null);
+      toast({ title: "Post auto-fixed", description: "Re-running SEO audit..." });
+      setTimeout(() => runAudit(data.post), 50);
+    } catch (e: any) {
+      toast({ title: "Auto-fix failed", description: e.message, variant: "destructive" });
+    } finally {
+      setAuditing(false);
     }
   };
 
@@ -305,6 +379,120 @@ export function AdminBlogGenerator({ onSaved }: { onSaved?: () => void }) {
                 dangerouslySetInnerHTML={{ __html: post.html.split("[IMAGE_PLACEHOLDER]").join(heroImageUrl) }}
               />
             </details>
+
+            <div className="border rounded-lg p-4 space-y-3 bg-muted/30">
+              <div className="flex items-center justify-between flex-wrap gap-2">
+                <h4 className="font-semibold flex items-center gap-2">
+                  <ShieldCheck className="h-4 w-4 text-primary" />
+                  SEO Audit {previousAudit && <Badge variant="outline" className="ml-1">Previous: {previousAudit.total_score}/100</Badge>}
+                </h4>
+                <div className="flex gap-2">
+                  <Button size="sm" variant="outline" onClick={() => runAudit()} disabled={auditing}>
+                    {auditing ? <Loader2 className="h-4 w-4 animate-spin" /> : <ShieldCheck className="h-4 w-4" />}
+                    {auditing ? "Auditing..." : audit ? "Re-run Audit" : "Run SEO Check"}
+                  </Button>
+                  {audit && audit.total_score < 90 && (
+                    <Button size="sm" onClick={autoFix} disabled={auditing} className="gap-1">
+                      <Wand2 className="h-4 w-4" /> Auto-Fix
+                    </Button>
+                  )}
+                </div>
+              </div>
+
+              {auditing && !audit && (
+                <p className="text-sm text-muted-foreground flex items-center gap-2">
+                  <Loader2 className="h-3 w-3 animate-spin" /> Scoring 10 dimensions...
+                </p>
+              )}
+
+              {audit && (
+                <div className="space-y-3">
+                  <div className="flex items-center gap-3 flex-wrap">
+                    <div className="text-3xl font-bold tabular-nums">
+                      {audit.total_score}<span className="text-base text-muted-foreground">/100</span>
+                    </div>
+                    <Badge
+                      variant={
+                        audit.verdict === "READY" ? "default" :
+                        audit.verdict === "MINOR_FIXES" ? "secondary" :
+                        "destructive"
+                      }
+                      className="text-sm"
+                    >
+                      {audit.verdict === "READY" && <CheckCircle2 className="h-3.5 w-3.5 mr-1" />}
+                      {audit.verdict !== "READY" && <AlertTriangle className="h-3.5 w-3.5 mr-1" />}
+                      {audit.verdict.split("_").join(" ")}
+                    </Badge>
+                  </div>
+
+                  <div className="grid sm:grid-cols-2 gap-2">
+                    {audit.dimensions?.map((d, i) => {
+                      const color = d.score >= 7 ? "text-emerald-600 dark:text-emerald-400" :
+                                    d.score >= 5 ? "text-amber-600 dark:text-amber-400" :
+                                    "text-destructive";
+                      return (
+                        <details key={i} className="border rounded px-3 py-2 text-sm bg-background">
+                          <summary className="cursor-pointer flex items-center justify-between gap-2">
+                            <span className="truncate">{i + 1}. {d.name}</span>
+                            <span className={`font-mono font-semibold ${color}`}>{d.score}/10</span>
+                          </summary>
+                          {d.notes && <p className="mt-2 text-xs text-muted-foreground">{d.notes}</p>}
+                          {d.fix && <p className="mt-1 text-xs"><span className="font-medium">Fix:</span> {d.fix}</p>}
+                          {d.banned_phrases_found && d.banned_phrases_found.length > 0 && (
+                            <p className="mt-1 text-xs"><span className="font-medium">Banned phrases:</span> {d.banned_phrases_found.join(", ")}</p>
+                          )}
+                          {d.corrected_slug && <p className="mt-1 text-xs"><span className="font-medium">Corrected slug:</span> <code>{d.corrected_slug}</code></p>}
+                          {typeof d.density_percent === "number" && (
+                            <p className="mt-1 text-xs"><span className="font-medium">Density:</span> {d.density_percent}% ({d.occurrences} occurrences)</p>
+                          )}
+                        </details>
+                      );
+                    })}
+                  </div>
+
+                  {audit.critical_issues?.length > 0 && (
+                    <div className="border-l-4 border-destructive bg-destructive/5 p-3 rounded text-sm">
+                      <p className="font-semibold flex items-center gap-1 text-destructive mb-1">
+                        <AlertTriangle className="h-4 w-4" /> Critical issues
+                      </p>
+                      <ul className="list-disc ml-5 space-y-0.5">
+                        {audit.critical_issues.map((c, i) => <li key={i}>{c}</li>)}
+                      </ul>
+                    </div>
+                  )}
+
+                  {audit.recommended_improvements?.length > 0 && (
+                    <div className="border-l-4 border-amber-500 bg-amber-500/5 p-3 rounded text-sm">
+                      <p className="font-semibold mb-1">Recommended improvements</p>
+                      <ul className="list-disc ml-5 space-y-0.5">
+                        {audit.recommended_improvements.map((c, i) => <li key={i}>{c}</li>)}
+                      </ul>
+                    </div>
+                  )}
+
+                  {audit.exact_rewrites && (
+                    <details className="border rounded p-3 text-sm bg-background">
+                      <summary className="cursor-pointer font-medium">Exact rewrites (copy-paste ready)</summary>
+                      <div className="mt-2 space-y-2 text-xs">
+                        {audit.exact_rewrites.h1 && <div><span className="font-semibold">H1:</span> {audit.exact_rewrites.h1}</div>}
+                        {audit.exact_rewrites.meta_description && <div><span className="font-semibold">Meta:</span> {audit.exact_rewrites.meta_description}</div>}
+                        {audit.exact_rewrites.slug && <div><span className="font-semibold">Slug:</span> <code>{audit.exact_rewrites.slug}</code></div>}
+                        {audit.exact_rewrites.anchor_text_fixes?.map((a, i) => (
+                          <div key={i}><span className="font-semibold">Anchor:</span> "{a.old}" → "{a.new}"</div>
+                        ))}
+                        {audit.exact_rewrites.failing_faqs?.map((f, i) => (
+                          <div key={i} className="border-l-2 pl-2">
+                            <div className="text-muted-foreground line-through">{f.old}</div>
+                            <div className="font-medium">Q: {f.new_q}</div>
+                            <div>A: {f.new_a}</div>
+                          </div>
+                        ))}
+                      </div>
+                    </details>
+                  )}
+                </div>
+              )}
+            </div>
 
             <div className="flex items-center gap-3 pt-2 border-t">
               <label className="flex items-center gap-2 text-sm">
