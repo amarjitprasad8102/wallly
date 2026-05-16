@@ -786,10 +786,12 @@ export default function Admin() {
 
     setSendingEmail(true);
     try {
-      const { error } = await supabase.functions.invoke('send-ses-email', {
-        body: { to: selectedRecipients, subject: emailSubject, html: emailContent, templateUsed: selectedTemplate || null },
-      });
-      if (error) throw error;
+      for (const recipient of selectedRecipients) {
+        const { error } = await supabase.functions.invoke('send-email', {
+          body: { to: recipient, subject: emailSubject, html: emailContent },
+        });
+        if (error) throw error;
+      }
 
       toast({ title: "Success", description: `Email sent to ${selectedRecipients.length} recipient(s)` });
       setEmailDialogOpen(false);
