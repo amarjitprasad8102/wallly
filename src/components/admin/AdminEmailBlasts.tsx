@@ -58,19 +58,11 @@ export function AdminEmailBlasts() {
   };
 
   const triggerBlast = async () => {
-    setSending(true);
-    try {
-      const { data, error } = await supabase.functions.invoke("send-bulk-blast", {
-        body: { triggeredBy: "manual" },
-      });
-      if (error) throw error;
-      toast({ title: "Blast queued", description: `Sent: ${data?.totalSent ?? 0}, Failed: ${data?.totalFailed ?? 0}` });
-      await loadBlasts();
-    } catch (e: any) {
-      toast({ title: "Failed to send blast", description: e.message, variant: "destructive" });
-    } finally {
-      setSending(false);
-    }
+    toast({
+      title: "Bulk blasts disabled",
+      description: "Amazon SES has been removed. Bulk email sending is no longer available.",
+      variant: "destructive",
+    });
   };
 
   const openedCount = recipients.filter((r) => r.opened_at).length;
