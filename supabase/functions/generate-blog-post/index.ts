@@ -86,6 +86,18 @@ function extractJson(text: string): any {
   return JSON.parse(slice);
 }
 
+// Strip rel="nofollow|ugc|sponsored" from any <a> pointing to wallly.in so internal links are dofollow
+function enforceDofollowInternal(html: string): string {
+  return html.replace(/<a\b[^>]*>/gi, (tag) => {
+    const hrefMatch = tag.match(/href\s*=\s*["']([^"']+)["']/i);
+    if (!hrefMatch) return tag;
+    const href = hrefMatch[1];
+    const isInternal = /^(https?:)?\/\/(www\.)?wallly\.in(\/|$|#|\?)/i.test(href) || href.startsWith("/");
+    if (!isInternal) return tag;
+    // Remove any rel attribute on internal links (default is dofollow)
+    return tag.replace(/\s+rel\s*=\s*["'][^"']*["']/gi, "");
+  });
+
 async function assertAdmin(req: Request) {
   const authHeader = req.headers.get("Authorization");
   if (!authHeader) throw new Error("Unauthorized");
