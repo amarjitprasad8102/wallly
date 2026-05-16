@@ -10,7 +10,7 @@ const corsHeaders = {
 };
 
 const GEMINI_API_KEY = Deno.env.get("GEMINI_API_KEY");
-const GEMINI_MODEL = Deno.env.get("GEMINI_MODEL") ?? "gemini-2.5-pro";
+const GEMINI_MODEL = Deno.env.get("GEMINI_MODEL") ?? "gemini-2.5-flash";
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
 const SUPABASE_ANON_KEY = Deno.env.get("SUPABASE_ANON_KEY")!;
 
@@ -187,7 +187,7 @@ Return ONLY a JSON object with this exact shape:
   "hero_image_prompt": "40-80 word detailed image prompt (no text/logos, photorealistic or editorial illustration, 1200x630)",
   "hero_image_alt": "descriptive alt with keyword",
   "internal_links": ["https://wallly.in/...","https://wallly.in/..."],
-  "html": "FULL valid semantic HTML of the post — must include <article> wrapping the post, <h1>, an intro paragraph, at least 6 <section class=\\"blog-section\\"> blocks each with an <h2>, multi-paragraph body and an <img src=\\"[IMAGE_PLACEHOLDER]\\" alt=\\"...\\" /> slot, a Frequently Asked Questions section with 5-7 <div class=\\"faq-item\\"><h3>Q</h3><p>A</p></div> entries, and a conclusion paragraph with an internal CTA link. Internal links must use full https://wallly.in/... URLs. No markdown, no <html>/<head>/<body> wrappers.",
+  "html": "FULL valid semantic HTML. STRICT structure: <article class=\\"blog-post\\"> wraps everything; one <h1> at top; an intro <p class=\\"lead\\"> of 60-100 words that includes a dofollow link to https://wallly.in/; at least 6 <section class=\\"blog-section\\"> blocks, each with <h2>, 3-5 short <p> paragraphs (max 3 sentences each, max 22 words per sentence for readability), use <h3> for sub-points where helpful, use <ul><li> bullet lists for enumerations (at least 2 lists in the article), use <blockquote> at least once for a key insight, use <strong> to highlight key terms (sparingly), and an <img src=\\"[IMAGE_PLACEHOLDER]\\" alt=\\"...\\" loading=\\"lazy\\" /> slot in every other section. Include a <h2>Frequently Asked Questions</h2> section followed by 5-7 <div class=\\"faq-item\\"><h3>Q</h3><p>A</p></div> entries. End with a <section class=\\"blog-conclusion\\"> containing 2 paragraphs and a strong branded CTA <a href=\\"https://wallly.in/\\">Wallly</a> or /premium link. Use semantic tags only: article, section, h1, h2, h3, p, a, ul, ol, li, blockquote, strong, em, img. NO <div> except for faq-item. NO markdown. NO <html>/<head>/<body> wrappers. NO inline styles.",
   "section_image_prompts": [
     {"section_title": "string", "prompt": "40-80 word detailed image prompt", "alt": "alt with keyword"}
   ],
@@ -355,22 +355,28 @@ Return ONLY this JSON (same shape as Phase 2 output, no fences):
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          model: "google/gemini-2.5-flash-image-preview",
+          model: "google/gemini-2.5-flash-image",
           messages: [
-            { role: "user", content: `${prompt}\n\nStyle: photorealistic editorial, 1200x630, no text, no logos, no watermarks.` },
+            { role: "user", content: `${prompt}\n\nStyle: photorealistic editorial, 1200x630 landscape, no text, no logos, no watermarks.` },
           ],
           modalities: ["image", "text"],
         }),
       });
       if (!aiRes.ok) {
         const t = await aiRes.text();
+        console.error("Image gen failed", aiRes.status, t);
         if (aiRes.status === 429) throw new Error("AI rate limit reached. Try again shortly.");
-        if (aiRes.status === 402) throw new Error("AI credits exhausted. Add credits in Settings.");
-        throw new Error(`Image generation failed ${aiRes.status}: ${t}`);
+        if (aiRes.status === 402) throw new Error("AI credits exhausted. Add credits in Settings → Workspace → Usage.");
+        throw new Error(`Image generation failed (${aiRes.status}): ${t.slice(0, 300)}`);
       }
       const aiData = await aiRes.json();
-      const imgUrl: string | undefined = aiData.choices?.[0]?.message?.images?.[0]?.image_url?.url;
-      if (!imgUrl?.startsWith("data:")) throw new Error("No image returned by model");
+      const imgUrl: string | undefined =
+        aiData.choices?.[0]?.message?.images?.[0]?.image_url?.url ??
+        aiData.choices?.[0]?.message?.images?.[0]?.url;
+      if (!imgUrl?.startsWith("data:")) {
+        console.error("No image in response", JSON.stringify(aiData).slice(0, 500));
+        throw new Error("No image returned by AI model");
+      }
 
       // Decode base64 and upload to blog-images bucket via service role
       const [meta, base64] = imgUrl.split(",");
