@@ -23,6 +23,7 @@ import {
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { ArrowLeft, Save, Loader2 } from "lucide-react";
 import { toast } from "sonner";
+import GenderSelect from "@/components/GenderSelect";
 
 const ProfileSettings = () => {
   const navigate = useNavigate();
