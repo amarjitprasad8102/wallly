@@ -519,13 +519,16 @@ const VideoChat = ({
                     playsInline
                     muted
                     className="w-full h-full object-cover"
-                    style={{ transform: 'translateZ(0) scaleX(-1)' }}
+                    style={{
+                      transform: 'translateZ(0) scaleX(-1)',
+                      opacity: virtualBackground && bgReady ? 0 : 1,
+                    }}
                   />
-                  {/* Virtual Background Overlay */}
                   {virtualBackground && (
-                    <div 
-                      className="absolute inset-0 pointer-events-none"
-                      style={getBackgroundStyle()}
+                    <canvas
+                      ref={bgCanvasRef}
+                      className="absolute inset-0 w-full h-full object-cover pointer-events-none"
+                      style={{ transform: 'translateZ(0) scaleX(-1)' }}
                     />
                   )}
                   <div className="absolute bottom-2 left-2 bg-black/60 px-2 py-1 rounded text-xs text-white flex items-center gap-1">
