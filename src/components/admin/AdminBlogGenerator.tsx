@@ -421,7 +421,7 @@ export function AdminBlogGenerator({ onSaved }: { onSaved?: () => void }) {
                     >
                       {audit.verdict === "READY" && <CheckCircle2 className="h-3.5 w-3.5 mr-1" />}
                       {audit.verdict !== "READY" && <AlertTriangle className="h-3.5 w-3.5 mr-1" />}
-                      {audit.verdict.replaceAll("_", " ")}
+                      {audit.verdict.split("_").join(" ")}
                     </Badge>
                   </div>
 
