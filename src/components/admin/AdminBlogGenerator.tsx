@@ -112,7 +112,11 @@ export function AdminBlogGenerator({ onSaved }: { onSaved?: () => void }) {
       if (error) throw error;
       if (data?.error) throw new Error(data.error);
       setPost(data.post);
+      setAudit(null);
+      setPreviousAudit(null);
       setStep("review");
+      // auto-run SEO audit
+      setTimeout(() => runAudit(data.post), 50);
     } catch (e: any) {
       toast({ title: "Generation failed", description: e.message, variant: "destructive" });
       setStep("ideas");
