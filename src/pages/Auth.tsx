@@ -165,7 +165,7 @@ const Auth = () => {
           password,
         });
         if (error) throw error;
-        toast.success("Welcome back!");
+        toast.success("yo, welcome back 👋");
       } else {
         // Validate age
         const ageNum = parseInt(age);
