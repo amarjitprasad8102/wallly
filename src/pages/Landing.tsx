@@ -128,7 +128,7 @@ const Landing = () => {
               <button
                 onClick={() => navigate('/premium')}
                 style={heading}
-                className="text-xs tracking-wide px-4 py-2 rounded-full text-black bg-gradient-to-b from-white to-blue-200 hover:from-white hover:to-white transition shadow-[0_0_20px_rgba(147,197,253,0.6)]"
+                className="text-xs tracking-wide px-4 py-2.5 min-h-[40px] rounded-full text-black bg-gradient-to-b from-white to-blue-200 hover:from-white hover:to-white transition shadow-[0_0_20px_rgba(147,197,253,0.6)]"
               >
                 ★ PREMIUM
               </button>
