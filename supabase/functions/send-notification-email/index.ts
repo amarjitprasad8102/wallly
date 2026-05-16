@@ -65,16 +65,18 @@ serve(async (req: Request): Promise<Response> => {
       throw new Error("AWS SES credentials not configured");
     }
 
-    // Get auth token to identify sender
+    // Require authentication
     const authHeader = req.headers.get("authorization");
-    const supabase = createClient(supabaseUrl, supabaseKey);
-
-    let sentByUserId: string | null = null;
-    if (authHeader) {
-      const token = authHeader.replace("Bearer ", "");
-      const { data: { user } } = await supabase.auth.getUser(token);
-      sentByUserId = user?.id || null;
+    if (!authHeader) {
+      return new Response(JSON.stringify({ error: "Unauthorized" }), { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } });
     }
+    const supabase = createClient(supabaseUrl, supabaseKey);
+    const token = authHeader.replace("Bearer ", "");
+    const { data: { user }, error: authErr } = await supabase.auth.getUser(token);
+    if (authErr || !user) {
+      return new Response(JSON.stringify({ error: "Unauthorized" }), { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+    }
+    const sentByUserId: string | null = user.id;
 
     const { type, recipientEmail, recipientUserId, params = {} }: NotificationRequest = await req.json();
 
