@@ -210,7 +210,7 @@ const Landing = () => {
                   { n: '03', t: 'Vibe or Skip', d: "Love it? Add as friend. Not feeling it? Skip — zero awkward.", c: '#FFFFFF' },
                 ].map((s) => (
                   <div key={s.n} className="bg-white border-4 border-black p-6 shadow-[8px_8px_0px_0px_rgba(0,0,0,1)]">
-                    <div style={heading} className="text-6xl mb-4 inline-block px-3 border-4 border-black" style={{ background: s.c, fontFamily: '"Archivo Black", system-ui, sans-serif' }}>{s.n}</div>
+                    <div className="text-6xl mb-4 inline-block px-3 border-4 border-black" style={{ ...heading, background: s.c }}>{s.n}</div>
                     <h3 style={heading} className="text-2xl uppercase mb-2">{s.t}</h3>
                     <p className="font-medium text-black/75">{s.d}</p>
                   </div>
