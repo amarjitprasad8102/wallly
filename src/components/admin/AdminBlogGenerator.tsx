@@ -82,8 +82,7 @@ export function AdminBlogGenerator({ onSaved }: { onSaved?: () => void }) {
   const [audit, setAudit] = useState<AuditReport | null>(null);
   const [auditing, setAuditing] = useState(false);
   const [previousAudit, setPreviousAudit] = useState<AuditReport | null>(null);
-  const [heroImageUrl, setHeroImageUrl] = useState("/placeholder.svg");
-  const [publishOnSave, setPublishOnSave] = useState(false);
+
 
   const runResearch = async () => {
     setLoading(true);
