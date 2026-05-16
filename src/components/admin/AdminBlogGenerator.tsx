@@ -176,6 +176,45 @@ export function AdminBlogGenerator({ onSaved }: { onSaved?: () => void }) {
     }
   };
 
+  const runAudit = async (target?: GeneratedPost) => {
+    const p = target || post;
+    if (!p) return;
+    setAuditing(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("generate-blog-post", {
+        body: { action: "audit", post: p },
+      });
+      if (error) throw error;
+      if (data?.error) throw new Error(data.error);
+      setAudit(data.audit);
+    } catch (e: any) {
+      toast({ title: "Audit failed", description: e.message, variant: "destructive" });
+    } finally {
+      setAuditing(false);
+    }
+  };
+
+  const autoFix = async () => {
+    if (!post) return;
+    setAuditing(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("generate-blog-post", {
+        body: { action: "autofix", post },
+      });
+      if (error) throw error;
+      if (data?.error) throw new Error(data.error);
+      setPreviousAudit(audit);
+      setPost(data.post);
+      setAudit(null);
+      toast({ title: "Post auto-fixed", description: "Re-running SEO audit..." });
+      setTimeout(() => runAudit(data.post), 50);
+    } catch (e: any) {
+      toast({ title: "Auto-fix failed", description: e.message, variant: "destructive" });
+    } finally {
+      setAuditing(false);
+    }
+  };
+
   return (
     <Card>
       <CardHeader>
