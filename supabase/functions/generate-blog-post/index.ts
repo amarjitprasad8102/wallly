@@ -9,7 +9,8 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
-const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
+const GEMINI_API_KEY = Deno.env.get("GEMINI_API_KEY");
+const GEMINI_MODEL = Deno.env.get("GEMINI_MODEL") ?? "gemini-2.5-pro";
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
 const SUPABASE_ANON_KEY = Deno.env.get("SUPABASE_ANON_KEY")!;
 
