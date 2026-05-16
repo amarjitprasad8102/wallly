@@ -103,11 +103,11 @@ Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
   try {
-    if (!GEMINI_API_KEY) throw new Error("GEMINI_API_KEY not configured");
     await assertAdmin(req);
 
     const body = await req.json();
     const { action, topic, niche, post: inputPost } = body;
+    if (action !== "image" && !GEMINI_API_KEY) throw new Error("GEMINI_API_KEY not configured");
 
     if (action === "research") {
       const userPrompt = `PHASE 1 — TOPIC & KEYWORD RESEARCH
@@ -321,6 +321,55 @@ Return ONLY this JSON (same shape as Phase 2 output, no fences):
       );
       const fixedPost = extractJson(fixedRaw);
       return new Response(JSON.stringify({ post: fixedPost, previous_audit: audit }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    if (action === "image") {
+      const prompt = body.prompt as string;
+      if (!prompt) throw new Error("prompt is required");
+      const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
+      if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY not configured");
+
+      const aiRes = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${LOVABLE_API_KEY}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          model: "google/gemini-2.5-flash-image-preview",
+          messages: [
+            { role: "user", content: `${prompt}\n\nStyle: photorealistic editorial, 1200x630, no text, no logos, no watermarks.` },
+          ],
+          modalities: ["image", "text"],
+        }),
+      });
+      if (!aiRes.ok) {
+        const t = await aiRes.text();
+        if (aiRes.status === 429) throw new Error("AI rate limit reached. Try again shortly.");
+        if (aiRes.status === 402) throw new Error("AI credits exhausted. Add credits in Settings.");
+        throw new Error(`Image generation failed ${aiRes.status}: ${t}`);
+      }
+      const aiData = await aiRes.json();
+      const imgUrl: string | undefined = aiData.choices?.[0]?.message?.images?.[0]?.image_url?.url;
+      if (!imgUrl?.startsWith("data:")) throw new Error("No image returned by model");
+
+      // Decode base64 and upload to blog-images bucket via service role
+      const [meta, base64] = imgUrl.split(",");
+      const mime = meta.match(/data:([^;]+)/)?.[1] || "image/png";
+      const ext = mime.split("/")[1] || "png";
+      const bytes = Uint8Array.from(atob(base64), (c) => c.charCodeAt(0));
+
+      const serviceClient = createClient(SUPABASE_URL, Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!);
+      const filePath = `blog/ai-${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
+      const { error: upErr } = await serviceClient.storage
+        .from("blog-images")
+        .upload(filePath, bytes, { contentType: mime, upsert: false });
+      if (upErr) throw new Error(`Upload failed: ${upErr.message}`);
+      const { data: pub } = serviceClient.storage.from("blog-images").getPublicUrl(filePath);
+
+      return new Response(JSON.stringify({ url: pub.publicUrl }), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
