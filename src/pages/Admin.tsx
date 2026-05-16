@@ -1367,7 +1367,9 @@ export default function Admin() {
             </header>
             
             <main className="flex-1 p-6">
-              {renderContent()}
+              <Suspense fallback={<AdminSectionFallback />}>
+                {renderContent()}
+              </Suspense>
             </main>
           </SidebarInset>
         </div>
