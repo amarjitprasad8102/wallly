@@ -45,17 +45,28 @@ export const useMatch = (
     filtersRef.current = filters;
     genderRef.current = userGender;
     isPremiumRef.current = isPremium;
-    // If we're currently in the matchmaking channel, re-track presence so
-    // every other client sees the updated gender/filters/premium status.
+    // If we're currently in the matchmaking channel, re-broadcast presence
+    // so every other client sees the updated gender/filters/premium status.
     const ch = channelRef.current;
-    if (ch && !isDirectConnectionRef.current && !hasMatchedRef.current && userId) {
-      ch.track({
+    if (!ch || isDirectConnectionRef.current || hasMatchedRef.current || !userId) {
+      return;
+    }
+    // Channel may not be joined yet; track() throws synchronously in that
+    // case. Wrap in try/catch + Promise.resolve so a filter change can never
+    // crash the page.
+    try {
+      const result: any = ch.track({
         user_id: userId,
         timestamp: Date.now(),
         is_premium: isPremium,
         gender: userGender ?? null,
         filters: filters || {},
-      }).catch((e) => console.warn('[MATCH] re-track failed', e));
+      });
+      Promise.resolve(result).catch((e) =>
+        console.warn('[MATCH] re-track failed', e),
+      );
+    } catch (e) {
+      console.warn('[MATCH] re-track threw', e);
     }
   }, [filters, userGender, isPremium, userId]);
 
