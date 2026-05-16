@@ -786,10 +786,12 @@ export default function Admin() {
 
     setSendingEmail(true);
     try {
-      const { error } = await supabase.functions.invoke('send-ses-email', {
-        body: { to: selectedRecipients, subject: emailSubject, html: emailContent, templateUsed: selectedTemplate || null },
-      });
-      if (error) throw error;
+      for (const recipient of selectedRecipients) {
+        const { error } = await supabase.functions.invoke('send-email', {
+          body: { to: recipient, subject: emailSubject, html: emailContent },
+        });
+        if (error) throw error;
+      }
 
       toast({ title: "Success", description: `Email sent to ${selectedRecipients.length} recipient(s)` });
       setEmailDialogOpen(false);
@@ -848,8 +850,8 @@ export default function Admin() {
       const banTemplate = emailTemplates.find(t => t.id === "account-banned");
       if (banTemplate) {
         const emailContent = banTemplate.content.replace("[BAN_REASON]", banReason || "Violation of community guidelines");
-        await supabase.functions.invoke('send-ses-email', {
-          body: { to: selectedUserForAction.email, subject: banTemplate.subject, html: emailContent, templateUsed: "account-banned" },
+        await supabase.functions.invoke('send-email', {
+          body: { to: selectedUserForAction.email, subject: banTemplate.subject, html: emailContent },
         });
       }
 
@@ -887,8 +889,8 @@ export default function Admin() {
       // Send deletion notification email first
       const deleteTemplate = emailTemplates.find(t => t.id === "account-deleted");
       if (deleteTemplate) {
-        await supabase.functions.invoke('send-ses-email', {
-          body: { to: selectedUserForAction.email, subject: deleteTemplate.subject, html: deleteTemplate.content, templateUsed: "account-deleted" },
+        await supabase.functions.invoke('send-email', {
+          body: { to: selectedUserForAction.email, subject: deleteTemplate.subject, html: deleteTemplate.content },
         });
       }
 
