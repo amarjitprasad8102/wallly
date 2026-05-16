@@ -35,10 +35,12 @@ ABSOLUTE RULES:
 - Never use the banned filler: "delve into", "in today's digital landscape", "it's important to note", "leverage", "very", "really", "just", "quite", "basically".
 - Never start with "In this article" / "In this blog post" / "In conclusion" / "To summarize".
 - Never use "click here" anchor text.
-- Internal links must point to wallly.in pages (use full https://wallly.in/<slug> URLs).
+- Internal links MUST point to wallly.in pages (use full https://wallly.in/<slug> URLs).
+- Internal links MUST be dofollow. NEVER add rel="nofollow", rel="ugc", or rel="sponsored" on internal wallly.in links. Do not add a rel attribute at all on internal links, OR use rel="dofollow". Only external links may use rel="nofollow noopener".
+- Every post MUST hero/feature wallly.in: the H1 should naturally include "Wallly" or "wallly.in" when contextually possible, the intro paragraph (first 100 words) MUST contain at least one dofollow link to https://wallly.in/ with branded anchor text ("Wallly", "wallly.in", or a descriptive branded phrase), and the conclusion MUST contain a strong branded CTA link to https://wallly.in/ or https://wallly.in/premium.
 - Active voice. Mix short and long sentences. Flesch 60–70.
 - Every section >= 200 words. Total >= 1500 words.
-- 3–7 internal links, descriptive anchors, never two in same paragraph.
+- 5–8 internal dofollow links to wallly.in pages, descriptive anchors, never two in same paragraph, spread across the article (at least one in first 3 sections).
 - 5–7 schema-friendly FAQs. Each answer 60–100 words.
 - Output clean semantic HTML (article, section, h1, h2, h3, p, a, ul, div).`;
 
