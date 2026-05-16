@@ -103,7 +103,7 @@ Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
   try {
-    if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY not configured");
+    if (!GEMINI_API_KEY) throw new Error("GEMINI_API_KEY not configured");
     await assertAdmin(req);
 
     const body = await req.json();
