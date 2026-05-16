@@ -141,8 +141,8 @@ const Landing = () => {
                 ● Now Live Worldwide
               </div>
 
-              <h1 style={heading} className="text-[2.75rem] sm:text-7xl lg:text-[7.5rem] uppercase leading-[0.88] tracking-tighter mb-8">
-                Where the <span className="outline-text text-[#5D5DFF]">walls</span> end, you find a <span className="text-[#FF72C0] italic underline decoration-[8px] sm:decoration-[12px] underline-offset-[6px] sm:underline-offset-8 decoration-black">friend</span>
+              <h1 style={heading} className="text-[2.25rem] xs:text-[2.75rem] sm:text-7xl lg:text-[7.5rem] uppercase leading-[0.9] sm:leading-[0.88] tracking-tighter mb-6 sm:mb-8 break-words">
+                Where the <span className="outline-text text-[#5D5DFF]">walls</span> end, you find a <span className="text-[#FF72C0] italic underline decoration-[6px] sm:decoration-[12px] underline-offset-[4px] sm:underline-offset-8 decoration-black">friend</span>
               </h1>
 
               <p className="text-lg sm:text-2xl max-w-2xl mx-auto mb-10 font-medium text-[#1A1A1A]/80">
