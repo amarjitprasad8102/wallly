@@ -84,7 +84,7 @@ const AdminLeads = ({ adminId }: AdminLeadsProps) => {
       .order('created_at', { ascending: false });
 
     if (filter !== 'all') {
-      if (filter === 'premium' || filter === 'contact' || filter === 'priority_contact' || ) {
+      if (filter === 'premium' || filter === 'contact' || filter === 'priority_contact') {
         query = query.eq('lead_type', filter);
       } else if (filter === 'priority') {
         query = query.eq('status', filter);
