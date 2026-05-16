@@ -97,7 +97,8 @@ Deno.serve(async (req) => {
     if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY not configured");
     await assertAdmin(req);
 
-    const { action, topic, niche } = await req.json();
+    const body = await req.json();
+    const { action, topic, niche, post: inputPost } = body;
 
     if (action === "research") {
       const userPrompt = `PHASE 1 — TOPIC & KEYWORD RESEARCH
