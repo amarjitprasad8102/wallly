@@ -1152,6 +1152,8 @@ export default function Admin() {
             </CardContent>
           </Card>
         );
+      case "blog-ai":
+        return <AdminBlogGenerator onSaved={fetchBlogPosts} />;
       case "communities":
         return (
           <Card>
