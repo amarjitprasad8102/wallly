@@ -27,17 +27,25 @@ const Landing = () => {
       if (session) navigate('/app');
     });
 
+    // Lenis smooth-scroll is heavy on mobile — only enable on pointer:fine (desktop)
+    const isDesktop = window.matchMedia('(pointer: fine) and (min-width: 1024px)').matches;
+    if (!isDesktop) return;
+
     const lenis = new Lenis({
       duration: 1.2,
       easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
       smoothWheel: true,
     });
+    let rafId = 0;
     function raf(time: number) {
       lenis.raf(time);
-      requestAnimationFrame(raf);
+      rafId = requestAnimationFrame(raf);
     }
-    requestAnimationFrame(raf);
-    return () => lenis.destroy();
+    rafId = requestAnimationFrame(raf);
+    return () => {
+      cancelAnimationFrame(rafId);
+      lenis.destroy();
+    };
   }, [navigate]);
 
   return (
@@ -47,9 +55,6 @@ const Landing = () => {
         <meta name="description" content="Wallly is a Gen-Z random video & text chat. Meet strangers, make friends, vibe worldwide. Free, no download, ages 16+." />
         <meta name="keywords" content="random video chat, talk to strangers, omegle alternative, ometv alternative, text chat, gen z chat, wallly" />
         <link rel="canonical" href="https://wallly.in/" />
-        <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="" />
-        <link href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=Hind:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
         <meta property="og:type" content="website" />
         <meta property="og:url" content="https://wallly.in/" />
         <meta property="og:title" content="Wallly — Talk to Strangers, Make Friends" />
@@ -86,10 +91,10 @@ const Landing = () => {
           }}
         />
 
-        {/* Floating chrome blobs */}
-        <div aria-hidden className="pointer-events-none absolute -top-24 -left-24 w-[420px] h-[420px] rounded-full blur-3xl opacity-40"
+        {/* Floating chrome blobs — hidden on mobile to save GPU */}
+        <div aria-hidden className="hidden md:block pointer-events-none absolute -top-24 -left-24 w-[420px] h-[420px] rounded-full blur-3xl opacity-40"
           style={{ background: 'conic-gradient(from 180deg, #60a5fa, #ffffff, #1e3a8a, #000000, #60a5fa)' }} />
-        <div aria-hidden className="pointer-events-none absolute top-[40%] -right-32 w-[520px] h-[520px] rounded-full blur-3xl opacity-30"
+        <div aria-hidden className="hidden md:block pointer-events-none absolute top-[40%] -right-32 w-[520px] h-[520px] rounded-full blur-3xl opacity-30"
           style={{ background: 'conic-gradient(from 0deg, #ffffff, #3b82f6, #0b1437, #ffffff)' }} />
 
         {/* NAV */}
@@ -98,7 +103,7 @@ const Landing = () => {
             <button onClick={() => navigate('/')} className="flex items-center gap-2 group">
               <div className="relative">
                 <div className="absolute inset-0 rounded-xl blur-md opacity-60 bg-white/40 group-hover:opacity-100 transition" />
-                <img src={logo} alt="Wallly Logo" className="relative w-9 h-9 rounded-xl ring-1 ring-white/30" />
+                <img src={logo} alt="Wallly Logo" width="36" height="36" className="relative w-9 h-9 rounded-xl ring-1 ring-white/30" />
               </div>
               <span style={heading} className="text-xl tracking-tight">WALLLY</span>
             </button>
@@ -123,7 +128,7 @@ const Landing = () => {
               <button
                 onClick={() => navigate('/premium')}
                 style={heading}
-                className="text-xs tracking-wide px-4 py-2 rounded-full text-black bg-gradient-to-b from-white to-blue-200 hover:from-white hover:to-white transition shadow-[0_0_20px_rgba(147,197,253,0.6)]"
+                className="text-xs tracking-wide px-4 py-2.5 min-h-[40px] rounded-full text-black bg-gradient-to-b from-white to-blue-200 hover:from-white hover:to-white transition shadow-[0_0_20px_rgba(147,197,253,0.6)]"
               >
                 ★ PREMIUM
               </button>
@@ -133,10 +138,10 @@ const Landing = () => {
 
         <main className="relative z-10">
           {/* HERO — asymmetric */}
-          <section className="px-4 sm:px-6 lg:px-8 pt-10 sm:pt-16 pb-24">
-            <div className="max-w-7xl mx-auto grid grid-cols-12 gap-6 items-end">
-              {/* Left badge column */}
-              <div className="col-span-12 lg:col-span-3 order-2 lg:order-1 flex lg:flex-col gap-3 lg:gap-4 lg:pb-10">
+          <section className="px-4 sm:px-6 lg:px-8 pt-6 sm:pt-16 pb-16 sm:pb-24">
+            <div className="max-w-7xl mx-auto grid grid-cols-12 gap-4 sm:gap-6 items-end">
+              {/* Left badge column — hidden on mobile to keep hero above the fold */}
+              <div className="hidden lg:flex col-span-12 lg:col-span-3 order-2 lg:order-1 lg:flex-col gap-3 lg:gap-4 lg:pb-10">
                 <div className="rounded-2xl border border-white/15 bg-white/5 backdrop-blur-xl p-4 lg:rotate-[-3deg]">
                   <div className="flex items-center gap-2 text-xs uppercase tracking-widest text-blue-200/80">
                     <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" /> Online now
@@ -156,10 +161,10 @@ const Landing = () => {
 
               {/* Center hero */}
               <div className="col-span-12 lg:col-span-6 order-1 lg:order-2 text-center">
-                <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full border border-white/20 bg-white/5 backdrop-blur-xl text-[11px] uppercase tracking-[0.2em] mb-6">
+                <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full border border-white/20 bg-white/5 backdrop-blur-xl text-[11px] uppercase tracking-[0.2em] mb-5 sm:mb-6">
                   <Sparkles className="w-3 h-3 text-blue-300" /> where the walls end
                 </div>
-                <h1 style={heading} className="text-[14vw] sm:text-7xl lg:text-[110px] leading-[0.85] uppercase">
+                <h1 style={heading} className="text-[clamp(2.75rem,11vw,4.5rem)] sm:text-7xl lg:text-[110px] leading-[0.88] uppercase">
                   <span className="block">talk to</span>
                   <span
                     className="block bg-clip-text text-transparent"
@@ -199,8 +204,8 @@ const Landing = () => {
                 <p className="text-[11px] text-white/50 mt-4 uppercase tracking-widest">free • no download • 16+</p>
               </div>
 
-              {/* Right ticker column */}
-              <div className="col-span-12 lg:col-span-3 order-3 flex lg:flex-col gap-3 lg:gap-4 lg:pb-10">
+              {/* Right ticker column — desktop only */}
+              <div className="hidden lg:flex col-span-12 lg:col-span-3 order-3 lg:flex-col gap-3 lg:gap-4 lg:pb-10">
                 <div className="rounded-2xl overflow-hidden border border-white/15 bg-black/40 backdrop-blur-xl aspect-[4/5] lg:rotate-[3deg] relative">
                   <div className="absolute inset-0 bg-gradient-to-br from-blue-500/40 via-transparent to-white/10" />
                   <div className="absolute top-2 left-2 text-[10px] uppercase tracking-widest bg-red-500 px-2 py-0.5 rounded-sm">● LIVE</div>
@@ -213,6 +218,20 @@ const Landing = () => {
                   <div className="text-[10px] uppercase tracking-widest text-white/60">since 2024</div>
                   <div style={heading} className="text-3xl mt-1">2.3M+</div>
                   <div className="text-xs text-white/60">connections made</div>
+                </div>
+              </div>
+
+              {/* Mobile stat strip — compact replacement for the side cards */}
+              <div className="lg:hidden col-span-12 order-3 mt-2 grid grid-cols-2 gap-3">
+                <div className="rounded-2xl border border-white/15 bg-white/5 backdrop-blur-xl p-3">
+                  <div className="flex items-center gap-1.5 text-[10px] uppercase tracking-widest text-blue-200/80">
+                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" /> Online
+                  </div>
+                  <div style={heading} className="text-xl mt-0.5">12,847</div>
+                </div>
+                <div className="rounded-2xl border border-white/15 bg-gradient-to-br from-blue-500/20 to-transparent backdrop-blur-xl p-3">
+                  <div className="text-[10px] uppercase tracking-widest text-white/60">connections</div>
+                  <div style={heading} className="text-xl mt-0.5">2.3M+</div>
                 </div>
               </div>
             </div>
@@ -304,7 +323,7 @@ const Landing = () => {
                   { n: '03', t: 'vibe or skip', d: 'Love it? Add as friend. Not feeling it? Skip — zero awkward.', align: 'left' },
                 ].map((s) => (
                   <div key={s.n} className={`flex flex-col ${s.align === 'right' ? 'lg:flex-row-reverse lg:text-right' : 'lg:flex-row'} gap-6 lg:items-center`}>
-                    <div style={heading} className="text-[20vw] lg:text-[180px] leading-none">
+                    <div style={heading} className="text-[18vw] sm:text-[14vw] lg:text-[180px] leading-none">
                       <span style={{ backgroundImage: 'linear-gradient(180deg,#fff,#3b82f6 60%,#0b1437)', WebkitBackgroundClip: 'text', backgroundClip: 'text', color: 'transparent' }}>{s.n}</span>
                     </div>
                     <div className="lg:max-w-md">
@@ -373,7 +392,7 @@ const Landing = () => {
               <div className="relative grid lg:grid-cols-12 gap-6 items-end">
                 <div className="lg:col-span-8">
                   <div className="text-xs uppercase tracking-[0.3em] text-white/80 mb-3">/ your turn</div>
-                  <h2 style={heading} className="text-5xl sm:text-7xl uppercase leading-[0.9]">from strangers<br />to friends.</h2>
+                  <h2 style={heading} className="text-4xl sm:text-7xl uppercase leading-[0.9]">from strangers<br />to friends.</h2>
                   <p className="mt-5 text-white/80 max-w-lg">Your next favorite person is online right now. Don’t leave them on read.</p>
                 </div>
                 <div className="lg:col-span-4 flex lg:justify-end">
@@ -396,7 +415,7 @@ const Landing = () => {
             <div className="grid grid-cols-2 md:grid-cols-5 gap-8 mb-10">
               <div className="col-span-2">
                 <div className="flex items-center gap-2 mb-3">
-                  <img src={logo} alt="Wallly" className="w-8 h-8 rounded-lg" />
+                  <img src={logo} alt="Wallly" width="32" height="32" loading="lazy" className="w-8 h-8 rounded-lg" />
                   <span style={heading} className="text-lg">WALLLY</span>
                 </div>
                 <p className="text-sm text-white/60 max-w-xs">Where the walls end, you find a friend.</p>
