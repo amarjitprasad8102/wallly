@@ -138,10 +138,10 @@ const Landing = () => {
 
         <main className="relative z-10">
           {/* HERO — asymmetric */}
-          <section className="px-4 sm:px-6 lg:px-8 pt-10 sm:pt-16 pb-24">
-            <div className="max-w-7xl mx-auto grid grid-cols-12 gap-6 items-end">
-              {/* Left badge column */}
-              <div className="col-span-12 lg:col-span-3 order-2 lg:order-1 flex lg:flex-col gap-3 lg:gap-4 lg:pb-10">
+          <section className="px-4 sm:px-6 lg:px-8 pt-6 sm:pt-16 pb-16 sm:pb-24">
+            <div className="max-w-7xl mx-auto grid grid-cols-12 gap-4 sm:gap-6 items-end">
+              {/* Left badge column — hidden on mobile to keep hero above the fold */}
+              <div className="hidden lg:flex col-span-12 lg:col-span-3 order-2 lg:order-1 lg:flex-col gap-3 lg:gap-4 lg:pb-10">
                 <div className="rounded-2xl border border-white/15 bg-white/5 backdrop-blur-xl p-4 lg:rotate-[-3deg]">
                   <div className="flex items-center gap-2 text-xs uppercase tracking-widest text-blue-200/80">
                     <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" /> Online now
@@ -161,10 +161,10 @@ const Landing = () => {
 
               {/* Center hero */}
               <div className="col-span-12 lg:col-span-6 order-1 lg:order-2 text-center">
-                <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full border border-white/20 bg-white/5 backdrop-blur-xl text-[11px] uppercase tracking-[0.2em] mb-6">
+                <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full border border-white/20 bg-white/5 backdrop-blur-xl text-[11px] uppercase tracking-[0.2em] mb-5 sm:mb-6">
                   <Sparkles className="w-3 h-3 text-blue-300" /> where the walls end
                 </div>
-                <h1 style={heading} className="text-[14vw] sm:text-7xl lg:text-[110px] leading-[0.85] uppercase">
+                <h1 style={heading} className="text-[clamp(2.75rem,11vw,4.5rem)] sm:text-7xl lg:text-[110px] leading-[0.88] uppercase">
                   <span className="block">talk to</span>
                   <span
                     className="block bg-clip-text text-transparent"
