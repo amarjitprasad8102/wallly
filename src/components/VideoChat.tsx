@@ -275,30 +275,32 @@ const VideoChat = ({
     }
   };
 
-  const handleSkip = async () => {
+  const handleSkip = () => {
     console.log('[VIDEO] Skipping to next user, cleaning up...');
     soundEffects.playClick();
     haptics.light();
-    await deleteUploadedImages();
+    // Tear down WebRTC + data channel synchronously so the UI reacts instantly.
     if (dataChannel.current) {
-      dataChannel.current.close();
+      try { dataChannel.current.close(); } catch {}
       dataChannel.current = null;
     }
     cleanup();
     onLeave();
+    // Storage cleanup is fire-and-forget — never block the user on it.
+    void deleteUploadedImages();
   };
 
-  const handleEndCall = async () => {
+  const handleEndCall = () => {
     console.log('[VIDEO] Ending call, cleaning up...');
     soundEffects.playDisconnect();
     haptics.medium();
-    await deleteUploadedImages();
     if (dataChannel.current) {
-      dataChannel.current.close();
+      try { dataChannel.current.close(); } catch {}
       dataChannel.current = null;
     }
     cleanup();
     onEndCall();
+    void deleteUploadedImages();
   };
 
   const setupDataChannel = (channel: RTCDataChannel) => {

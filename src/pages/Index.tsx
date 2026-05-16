@@ -192,12 +192,9 @@ const Index = () => {
     soundEffects.playClick();
     haptics.light();
     setDisconnectMessage(null);
-    // Don't go home, immediately start searching for next user
+    // Tear down and immediately rejoin — no artificial delay.
     leaveMatchmaking();
-    // Small delay to ensure cleanup completes
-    setTimeout(() => {
-      joinMatchmaking();
-    }, 100);
+    joinMatchmaking();
   };
 
   const handleOtherUserDisconnected = () => {

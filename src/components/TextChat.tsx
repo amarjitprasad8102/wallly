@@ -349,22 +349,22 @@ const TextChat = ({
     }
   }, [isPremium]);
 
-  const handleSkip = async () => {
+  const handleSkip = () => {
     soundEffects.playClick();
     haptics.light();
-    await deleteUploadedImages();
-    dataChannel.current?.close();
+    try { dataChannel.current?.close(); } catch {}
     cleanup();
     onLeave();
+    void deleteUploadedImages();
   };
 
-  const handleEndCall = async () => {
+  const handleEndCall = () => {
     soundEffects.playDisconnect();
     haptics.medium();
-    await deleteUploadedImages();
-    dataChannel.current?.close();
+    try { dataChannel.current?.close(); } catch {}
     cleanup();
     onEndCall();
+    void deleteUploadedImages();
   };
 
   const formatDuration = (seconds: number) => {

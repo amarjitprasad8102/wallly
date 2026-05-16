@@ -235,20 +235,20 @@ const ChatWithImageSupport = ({ userId, matchedUserId, sendSignal, onSignal, lea
     }
   };
 
-  const handleSkip = async () => {
+  const handleSkip = () => {
     toast({ title: 'Searching for next person...' });
-    await deleteUploadedImages();
     cleanup();
     leaveMatchmaking();
     onEnd();
+    void deleteUploadedImages();
   };
 
-  const handleEndCall = async () => {
-    await deleteUploadedImages();
+  const handleEndCall = () => {
     cleanup();
     leaveMatchmaking();
-    dataChannelRef.current?.close();
+    try { dataChannelRef.current?.close(); } catch {}
     onEnd();
+    void deleteUploadedImages();
   };
 
   const handleSendMessage = async () => {
