@@ -745,7 +745,39 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      profiles_public: {
+        Row: {
+          age: number | null
+          created_at: string | null
+          gender: string | null
+          id: string | null
+          is_premium: boolean | null
+          name: string | null
+          premium_until: string | null
+          unique_id: string | null
+        }
+        Insert: {
+          age?: number | null
+          created_at?: string | null
+          gender?: string | null
+          id?: string | null
+          is_premium?: boolean | null
+          name?: string | null
+          premium_until?: string | null
+          unique_id?: string | null
+        }
+        Update: {
+          age?: number | null
+          created_at?: string | null
+          gender?: string | null
+          id?: string | null
+          is_premium?: boolean | null
+          name?: string | null
+          premium_until?: string | null
+          unique_id?: string | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
       cleanup_stale_queue_entries: { Args: never; Returns: number }
