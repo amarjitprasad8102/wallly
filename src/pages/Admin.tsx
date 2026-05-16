@@ -965,6 +965,7 @@ export default function Admin() {
                     <TableHead>Age</TableHead>
                     <TableHead>Premium</TableHead>
                     <TableHead>Role</TableHead>
+                    <TableHead>Joined</TableHead>
                     <TableHead>Actions</TableHead>
                   </TableRow>
                 </TableHeader>
