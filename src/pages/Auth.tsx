@@ -509,8 +509,8 @@ const Auth = () => {
                   className="text-sm text-primary hover:underline"
                 >
                   {isLogin
-                    ? "Don't have an account? Sign up"
-                    : "Already have an account? Sign in"}
+                    ? "new here? make an account"
+                    : "already vibing? log in"}
                 </button>
               </div>
             </>
