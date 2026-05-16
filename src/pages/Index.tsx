@@ -507,11 +507,10 @@ const Index = () => {
 
           {/* Heading */}
           <h1 className="text-3xl sm:text-5xl md:text-7xl font-bold mb-4 sm:mb-6 gradient-text">
-            Random Video Chat
+            tap in. say hi.
           </h1>
           <p className="text-base sm:text-xl md:text-2xl text-muted-foreground mb-8 sm:mb-12 max-w-2xl mx-auto px-2">
-            Connect face-to-face with strangers worldwide through instant video chat. Start conversations, make
-            friends, and explore new perspectives.
+            real faces, zero pressure. get matched with someone new in seconds and see where the vibe takes you.
           </p>
 
           {/* CTA Buttons - Mobile Stacked */}
@@ -591,7 +590,7 @@ const Index = () => {
                 className="bg-gradient-to-r from-yellow-500/10 to-orange-500/10 border-yellow-500/30 hover:border-yellow-500/50 text-yellow-600 dark:text-yellow-400"
               >
                 <Crown className="w-4 h-4 mr-2" />
-                Upgrade to Premium for Gender Filters & Priority Matching
+                Go Premium — unlock gender filters & front-of-queue energy
               </Button>
             </div>
           )}
@@ -605,9 +604,9 @@ const Index = () => {
               <div className="bg-primary/10 w-10 h-10 sm:w-12 sm:h-12 rounded-lg flex items-center justify-center mb-3 sm:mb-4" aria-hidden="true">
                 <Users className="w-5 h-5 sm:w-6 sm:h-6 text-primary" aria-label="Users icon" />
               </div>
-              <h3 className="text-lg sm:text-xl font-semibold mb-2">Random Matching</h3>
+              <h3 className="text-lg sm:text-xl font-semibold mb-2">Random AF</h3>
               <p className="text-sm sm:text-base text-muted-foreground">
-                Instantly connect with random people from around the world
+                no algorithm, no for-you bubble. just real humans from everywhere, dropped into your screen.
               </p>
             </div>
 
@@ -618,9 +617,9 @@ const Index = () => {
               <div className="bg-accent/10 w-10 h-10 sm:w-12 sm:h-12 rounded-lg flex items-center justify-center mb-3 sm:mb-4" aria-hidden="true">
                 <Zap className="w-5 h-5 sm:w-6 sm:h-6 text-accent" aria-label="Lightning icon" />
               </div>
-              <h3 className="text-lg sm:text-xl font-semibold mb-2">Lightning Fast</h3>
+              <h3 className="text-lg sm:text-xl font-semibold mb-2">No Lag, All Talk</h3>
               <p className="text-sm sm:text-base text-muted-foreground">
-                Instant peer-to-peer video with minimal latency for smooth conversations
+                peer-to-peer video that actually keeps up. zero buffering vibes only.
               </p>
             </div>
 
@@ -631,9 +630,9 @@ const Index = () => {
               <div className="bg-destructive/10 w-10 h-10 sm:w-12 sm:h-12 rounded-lg flex items-center justify-center mb-3 sm:mb-4" aria-hidden="true">
                 <Shield className="w-5 h-5 sm:w-6 sm:h-6 text-destructive" aria-label="Shield icon" />
               </div>
-              <h3 className="text-lg sm:text-xl font-semibold mb-2">Safe & Private</h3>
+              <h3 className="text-lg sm:text-xl font-semibold mb-2">Your Space, Your Rules</h3>
               <p className="text-sm sm:text-base text-muted-foreground">
-                Secure connections. No data stored. Your privacy is our priority
+                skip whenever, report anything sus. nothing saved, nothing leaked.
               </p>
             </div>
           </div>
@@ -643,7 +642,7 @@ const Index = () => {
       {/* Footer - Mobile Optimized */}
       <footer className="py-4 sm:py-6 text-center text-xs sm:text-sm text-muted-foreground border-t border-border">
         <p className="px-4">
-          By using this service, you agree to be respectful and follow community guidelines.
+          be cool, stay kind, don't be weird. that's the whole rulebook.
         </p>
         <Button
           variant="link"

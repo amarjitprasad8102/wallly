@@ -165,7 +165,7 @@ const Auth = () => {
           password,
         });
         if (error) throw error;
-        toast.success("Welcome back!");
+        toast.success("yo, welcome back 👋");
       } else {
         // Validate age
         const ageNum = parseInt(age);
@@ -421,12 +421,12 @@ const Auth = () => {
             /* Login/Signup Form */
             <>
               <h1 className="text-3xl font-bold text-center mb-2">
-                {isLogin ? "Welcome Back" : "Create Account"}
+                {isLogin ? "wb, stranger 👋" : "let's get you in"}
               </h1>
               <p className="text-center text-muted-foreground mb-6">
                 {isLogin
-                  ? "Sign in to start chatting"
-                  : "Sign up to get your unique ID"}
+                  ? "log in and slide into a chat"
+                  : "20 seconds and you're vibing"}
               </p>
 
               <form onSubmit={handleSubmit} className="space-y-4">
@@ -509,8 +509,8 @@ const Auth = () => {
                   className="text-sm text-primary hover:underline"
                 >
                   {isLogin
-                    ? "Don't have an account? Sign up"
-                    : "Already have an account? Sign in"}
+                    ? "new here? make an account"
+                    : "already vibing? log in"}
                 </button>
               </div>
             </>
