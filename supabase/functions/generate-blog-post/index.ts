@@ -97,6 +97,7 @@ function enforceDofollowInternal(html: string): string {
     // Remove any rel attribute on internal links (default is dofollow)
     return tag.replace(/\s+rel\s*=\s*["'][^"']*["']/gi, "");
   });
+}
 
 async function assertAdmin(req: Request) {
   const authHeader = req.headers.get("Authorization");
