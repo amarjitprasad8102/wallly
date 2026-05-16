@@ -392,7 +392,7 @@ const Landing = () => {
               <div className="relative grid lg:grid-cols-12 gap-6 items-end">
                 <div className="lg:col-span-8">
                   <div className="text-xs uppercase tracking-[0.3em] text-white/80 mb-3">/ your turn</div>
-                  <h2 style={heading} className="text-5xl sm:text-7xl uppercase leading-[0.9]">from strangers<br />to friends.</h2>
+                  <h2 style={heading} className="text-4xl sm:text-7xl uppercase leading-[0.9]">from strangers<br />to friends.</h2>
                   <p className="mt-5 text-white/80 max-w-lg">Your next favorite person is online right now. Don’t leave them on read.</p>
                 </div>
                 <div className="lg:col-span-4 flex lg:justify-end">
