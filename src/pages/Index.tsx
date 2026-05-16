@@ -49,7 +49,7 @@ const Index = () => {
   // Check premium status
   const { isPremium, loading: premiumLoading } = usePremiumStatus(user?.id);
 
-  const { isSearching, matchedUserId, searchingUsersCount, joinMatchmaking, connectDirectly, leaveMatchmaking, sendSignal, onSignal } = useMatch(effectiveUserId, chatMode, isPremium, premiumFilters);
+  const { isSearching, matchedUserId, searchingUsersCount, joinMatchmaking, connectDirectly, leaveMatchmaking, sendSignal, onSignal } = useMatch(effectiveUserId, chatMode, isPremium, premiumFilters, (userProfile as any)?.gender || null);
 
   const handleFiltersChange = useCallback((filters: PremiumFilterSettings) => {
     setPremiumFilters({
@@ -117,7 +117,7 @@ const Index = () => {
   const fetchUserProfile = async (userId: string) => {
     const { data, error } = await supabase
       .from('profiles')
-      .select('unique_id')
+      .select('unique_id, gender')
       .eq('id', userId)
       .single();
 

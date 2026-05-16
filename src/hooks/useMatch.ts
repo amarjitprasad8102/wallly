@@ -18,7 +18,13 @@ export interface PremiumMatchFilters {
   interestPriority?: boolean;
 }
 
-export const useMatch = (userId: string, chatMode: 'video' | 'text' = 'video', isPremium: boolean = false, filters?: PremiumMatchFilters) => {
+export const useMatch = (
+  userId: string,
+  chatMode: 'video' | 'text' = 'video',
+  isPremium: boolean = false,
+  filters?: PremiumMatchFilters,
+  userGender?: string | null,
+) => {
   const [isSearching, setIsSearching] = useState(false);
   const [matchedUserId, setMatchedUserId] = useState<string | null>(null);
   const [searchingUsersCount, setSearchingUsersCount] = useState(0);
@@ -120,41 +126,65 @@ export const useMatch = (userId: string, chatMode: 'video' | 'text' = 'video', i
 
     channel
       .on('presence', { event: 'sync' }, () => {
-        const presenceState = channel.presenceState();
-        const users = Object.keys(presenceState).filter(id => id !== userId);
-        console.log('[MATCH] Available users:', users);
-        
-        // Update the count of searching users
-        setSearchingUsersCount(users.length);
-        
-        if (hasMatchedRef.current) return;
+        const presenceState = channel.presenceState() as Record<string, Array<{
+          user_id: string;
+          is_premium?: boolean;
+          gender?: string | null;
+          filters?: PremiumMatchFilters;
+        }>>;
 
-        if (users.length > 0) {
-          // Sort users to ensure deterministic matching
-          const sortedUsers = [...users, userId].sort();
-          const myIndex = sortedUsers.indexOf(userId);
-          
-          // Only match if we're at an even index (0, 2, 4...)
-          // and there's a user right after us
-          if (myIndex % 2 === 0 && myIndex + 1 < sortedUsers.length) {
-            const partner = sortedUsers[myIndex + 1];
-            hasMatchedRef.current = true;
-            console.log('[MATCH] Matched with:', partner, 'as initiator');
-            setMatchedUserId(partner);
-            setIsSearching(false);
-          } 
-          // If we're at odd index (1, 3, 5...), match with user before us
-          else if (myIndex % 2 === 1) {
-            const partner = sortedUsers[myIndex - 1];
-            hasMatchedRef.current = true;
-            console.log('[MATCH] Matched with:', partner, 'as receiver');
-            setMatchedUserId(partner);
-            setIsSearching(false);
-          } else {
-            console.log('[MATCH] Waiting for a partner... (odd number of users)');
+        // Build a map of every present user (including self) → their state.
+        const allUserIds = Object.keys(presenceState);
+        const stateFor = (id: string) => presenceState[id]?.[0];
+
+        const otherIds = allUserIds.filter((id) => id !== userId);
+        setSearchingUsersCount(otherIds.length);
+
+        if (hasMatchedRef.current) return;
+        if (otherIds.length === 0) return;
+
+        // Mutual-acceptance predicate.
+        // Free users accept everyone; premium users honour their genderFilter.
+        const accepts = (viewerId: string, candidateId: string): boolean => {
+          const viewer = stateFor(viewerId);
+          const candidate = stateFor(candidateId);
+          if (!viewer || !candidate) return false;
+          const viewerIsPremium = !!viewer.is_premium;
+          const pref = viewer.filters?.genderFilter;
+          if (!viewerIsPremium || !pref || pref === 'any') return true;
+          return candidate.gender === pref;
+        };
+
+        // Deterministic greedy pairing across all clients: sort user ids,
+        // walk in order, pair each unmatched user with the first later
+        // unmatched user that is mutually compatible.
+        const sortedIds = [...allUserIds].sort();
+        const matched = new Set<string>();
+        const pairs = new Map<string, string>();
+
+        for (const a of sortedIds) {
+          if (matched.has(a)) continue;
+          for (const b of sortedIds) {
+            if (b <= a || matched.has(b)) continue;
+            if (accepts(a, b) && accepts(b, a)) {
+              matched.add(a);
+              matched.add(b);
+              pairs.set(a, b);
+              pairs.set(b, a);
+              break;
+            }
           }
+        }
+
+        const partner = pairs.get(userId);
+        if (partner) {
+          hasMatchedRef.current = true;
+          const role = partner > userId ? 'initiator' : 'receiver';
+          console.log('[MATCH] Matched with:', partner, 'as', role);
+          setMatchedUserId(partner);
+          setIsSearching(false);
         } else {
-          setSearchingUsersCount(0);
+          console.log('[MATCH] No compatible partner yet — waiting.');
         }
       })
       .on('broadcast', { event: 'signal' }, (payload) => {
@@ -173,11 +203,12 @@ export const useMatch = (userId: string, chatMode: 'video' | 'text' = 'video', i
       .subscribe(async (status) => {
         console.log('[MATCH] Channel subscription status:', status);
         if (status === 'SUBSCRIBED') {
-          console.log('[MATCH] Tracking presence for user:', userId, 'isPremium:', isPremium);
-          await channel.track({ 
-            user_id: userId, 
+          console.log('[MATCH] Tracking presence for user:', userId, 'isPremium:', isPremium, 'gender:', userGender);
+          await channel.track({
+            user_id: userId,
             timestamp: Date.now(),
             is_premium: isPremium,
+            gender: userGender ?? null,
             filters: filters || {},
           });
         }
