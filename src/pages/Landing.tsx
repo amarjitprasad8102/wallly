@@ -12,12 +12,10 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
-import StrangerDialog from '@/components/StrangerDialog';
 import { toast } from 'sonner';
 
 const Landing = () => {
   const navigate = useNavigate();
-  const [strangerDialogOpen, setStrangerDialogOpen] = useState(false);
 
   const handleStrangerStart = async (gender: string, age: number, email: string, tempId: string) => {
     // Store stranger session data
@@ -133,7 +131,6 @@ const Landing = () => {
               <Button variant="ghost" size="sm" onClick={() => navigate('/auth')} aria-label="Sign in to your account">
                 Sign In
               </Button>
-              <Button variant="outline" size="sm" onClick={() => setStrangerDialogOpen(true)} aria-label="Chat as stranger">
                 <UserX className="w-4 h-4 mr-1" />
                 Stranger
               </Button>
@@ -454,9 +451,7 @@ const Landing = () => {
         </div>
       </footer>
 
-      <StrangerDialog 
         open={strangerDialogOpen} 
-        onOpenChange={setStrangerDialogOpen} 
         onStart={handleStrangerStart} 
       />
       </div>

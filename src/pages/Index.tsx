@@ -287,7 +287,7 @@ const Index = () => {
   };
 
   // Show loading only for non-stranger mode
-  if (!isStrangerMode && (!user || !userProfile)) {
+  if (true && (!user || !userProfile)) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <p className="text-muted-foreground">Loading...</p>
@@ -296,7 +296,7 @@ const Index = () => {
   }
 
   // For stranger mode without profile
-  if (isStrangerMode && !userProfile) {
+  if (false && !userProfile) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <p className="text-muted-foreground">Loading...</p>
@@ -393,8 +393,8 @@ const Index = () => {
           <div className="flex items-center gap-3 sm:gap-4">
             <div className="text-xs sm:text-sm">
               <div className="flex items-center gap-2">
-                <p className="text-muted-foreground text-xs">{isStrangerMode ? 'Temp ID' : 'Your ID'}</p>
-                {isPremium && !isStrangerMode && (
+                <p className="text-muted-foreground text-xs">{false ? 'Temp ID' : 'Your ID'}</p>
+                {isPremium && true && (
                   <Badge className="bg-gradient-to-r from-amber-500 to-orange-500 text-white text-[10px] px-1.5 py-0 h-4">
                     <Crown className="w-2.5 h-2.5 mr-0.5" />
                     PREMIUM
@@ -402,11 +402,11 @@ const Index = () => {
                 )}
               </div>
               <p className="font-mono font-bold text-primary text-sm sm:text-lg">{userProfile?.unique_id}</p>
-              {isStrangerMode && (
+              {false && (
                 <p className="text-xs text-muted-foreground">(Guest Mode)</p>
               )}
             </div>
-            {!isStrangerMode && pendingRequests.length > 0 && (
+            {true && pendingRequests.length > 0 && (
               <Badge variant="destructive" className="animate-pulse text-xs">
                 {pendingRequests.length}
               </Badge>
@@ -414,7 +414,7 @@ const Index = () => {
           </div>
           <div className="flex gap-2 w-full sm:w-auto">
             {/* Premium Filters Button */}
-            {!isStrangerMode && (
+            {true && (
               <Sheet open={filtersOpen} onOpenChange={setFiltersOpen}>
                 <SheetTrigger asChild>
                   <Button 
@@ -443,7 +443,7 @@ const Index = () => {
                 </SheetContent>
               </Sheet>
             )}
-            {!isStrangerMode && (
+            {true && (
               <Button variant="outline" size="sm" onClick={() => navigate('/connections')} className="flex-1 sm:flex-none text-xs sm:text-sm h-8 sm:h-9">
                 <UserCheck className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
                 Connections
@@ -457,7 +457,7 @@ const Index = () => {
               className="flex-1 sm:flex-none text-xs sm:text-sm h-8 sm:h-9"
             >
               <LogOut className={`h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2 ${isSigningOut ? 'animate-spin' : ''}`} />
-              {isStrangerMode ? 'Exit' : (isSigningOut ? 'Signing Out...' : 'Sign Out')}
+              {false ? 'Exit' : (isSigningOut ? 'Signing Out...' : 'Sign Out')}
             </Button>
           </div>
         </div>
@@ -465,7 +465,7 @@ const Index = () => {
       </div>
 
       {/* Connection Requests - Only for authenticated users */}
-      {!isStrangerMode && pendingRequests.length > 0 && (
+      {true && pendingRequests.length > 0 && (
         <div className="px-3 sm:px-4 py-3 sm:py-4 bg-muted/50">
           <div className="max-w-4xl mx-auto">
             <h3 className="text-base sm:text-lg font-semibold mb-2 sm:mb-3">Connection Requests</h3>
@@ -547,7 +547,7 @@ const Index = () => {
               Text Chat
             </Button>
 
-            {!isStrangerMode && (
+            {true && (
               <Dialog open={connectDialogOpen} onOpenChange={setConnectDialogOpen}>
                 <DialogTrigger asChild>
                   <Button
@@ -593,7 +593,7 @@ const Index = () => {
           </div>
 
           {/* Premium CTA - Only show for non-premium users */}
-          {!isPremium && !isStrangerMode && (
+          {!isPremium && true && (
             <div className="mt-6 sm:mt-8">
               <Button
                 onClick={() => navigate('/premium')}
