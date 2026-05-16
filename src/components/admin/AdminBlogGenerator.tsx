@@ -82,6 +82,28 @@ export function AdminBlogGenerator({ onSaved }: { onSaved?: () => void }) {
   const [audit, setAudit] = useState<AuditReport | null>(null);
   const [auditing, setAuditing] = useState(false);
   const [previousAudit, setPreviousAudit] = useState<AuditReport | null>(null);
+  const [generatingImage, setGeneratingImage] = useState(false);
+
+  const generateHeroImage = async () => {
+    if (!post?.hero_image_prompt) {
+      toast({ title: "No prompt available", variant: "destructive" });
+      return;
+    }
+    setGeneratingImage(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("generate-blog-post", {
+        body: { action: "image", prompt: post.hero_image_prompt },
+      });
+      if (error) throw error;
+      if (data?.error) throw new Error(data.error);
+      setHeroImageUrl(data.url);
+      toast({ title: "Hero image generated" });
+    } catch (e: any) {
+      toast({ title: "Generation failed", description: e.message, variant: "destructive" });
+    } finally {
+      setGeneratingImage(false);
+    }
+  };
 
 
   const runResearch = async () => {
