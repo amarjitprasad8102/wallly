@@ -211,20 +211,16 @@ const ProfileSettings = () => {
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="gender">Gender</Label>
-                  <Select
+                  <Label htmlFor="gender">Gender / Identity</Label>
+                  <GenderSelect
+                    id="gender"
                     value={profile.gender}
                     onValueChange={(value) => setProfile({ ...profile, gender: value })}
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select gender" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="male">Male</SelectItem>
-                      <SelectItem value="female">Female</SelectItem>
-                      <SelectItem value="other">Other</SelectItem>
-                    </SelectContent>
-                  </Select>
+                    placeholder="Select your gender or identity"
+                  />
+                  <p className="text-xs text-muted-foreground">
+                    Wallly welcomes all identities — pick what feels right (gay, lesbian, bi, trans, non-binary, top, bottom and more).
+                  </p>
                 </div>
 
                 <Button
