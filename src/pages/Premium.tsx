@@ -547,10 +547,10 @@ const Premium = () => {
             <div className="max-w-3xl mx-auto text-center">
               <Crown className="w-16 h-16 mx-auto mb-6 opacity-80" />
               <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold mb-6">
-                Ready to Go Premium?
+                ok but for real, ready?
               </h2>
               <p className="text-lg sm:text-xl mb-8 opacity-90">
-                Join thousands of premium members who are enjoying the best random chat experience.
+                thousands already glow'd up to Premium. your turn whenever.
               </p>
               <div className="flex flex-col sm:flex-row gap-4 justify-center">
                 <Button
@@ -560,7 +560,7 @@ const Premium = () => {
                   onClick={() => navigate('/auth')}
                 >
                   <Sparkles className="w-5 h-5 mr-2" />
-                  Start Free Trial
+                  Lock in Premium
                 </Button>
                 <Button
                   size="lg"
@@ -568,7 +568,7 @@ const Premium = () => {
                   className="text-lg px-8 py-6 rounded-full border-white/30 text-white hover:bg-white/10 hover:scale-105 transition-all"
                   onClick={() => navigate('/app')}
                 >
-                  Try Free Version
+                  vibe for free first
                 </Button>
               </div>
             </div>
