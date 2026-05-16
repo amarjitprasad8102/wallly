@@ -323,7 +323,7 @@ const Landing = () => {
                   { n: '03', t: 'vibe or skip', d: 'Love it? Add as friend. Not feeling it? Skip — zero awkward.', align: 'left' },
                 ].map((s) => (
                   <div key={s.n} className={`flex flex-col ${s.align === 'right' ? 'lg:flex-row-reverse lg:text-right' : 'lg:flex-row'} gap-6 lg:items-center`}>
-                    <div style={heading} className="text-[20vw] lg:text-[180px] leading-none">
+                    <div style={heading} className="text-[18vw] sm:text-[14vw] lg:text-[180px] leading-none">
                       <span style={{ backgroundImage: 'linear-gradient(180deg,#fff,#3b82f6 60%,#0b1437)', WebkitBackgroundClip: 'text', backgroundClip: 'text', color: 'transparent' }}>{s.n}</span>
                     </div>
                     <div className="lg:max-w-md">
