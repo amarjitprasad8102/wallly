@@ -32,6 +32,7 @@ import { AdminDashboard } from "@/components/admin/AdminDashboard";
 import { AdminAnalytics } from "@/components/admin/AdminAnalytics";
 import { AdminSystemHealth } from "@/components/admin/AdminSystemHealth";
 import { AdminEmailBlasts } from "@/components/admin/AdminEmailBlasts";
+import { AdminBlogGenerator } from "@/components/admin/AdminBlogGenerator";
 
 interface User {
   id: string;
