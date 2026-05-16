@@ -850,8 +850,8 @@ export default function Admin() {
       const banTemplate = emailTemplates.find(t => t.id === "account-banned");
       if (banTemplate) {
         const emailContent = banTemplate.content.replace("[BAN_REASON]", banReason || "Violation of community guidelines");
-        await supabase.functions.invoke('send-ses-email', {
-          body: { to: selectedUserForAction.email, subject: banTemplate.subject, html: emailContent, templateUsed: "account-banned" },
+        await supabase.functions.invoke('send-email', {
+          body: { to: selectedUserForAction.email, subject: banTemplate.subject, html: emailContent },
         });
       }
 
