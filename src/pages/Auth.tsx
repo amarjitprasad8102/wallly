@@ -30,7 +30,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import StrangerDialog from "@/components/StrangerDialog";
 
 const Auth = () => {
   const navigate = useNavigate();

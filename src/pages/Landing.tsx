@@ -12,24 +12,11 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
-import StrangerDialog from '@/components/StrangerDialog';
 import { toast } from 'sonner';
 
 const Landing = () => {
   const navigate = useNavigate();
-  const [strangerDialogOpen, setStrangerDialogOpen] = useState(false);
 
-  const handleStrangerStart = async (gender: string, age: number, email: string, tempId: string) => {
-    // Store stranger session data
-    sessionStorage.setItem('stranger_mode', 'true');
-    sessionStorage.setItem('stranger_id', tempId);
-    sessionStorage.setItem('stranger_gender', gender);
-    sessionStorage.setItem('stranger_age', age.toString());
-    sessionStorage.setItem('stranger_email', email);
-    
-    toast.success('Starting as stranger...');
-    navigate('/app');
-  };
 
   useEffect(() => {
     // Check if user is already logged in
@@ -132,10 +119,6 @@ const Landing = () => {
               </Button>
               <Button variant="ghost" size="sm" onClick={() => navigate('/auth')} aria-label="Sign in to your account">
                 Sign In
-              </Button>
-              <Button variant="outline" size="sm" onClick={() => setStrangerDialogOpen(true)} aria-label="Chat as stranger">
-                <UserX className="w-4 h-4 mr-1" />
-                Stranger
               </Button>
               <Button size="sm" className="bg-gradient-to-r from-yellow-500 to-orange-500 hover:opacity-90 text-white" onClick={() => navigate('/premium')} aria-label="Premium">
                 Premium
@@ -453,12 +436,6 @@ const Landing = () => {
           </div>
         </div>
       </footer>
-
-      <StrangerDialog 
-        open={strangerDialogOpen} 
-        onOpenChange={setStrangerDialogOpen} 
-        onStart={handleStrangerStart} 
-      />
       </div>
     </>
   );
