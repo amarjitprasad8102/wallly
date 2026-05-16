@@ -4,7 +4,6 @@ import { Helmet } from 'react-helmet';
 import { ArrowUpRight, MessageCircle, MessageSquare, Sparkles, Shield, Users, Hash, Image as ImageIcon, Zap, Menu, X } from 'lucide-react';
 import logo from '@/assets/logo.png';
 import { supabase } from '@/integrations/supabase/client';
-import Lenis from '@studio-freight/lenis';
 import {
   Accordion,
   AccordionContent,
@@ -37,11 +36,21 @@ const Landing = () => {
 
     const isDesktop = window.matchMedia('(pointer: fine) and (min-width: 1024px)').matches;
     if (!isDesktop) return;
-    const lenis = new Lenis({ duration: 1.2, easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)), smoothWheel: true });
     let rafId = 0;
-    function raf(time: number) { lenis.raf(time); rafId = requestAnimationFrame(raf); }
-    rafId = requestAnimationFrame(raf);
-    return () => { cancelAnimationFrame(rafId); lenis.destroy(); };
+    let cancelled = false;
+    let lenisInstance: any = null;
+    // Defer Lenis load so it doesn't block initial render
+    const idle = (cb: () => void) => (window as any).requestIdleCallback ? (window as any).requestIdleCallback(cb) : setTimeout(cb, 200);
+    idle(() => {
+      if (cancelled) return;
+      import('@studio-freight/lenis').then(({ default: Lenis }) => {
+        if (cancelled) return;
+        lenisInstance = new Lenis({ duration: 1.2, easing: (t: number) => Math.min(1, 1.001 - Math.pow(2, -10 * t)), smoothWheel: true });
+        const raf = (time: number) => { lenisInstance?.raf(time); rafId = requestAnimationFrame(raf); };
+        rafId = requestAnimationFrame(raf);
+      });
+    });
+    return () => { cancelled = true; cancelAnimationFrame(rafId); lenisInstance?.destroy(); };
   }, [navigate]);
 
   return (
