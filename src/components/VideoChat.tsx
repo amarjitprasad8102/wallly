@@ -72,38 +72,11 @@ const VideoChat = ({
   const isMobile = useIsMobile();
   const [isChannelReady, setIsChannelReady] = useState(false);
   const [virtualBackground, setVirtualBackground] = useState<BackgroundOption | null>(null);
-
-  // Get background style for local video overlay
-  const getBackgroundStyle = (): React.CSSProperties => {
-    if (!virtualBackground) return {};
-    
-    if (virtualBackground.type === 'blur') {
-      return {
-        backdropFilter: `blur(${virtualBackground.value}px)`,
-        WebkitBackdropFilter: `blur(${virtualBackground.value}px)`,
-      };
-    }
-    
-    if (virtualBackground.type === 'color') {
-      return {
-        background: virtualBackground.value,
-        opacity: 0.85,
-        mixBlendMode: 'multiply' as const,
-      };
-    }
-    
-    if (virtualBackground.type === 'image') {
-      return {
-        backgroundImage: `url(${virtualBackground.value})`,
-        backgroundSize: 'cover',
-        backgroundPosition: 'center',
-        opacity: 0.9,
-        mixBlendMode: 'multiply' as const,
-      };
-    }
-    
-    return {};
-  };
+  const { canvasRef: bgCanvasRef, ready: bgReady } = useVirtualBackground(
+    localVideoRef.current,
+    virtualBackground,
+    isPremium && !!virtualBackground,
+  );
 
   const {
     peerConnection,
