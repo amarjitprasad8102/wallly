@@ -35,6 +35,30 @@ export const useMatch = (
   // Buffer signals received before a handler is registered (prevents race conditions)
   const pendingSignalsRef = useRef<SignalMessage[]>([]);
 
+  // Keep latest filter/gender/premium values accessible to channel callbacks
+  // and re-broadcast presence whenever they change so other clients see them.
+  const filtersRef = useRef<PremiumMatchFilters | undefined>(filters);
+  const genderRef = useRef<string | null | undefined>(userGender);
+  const isPremiumRef = useRef<boolean>(isPremium);
+
+  useEffect(() => {
+    filtersRef.current = filters;
+    genderRef.current = userGender;
+    isPremiumRef.current = isPremium;
+    // If we're currently in the matchmaking channel, re-track presence so
+    // every other client sees the updated gender/filters/premium status.
+    const ch = channelRef.current;
+    if (ch && !isDirectConnectionRef.current && !hasMatchedRef.current && userId) {
+      ch.track({
+        user_id: userId,
+        timestamp: Date.now(),
+        is_premium: isPremium,
+        gender: userGender ?? null,
+        filters: filters || {},
+      }).catch((e) => console.warn('[MATCH] re-track failed', e));
+    }
+  }, [filters, userGender, isPremium, userId]);
+
   const connectDirectly = useCallback((targetUserId: string) => {
     if (!userId) {
       console.warn('connectDirectly called without userId; aborting.');
@@ -203,13 +227,13 @@ export const useMatch = (
       .subscribe(async (status) => {
         console.log('[MATCH] Channel subscription status:', status);
         if (status === 'SUBSCRIBED') {
-          console.log('[MATCH] Tracking presence for user:', userId, 'isPremium:', isPremium, 'gender:', userGender);
+          console.log('[MATCH] Tracking presence for user:', userId, 'isPremium:', isPremiumRef.current, 'gender:', genderRef.current, 'filters:', filtersRef.current);
           await channel.track({
             user_id: userId,
             timestamp: Date.now(),
-            is_premium: isPremium,
-            gender: userGender ?? null,
-            filters: filters || {},
+            is_premium: isPremiumRef.current,
+            gender: genderRef.current ?? null,
+            filters: filtersRef.current || {},
           });
         }
       });
