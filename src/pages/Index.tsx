@@ -81,59 +81,14 @@ const Index = () => {
     }
   }, [isPremium, premiumLoading, user]);
 
-  // Cleanup stranger session when leaving the page
   useEffect(() => {
-    const cleanupStrangerSession = async () => {
-      const strangerId = sessionStorage.getItem('stranger_id');
-      if (strangerId) {
-        // Delete stranger session from database
-        try {
-          await supabase
-            .from('stranger_sessions')
-            .delete()
-            .eq('temp_id', strangerId);
-        } catch (err) {
-          console.error('Failed to cleanup stranger session:', err);
-        }
-      }
-      
-      sessionStorage.removeItem('stranger_mode');
-      sessionStorage.removeItem('stranger_id');
-      sessionStorage.removeItem('stranger_gender');
-      sessionStorage.removeItem('stranger_age');
-      sessionStorage.removeItem('stranger_email');
-    };
-
-    const handleBeforeUnload = () => {
-      if (sessionStorage.getItem('stranger_mode') === 'true') {
-        // Use sendBeacon for reliable cleanup on page unload
-        const strangerId = sessionStorage.getItem('stranger_id');
-        if (strangerId) {
-          // Can't await in beforeunload, so we just try to send it
-          navigator.sendBeacon && navigator.sendBeacon('/api/cleanup', JSON.stringify({ temp_id: strangerId }));
-        }
-        cleanupStrangerSession();
-      }
-    };
-
-    window.addEventListener('beforeunload', handleBeforeUnload);
-    return () => window.removeEventListener('beforeunload', handleBeforeUnload);
-  }, []);
-
-  useEffect(() => {
-    // Check for stranger mode first
-    const strangerMode = sessionStorage.getItem('stranger_mode') === 'true';
-    const strangerId = sessionStorage.getItem('stranger_id');
-    
-    if (strangerMode && strangerId) {
-      setIsStrangerMode(true);
-      setUserProfile({ unique_id: strangerId });
-      return; // Skip auth check for stranger mode
-    }
-
-    // Check authentication for regular users
+    // Check authentication — every user must be logged in with a verified email
     supabase.auth.getSession().then(({ data: { session } }) => {
       if (!session) {
+        navigate('/auth');
+      } else if (!session.user.email_confirmed_at) {
+        toast.error('Please verify your email before continuing.');
+        supabase.auth.signOut();
         navigate('/auth');
       } else {
         setUser(session.user);
@@ -142,19 +97,22 @@ const Index = () => {
     });
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-      if (!session && !isStrangerMode) {
+      if (!session) {
         setUser(null);
         setUserProfile(null);
         setAppState('home');
         navigate('/auth', { replace: true });
-      } else if (session) {
+      } else if (!session.user.email_confirmed_at) {
+        supabase.auth.signOut();
+        navigate('/auth', { replace: true });
+      } else {
         setUser(session.user);
         fetchUserProfile(session.user.id);
       }
     });
 
     return () => subscription.unsubscribe();
-  }, [navigate, isStrangerMode]);
+  }, [navigate]);
 
   const fetchUserProfile = async (userId: string) => {
     const { data, error } = await supabase
@@ -200,30 +158,6 @@ const Index = () => {
   };
 
   const handleSignOut = async () => {
-    // For stranger mode, cleanup session and go home
-    if (isStrangerMode) {
-      const strangerId = sessionStorage.getItem('stranger_id');
-      if (strangerId) {
-        // Delete stranger session from database
-        try {
-          await supabase
-            .from('stranger_sessions')
-            .delete()
-            .eq('temp_id', strangerId);
-        } catch (err) {
-          console.error('Failed to cleanup stranger session:', err);
-        }
-      }
-      
-      sessionStorage.removeItem('stranger_mode');
-      sessionStorage.removeItem('stranger_id');
-      sessionStorage.removeItem('stranger_gender');
-      sessionStorage.removeItem('stranger_age');
-      sessionStorage.removeItem('stranger_email');
-      navigate('/', { replace: true });
-      return;
-    }
-
     setIsSigningOut(true);
     try {
       await supabase.auth.signOut({ scope: 'global' });
