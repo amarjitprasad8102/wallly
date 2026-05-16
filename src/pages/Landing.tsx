@@ -103,7 +103,7 @@ const Landing = () => {
             <button onClick={() => navigate('/')} className="flex items-center gap-2 group">
               <div className="relative">
                 <div className="absolute inset-0 rounded-xl blur-md opacity-60 bg-white/40 group-hover:opacity-100 transition" />
-                <img src={logo} alt="Wallly Logo" className="relative w-9 h-9 rounded-xl ring-1 ring-white/30" />
+                <img src={logo} alt="Wallly Logo" width="36" height="36" className="relative w-9 h-9 rounded-xl ring-1 ring-white/30" />
               </div>
               <span style={heading} className="text-xl tracking-tight">WALLLY</span>
             </button>
