@@ -983,6 +983,9 @@ export default function Admin() {
                       <TableCell>
                         <span className="capitalize">{userRoles[user.id] || "user"}</span>
                       </TableCell>
+                      <TableCell className="text-sm">
+                        {user.created_at ? new Date(user.created_at).toLocaleDateString() : "N/A"}
+                      </TableCell>
                       <TableCell>
                         <div className="flex items-center gap-1">
                           <Select value={userRoles[user.id] || "user"} onValueChange={(value) => updateUserRole(user.id, value)}>
