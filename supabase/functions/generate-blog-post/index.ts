@@ -323,6 +323,7 @@ Return ONLY this JSON (same shape as Phase 2 output, no fences):
         0.5,
       );
       const fixedPost = extractJson(fixedRaw);
+      if (fixedPost?.html) fixedPost.html = enforceDofollowInternal(fixedPost.html);
       return new Response(JSON.stringify({ post: fixedPost, previous_audit: audit }), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
