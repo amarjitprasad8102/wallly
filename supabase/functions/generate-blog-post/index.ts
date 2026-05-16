@@ -355,22 +355,28 @@ Return ONLY this JSON (same shape as Phase 2 output, no fences):
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          model: "google/gemini-2.5-flash-image-preview",
+          model: "google/gemini-2.5-flash-image",
           messages: [
-            { role: "user", content: `${prompt}\n\nStyle: photorealistic editorial, 1200x630, no text, no logos, no watermarks.` },
+            { role: "user", content: `${prompt}\n\nStyle: photorealistic editorial, 1200x630 landscape, no text, no logos, no watermarks.` },
           ],
           modalities: ["image", "text"],
         }),
       });
       if (!aiRes.ok) {
         const t = await aiRes.text();
+        console.error("Image gen failed", aiRes.status, t);
         if (aiRes.status === 429) throw new Error("AI rate limit reached. Try again shortly.");
-        if (aiRes.status === 402) throw new Error("AI credits exhausted. Add credits in Settings.");
-        throw new Error(`Image generation failed ${aiRes.status}: ${t}`);
+        if (aiRes.status === 402) throw new Error("AI credits exhausted. Add credits in Settings → Workspace → Usage.");
+        throw new Error(`Image generation failed (${aiRes.status}): ${t.slice(0, 300)}`);
       }
       const aiData = await aiRes.json();
-      const imgUrl: string | undefined = aiData.choices?.[0]?.message?.images?.[0]?.image_url?.url;
-      if (!imgUrl?.startsWith("data:")) throw new Error("No image returned by model");
+      const imgUrl: string | undefined =
+        aiData.choices?.[0]?.message?.images?.[0]?.image_url?.url ??
+        aiData.choices?.[0]?.message?.images?.[0]?.url;
+      if (!imgUrl?.startsWith("data:")) {
+        console.error("No image in response", JSON.stringify(aiData).slice(0, 500));
+        throw new Error("No image returned by AI model");
+      }
 
       // Decode base64 and upload to blog-images bucket via service role
       const [meta, base64] = imgUrl.split(",");
