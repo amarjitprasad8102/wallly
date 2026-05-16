@@ -40,22 +40,17 @@ const Index = () => {
   const [connectId, setConnectId] = useState('');
   const [isSigningOut, setIsSigningOut] = useState(false);
   const [disconnectMessage, setDisconnectMessage] = useState<string | null>(null);
-  const [isStrangerMode, setIsStrangerMode] = useState(false);
   const [premiumFilters, setPremiumFilters] = useState<PremiumMatchFilters>({});
   const [filtersOpen, setFiltersOpen] = useState(false);
   const premiumWelcomeShown = useRef(false);
-  
-  // For stranger mode, use a generated ID; for authenticated, use actual user ID
-  const effectiveUserId = isStrangerMode 
-    ? (sessionStorage.getItem('stranger_id') || 'stranger') 
-    : (user?.id || '');
-  
+
+  const effectiveUserId = user?.id || '';
+
   // Check premium status
-  const { isPremium, loading: premiumLoading } = usePremiumStatus(isStrangerMode ? undefined : user?.id);
-  
+  const { isPremium, loading: premiumLoading } = usePremiumStatus(user?.id);
+
   const { isSearching, matchedUserId, searchingUsersCount, joinMatchmaking, connectDirectly, leaveMatchmaking, sendSignal, onSignal } = useMatch(effectiveUserId, chatMode, isPremium, premiumFilters);
-  
-  // Handle filter changes from PremiumFilters component
+
   const handleFiltersChange = useCallback((filters: PremiumFilterSettings) => {
     setPremiumFilters({
       genderFilter: filters.genderFilter,
@@ -64,6 +59,7 @@ const Index = () => {
       interestPriority: filters.interestPriority,
     });
   }, []);
+
   const {
     pendingRequests,
     acceptedRequest,
@@ -71,7 +67,7 @@ const Index = () => {
     acceptConnectionRequest,
     rejectConnectionRequest,
     clearAcceptedRequest,
-  } = useConnectionRequests(isStrangerMode ? null : user?.id);
+  } = useConnectionRequests(user?.id);
 
   // Show premium welcome message once
   useEffect(() => {
