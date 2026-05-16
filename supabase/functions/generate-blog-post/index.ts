@@ -189,11 +189,129 @@ Total HTML body must be >= 1500 words. Return only JSON, no fences.`;
       });
     }
 
-    if (action === "generate_image") {
-      const { prompt } = await req.json().catch(() => ({}));
-      // Reserved for future Imagen integration via gateway
-      return new Response(JSON.stringify({ error: "not_implemented", prompt }), {
-        status: 501,
+    if (action === "audit" || action === "autofix") {
+      if (!inputPost?.html || !inputPost?.primary_keyword) {
+        throw new Error("post.html and post.primary_keyword are required");
+      }
+
+      const plainText = String(inputPost.html).replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim();
+      const wordCount = plainText.split(/\s+/).filter(Boolean).length;
+
+      const auditPrompt = `PHASE 3 — SEO AUDIT for wallly.in
+
+You are a brutally honest, data-driven SEO auditor. Be strict. A 10 is near impossible. A 7 is good. Below 5 is failure.
+
+POST METADATA:
+- title: ${inputPost.title || ""}
+- slug: ${inputPost.slug || ""}
+- meta_description: ${inputPost.meta_description || ""}
+- primary_keyword: ${inputPost.primary_keyword}
+- secondary_keywords: ${JSON.stringify(inputPost.secondary_keywords || [])}
+- canonical: ${inputPost.canonical || ""}
+- word_count_observed: ${wordCount}
+
+POST HTML:
+"""
+${String(inputPost.html).slice(0, 18000)}
+"""
+
+Score each of these 10 dimensions 0-10 with strict rubric:
+1) Title Tag & H1, 2) Meta Description, 3) Keyword Usage & Density,
+4) Content Depth & Length, 5) Readability & Writing Quality,
+6) Internal Linking, 7) Image SEO, 8) URL Slug Quality,
+9) FAQ & Schema Readiness, 10) Overall Publish Readiness.
+
+Apply the penalty rules from the wallly.in SEO Checker spec. Flag every
+banned filler ("delve into","in today's digital landscape","it's important to note","leverage","furthermore","utilize","in conclusion","to summarize","very","really","basically","quite","just").
+Flag every "click here"/"read more" anchor. Compute keyword density.
+
+Return ONLY this JSON (no fences, no prose):
+{
+  "total_score": 0,
+  "verdict": "READY|MINOR_FIXES|SIGNIFICANT_REVISION|MAJOR_REWRITE",
+  "dimensions": [
+    {"name":"Title Tag & H1","score":0,"status":"PASS|NEEDS_FIX|FAIL","notes":"","fix":""},
+    {"name":"Meta Description","score":0,"status":"","notes":"","fix":""},
+    {"name":"Keyword Usage & Density","score":0,"status":"","notes":"","density_percent":0,"occurrences":0,"fix":""},
+    {"name":"Content Depth & Length","score":0,"status":"","notes":"","word_count":0,"fix":""},
+    {"name":"Readability & Writing Quality","score":0,"status":"","notes":"","banned_phrases_found":[],"fix":""},
+    {"name":"Internal Linking","score":0,"status":"","notes":"","link_audit":[{"anchor":"","url":"","section":"","pass":true}],"fix":""},
+    {"name":"Image SEO","score":0,"status":"","notes":"","image_audit":[{"position":"","alt":"","keyword_present":false,"pass":true}],"fix":""},
+    {"name":"URL Slug Quality","score":0,"status":"","notes":"","corrected_slug":"","fix":""},
+    {"name":"FAQ & Schema Readiness","score":0,"status":"","notes":"","fix":""},
+    {"name":"Overall Publish Readiness","score":0,"status":"","notes":"","fix":""}
+  ],
+  "critical_issues": ["short bullet"],
+  "recommended_improvements": ["short bullet"],
+  "exact_rewrites": {
+    "h1": "",
+    "meta_description": "",
+    "slug": "",
+    "failing_faqs": [{"old":"","new_q":"","new_a":""}],
+    "anchor_text_fixes": [{"old":"","new":""}]
+  }
+}`;
+
+      const auditRaw = await callAI(
+        [
+          { role: "system", content: SYSTEM_PROMPT },
+          { role: "user", content: auditPrompt },
+        ],
+        0.3,
+      );
+      const audit = extractJson(auditRaw);
+
+      if (action === "audit") {
+        return new Response(JSON.stringify({ audit, word_count: wordCount }), {
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+
+      const fixPrompt = `PHASE 4 — AUTO-FIX
+
+Audit you produced:
+${JSON.stringify(audit)}
+
+ORIGINAL POST JSON:
+${JSON.stringify({
+  title: inputPost.title,
+  slug: inputPost.slug,
+  meta_description: inputPost.meta_description,
+  category: inputPost.category,
+  primary_keyword: inputPost.primary_keyword,
+  secondary_keywords: inputPost.secondary_keywords,
+  canonical: inputPost.canonical,
+  html: String(inputPost.html).slice(0, 18000),
+})}
+
+Apply EVERY flagged fix: rewrite H1, meta, slug, anchor texts, alt texts,
+failing FAQs, replace banned filler, fix keyword density gaps, ensure
+>=1500 words, >=6 H2 sections, 5-7 FAQs, 3-7 internal wallly.in links
+with descriptive anchors (never "click here"/"read more"), at least 1
+internal link in first 3 sections, image alt text including primary
+keyword on >=1 image.
+
+Return ONLY this JSON (same shape as Phase 2 output, no fences):
+{
+  "title":"","slug":"","meta_description":"","category":"",
+  "primary_keyword":"","secondary_keywords":[],"intent":"",
+  "word_count":0,"hero_image_prompt":"","hero_image_alt":"",
+  "internal_links":[],"html":"FULL revised semantic HTML",
+  "section_image_prompts":[{"section_title":"","prompt":"","alt":""}],
+  "faq":[{"q":"","a":""}],"schema_type":"Article",
+  "og":{"title":"","description":"","image":""},
+  "canonical":"https://wallly.in/<slug>"
+}`;
+
+      const fixedRaw = await callAI(
+        [
+          { role: "system", content: SYSTEM_PROMPT },
+          { role: "user", content: fixPrompt },
+        ],
+        0.5,
+      );
+      const fixedPost = extractJson(fixedRaw);
+      return new Response(JSON.stringify({ post: fixedPost, previous_audit: audit }), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
