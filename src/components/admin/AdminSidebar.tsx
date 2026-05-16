@@ -41,6 +41,7 @@ const managementItems = [
 
 const contentItems = [
   { title: "Blogs", value: "blogs", icon: FileText },
+  { title: "AI Blog Generator", value: "blog-ai", icon: Sparkles },
   { title: "Communities", value: "communities", icon: Settings },
   { title: "Email", value: "email", icon: Mail },
   { title: "Bulk Emails", value: "blasts", icon: Mail },
