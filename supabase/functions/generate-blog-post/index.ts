@@ -9,7 +9,8 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
-const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
+const GEMINI_API_KEY = Deno.env.get("GEMINI_API_KEY");
+const GEMINI_MODEL = Deno.env.get("GEMINI_MODEL") ?? "gemini-2.5-pro";
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
 const SUPABASE_ANON_KEY = Deno.env.get("SUPABASE_ANON_KEY")!;
 
@@ -41,28 +42,36 @@ ABSOLUTE RULES:
 - 5–7 schema-friendly FAQs. Each answer 60–100 words.
 - Output clean semantic HTML (article, section, h1, h2, h3, p, a, ul, div).`;
 
-async function callAI(messages: any[], temperature = 0.7) {
-  const res = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+async function callAI(messages: { role: string; content: string }[], temperature = 0.7) {
+  // Convert OpenAI-style messages to Gemini format
+  const systemMsg = messages.find((m) => m.role === "system")?.content ?? "";
+  const userParts = messages
+    .filter((m) => m.role !== "system")
+    .map((m) => ({ role: m.role === "assistant" ? "model" : "user", parts: [{ text: m.content }] }));
+
+  const url = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent?key=${GEMINI_API_KEY}`;
+  const res = await fetch(url, {
     method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      "Authorization": `Bearer ${LOVABLE_API_KEY}`,
-    },
+    headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
-      model: "google/gemini-2.5-pro",
-      messages,
-      temperature,
+      systemInstruction: systemMsg ? { parts: [{ text: systemMsg }] } : undefined,
+      contents: userParts,
+      generationConfig: {
+        temperature,
+        responseMimeType: "application/json",
+        maxOutputTokens: 8192,
+      },
     }),
   });
 
   if (!res.ok) {
     const text = await res.text();
-    if (res.status === 429) throw new Error("Rate limit reached. Please try again in a moment.");
-    if (res.status === 402) throw new Error("AI credits exhausted. Add credits in Workspace Settings.");
-    throw new Error(`AI gateway error ${res.status}: ${text}`);
+    if (res.status === 429) throw new Error("Gemini rate limit reached. Please try again in a moment.");
+    if (res.status === 401 || res.status === 403) throw new Error("Invalid GEMINI_API_KEY. Check your secret.");
+    throw new Error(`Gemini API error ${res.status}: ${text}`);
   }
   const data = await res.json();
-  return data.choices?.[0]?.message?.content ?? "";
+  return data.candidates?.[0]?.content?.parts?.[0]?.text ?? "";
 }
 
 function extractJson(text: string): any {
@@ -94,7 +103,7 @@ Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
   try {
-    if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY not configured");
+    if (!GEMINI_API_KEY) throw new Error("GEMINI_API_KEY not configured");
     await assertAdmin(req);
 
     const body = await req.json();
