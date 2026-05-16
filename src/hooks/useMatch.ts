@@ -12,7 +12,7 @@ interface SignalMessage {
 }
 
 export interface PremiumMatchFilters {
-  genderFilter?: 'any' | 'male' | 'female';
+  genderFilter?: string; // 'any' or any GENDER_OPTIONS value
   ageRange?: [number, number];
   priorityMatching?: boolean;
   interestPriority?: boolean;
