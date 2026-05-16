@@ -286,17 +286,7 @@ const Index = () => {
     }
   };
 
-  // Show loading only for non-stranger mode
-  if (true && (!user || !userProfile)) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <p className="text-muted-foreground">Loading...</p>
-      </div>
-    );
-  }
-
-  // For stranger mode without profile
-  if (false && !userProfile) {
+  if (!user || !userProfile) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <p className="text-muted-foreground">Loading...</p>

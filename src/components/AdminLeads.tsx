@@ -192,14 +192,6 @@ const AdminLeads = ({ adminId }: AdminLeadsProps) => {
         </Badge>
       );
     }
-    if (type === 'stranger') {
-      return (
-        <Badge className="bg-gradient-to-r from-slate-500 to-gray-600 text-white">
-          <User className="w-3 h-3 mr-1" />
-          Stranger
-        </Badge>
-      );
-    }
     return <Badge variant="outline">Contact</Badge>;
   };
 
