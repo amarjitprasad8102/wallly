@@ -21,6 +21,14 @@ const body = { fontFamily: '"Hind", system-ui, sans-serif' };
 
 const Landing = () => {
   const navigate = useNavigate();
+  const [menuOpen, setMenuOpen] = useState(false);
+
+  const navItems = [
+    { l: 'How to use', p: '/howtouse' },
+    { l: 'Communities', p: '/c' },
+    { l: 'Blog', p: '/blog' },
+    { l: 'Premium', p: '/premium' },
+  ];
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
