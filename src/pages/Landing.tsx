@@ -415,7 +415,7 @@ const Landing = () => {
             <div className="grid grid-cols-2 md:grid-cols-5 gap-8 mb-10">
               <div className="col-span-2">
                 <div className="flex items-center gap-2 mb-3">
-                  <img src={logo} alt="Wallly" className="w-8 h-8 rounded-lg" />
+                  <img src={logo} alt="Wallly" width="32" height="32" loading="lazy" className="w-8 h-8 rounded-lg" />
                   <span style={heading} className="text-lg">WALLLY</span>
                 </div>
                 <p className="text-sm text-white/60 max-w-xs">Where the walls end, you find a friend.</p>
