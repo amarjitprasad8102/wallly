@@ -2,56 +2,96 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Definition of the design system. All colors, gradients, fonts, etc should be defined here. 
-All colors MUST be HSL.
-*/
+/* =========================================================
+   WALLLY — Neo-brutalist / Sticker-pop design system
+   Palette: bg #F3F3F3 · ink #1A1A1A · indigo #5D5DFF · pink #FF72C0 · lime #E4FF00
+   Fonts: Archivo Black (display) · Hind (body)
+   All colors in HSL.
+   ========================================================= */
 
 @layer base {
   :root {
-    --background: 0 0% 100%;
-    --foreground: 222 47% 11%;
+    /* surfaces */
+    --background: 0 0% 95%;          /* #F3F3F3 */
+    --foreground: 0 0% 10%;          /* #1A1A1A */
 
     --card: 0 0% 100%;
-    --card-foreground: 222 47% 11%;
+    --card-foreground: 0 0% 10%;
 
     --popover: 0 0% 100%;
-    --popover-foreground: 222 47% 11%;
+    --popover-foreground: 0 0% 10%;
 
-    --primary: 263 70% 50%;
+    /* brand */
+    --primary: 240 100% 68%;         /* indigo #5D5DFF */
     --primary-foreground: 0 0% 100%;
-    --primary-glow: 263 70% 60%;
+    --primary-glow: 240 100% 75%;
 
-    --secondary: 210 40% 96%;
-    --secondary-foreground: 222 47% 11%;
+    --secondary: 66 100% 50%;        /* lime #E4FF00 */
+    --secondary-foreground: 0 0% 10%;
 
-    --muted: 210 40% 96%;
-    --muted-foreground: 215 16% 47%;
+    --muted: 0 0% 92%;
+    --muted-foreground: 0 0% 35%;
 
-    --accent: 217 91% 60%;
-    --accent-foreground: 0 0% 100%;
+    --accent: 323 100% 72%;          /* pink #FF72C0 */
+    --accent-foreground: 0 0% 10%;
 
-    --destructive: 0 84% 60%;
+    --destructive: 0 84% 55%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 214 32% 91%;
-    --input: 214 32% 91%;
-    --ring: 263 70% 50%;
+    /* lines */
+    --border: 0 0% 0%;               /* hard black borders */
+    --input: 0 0% 0%;
+    --ring: 240 100% 68%;
 
-    --radius: 1rem;
+    --radius: 0px;                   /* sharp brutalist corners */
 
-    --gradient-primary: linear-gradient(135deg, hsl(263 70% 50%), hsl(217 91% 60%));
-    --gradient-subtle: linear-gradient(180deg, hsl(210 40% 98%), hsl(220 60% 97%));
-    --shadow-glow: 0 0 40px hsla(263 70% 50% / 0.3);
-    --shadow-card: 0 10px 30px -10px hsla(263 70% 50% / 0.15);
+    /* brand tokens */
+    --brand-indigo: 240 100% 68%;
+    --brand-pink: 323 100% 72%;
+    --brand-lime: 66 100% 50%;
+    --brand-ink: 0 0% 10%;
 
+    /* shadows: chunky offset */
+    --shadow-brutal: 6px 6px 0 0 hsl(0 0% 0%);
+    --shadow-brutal-lg: 8px 8px 0 0 hsl(0 0% 0%);
+    --shadow-brutal-xl: 12px 12px 0 0 hsl(0 0% 0%);
+    --shadow-brutal-pink: 6px 6px 0 0 hsl(323 100% 72%);
+    --shadow-brutal-indigo: 6px 6px 0 0 hsl(240 100% 68%);
+    --shadow-brutal-lime: 6px 6px 0 0 hsl(66 100% 50%);
+
+    --gradient-primary: linear-gradient(135deg, hsl(240 100% 68%), hsl(323 100% 72%));
+    --gradient-subtle: linear-gradient(180deg, hsl(0 0% 97%), hsl(0 0% 92%));
+
+    /* sidebar */
     --sidebar-background: 0 0% 100%;
-    --sidebar-foreground: 222 47% 11%;
-    --sidebar-primary: 263 70% 50%;
+    --sidebar-foreground: 0 0% 10%;
+    --sidebar-primary: 240 100% 68%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 210 40% 96%;
-    --sidebar-accent-foreground: 222 47% 11%;
-    --sidebar-border: 214 32% 91%;
-    --sidebar-ring: 263 70% 50%;
+    --sidebar-accent: 323 100% 95%;
+    --sidebar-accent-foreground: 0 0% 10%;
+    --sidebar-border: 0 0% 0%;
+    --sidebar-ring: 240 100% 68%;
+  }
+
+  /* No real dark mode — brutalist is light-first. Force dark to mirror light. */
+  .dark {
+    --background: 0 0% 10%;
+    --foreground: 0 0% 95%;
+    --card: 0 0% 14%;
+    --card-foreground: 0 0% 95%;
+    --popover: 0 0% 14%;
+    --popover-foreground: 0 0% 95%;
+    --primary: 240 100% 68%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 66 100% 50%;
+    --secondary-foreground: 0 0% 10%;
+    --muted: 0 0% 18%;
+    --muted-foreground: 0 0% 65%;
+    --accent: 323 100% 72%;
+    --accent-foreground: 0 0% 10%;
+    --border: 0 0% 0%;
+    --input: 0 0% 0%;
+    --ring: 240 100% 68%;
   }
 }
 
@@ -67,26 +107,37 @@ All colors MUST be HSL.
 
   body {
     @apply bg-background text-foreground;
+    font-family: 'Hind', system-ui, -apple-system, sans-serif;
     -webkit-font-smoothing: antialiased;
     -webkit-tap-highlight-color: transparent;
     overscroll-behavior-y: none;
+    font-weight: 500;
   }
 
-  /* iOS Safari: prevent zoom on focusing inputs (font-size must be >=16px) */
+  h1, h2, h3, h4, h5, h6 {
+    font-family: 'Archivo Black', system-ui, sans-serif;
+    letter-spacing: -0.02em;
+  }
+
+  /* Brutalist selection */
+  ::selection {
+    background: hsl(var(--brand-lime));
+    color: hsl(var(--brand-ink));
+  }
+
+  /* iOS Safari: prevent zoom on focusing inputs */
   @media (max-width: 640px) {
     input, select, textarea {
       font-size: 16px;
     }
   }
 
-  /* Ensure tap targets are big enough on mobile */
   @media (max-width: 640px) {
     button, a[role="button"], [data-touch-target] {
       min-height: 40px;
     }
   }
 
-  /* Reduce heavy blurs on small screens — backdrop-blur-xl is GPU-expensive */
   @media (max-width: 768px) {
     .backdrop-blur-xl { backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); }
     .backdrop-blur-2xl { backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); }
@@ -102,77 +153,63 @@ All colors MUST be HSL.
     }
   }
 
-  .mirror {
-    transform: scaleX(-1);
-  }
+  .mirror { transform: scaleX(-1); }
 }
 
 @layer utilities {
-  /* Touch-friendly interactions for mobile */
   .touch-manipulation {
     touch-action: manipulation;
     -webkit-tap-highlight-color: transparent;
   }
-  
-  /* Safe area for mobile devices with notches */
-  .safe-bottom {
-    padding-bottom: env(safe-area-inset-bottom);
-  }
-  
-  .safe-top {
-    padding-top: env(safe-area-inset-top);
+  .safe-bottom { padding-bottom: env(safe-area-inset-bottom); }
+  .safe-top { padding-top: env(safe-area-inset-top); }
+
+  /* Brutalist utilities */
+  .font-display { font-family: 'Archivo Black', system-ui, sans-serif; letter-spacing: -0.02em; }
+  .font-body { font-family: 'Hind', system-ui, sans-serif; }
+
+  .shadow-brutal { box-shadow: var(--shadow-brutal); }
+  .shadow-brutal-lg { box-shadow: var(--shadow-brutal-lg); }
+  .shadow-brutal-xl { box-shadow: var(--shadow-brutal-xl); }
+  .shadow-brutal-pink { box-shadow: var(--shadow-brutal-pink); }
+  .shadow-brutal-indigo { box-shadow: var(--shadow-brutal-indigo); }
+  .shadow-brutal-lime { box-shadow: var(--shadow-brutal-lime); }
+
+  .border-brutal { @apply border-[3px] border-black; }
+  .border-brutal-4 { @apply border-4 border-black; }
+
+  .brutal-card { @apply bg-white border-[3px] border-black shadow-brutal; }
+  .brutal-card-lg { @apply bg-white border-4 border-black shadow-brutal-lg; }
+
+  .outline-text {
+    -webkit-text-stroke: 2px hsl(var(--brand-ink));
+    color: transparent;
   }
 
   /* Animations */
   @keyframes fade-in {
-    from {
-      opacity: 0;
-      transform: translateY(10px);
-    }
-    to {
-      opacity: 1;
-      transform: translateY(0);
-    }
+    from { opacity: 0; transform: translateY(10px); }
+    to   { opacity: 1; transform: translateY(0); }
   }
-
   @keyframes slide-up {
-    from {
-      opacity: 0;
-      transform: translateY(20px);
-    }
-    to {
-      opacity: 1;
-      transform: translateY(0);
-    }
+    from { opacity: 0; transform: translateY(20px); }
+    to   { opacity: 1; transform: translateY(0); }
   }
-
   @keyframes pulse-glow {
-    0%, 100% {
-      opacity: 0.5;
-      transform: scale(1);
-    }
-    50% {
-      opacity: 0.8;
-      transform: scale(1.05);
-    }
+    0%, 100% { opacity: 0.5; transform: scale(1); }
+    50% { opacity: 0.8; transform: scale(1.05); }
+  }
+  @keyframes wallmarquee {
+    from { transform: translateX(0); }
+    to   { transform: translateX(-50%); }
   }
 
-  .animate-fade-in {
-    animation: fade-in 0.6s ease-out;
-  }
+  .animate-fade-in { animation: fade-in 0.6s ease-out; }
+  .animate-slide-up { animation: slide-up 0.8s ease-out; animation-fill-mode: both; }
+  .animate-pulse-glow { animation: pulse-glow 3s ease-in-out infinite; }
 
-  .animate-slide-up {
-    animation: slide-up 0.8s ease-out;
-    animation-fill-mode: both;
-  }
-
-  .animate-pulse-glow {
-    animation: pulse-glow 3s ease-in-out infinite;
-  }
-
-  .bg-gradient-primary {
-    background: var(--gradient-primary);
-  }
+  .bg-gradient-primary { background: var(--gradient-primary); }
+  .bg-gradient-subtle { background: var(--gradient-subtle); }
 
   .gradient-text {
     background: var(--gradient-primary);
@@ -182,15 +219,6 @@ All colors MUST be HSL.
     color: transparent;
   }
 
-  .bg-gradient-subtle {
-    background: var(--gradient-subtle);
-  }
-
-  .shadow-glow {
-    box-shadow: var(--shadow-glow);
-  }
-
-  .shadow-card {
-    box-shadow: var(--shadow-card);
-  }
+  .shadow-glow { box-shadow: var(--shadow-brutal); }
+  .shadow-card { box-shadow: var(--shadow-brutal); }
 }
