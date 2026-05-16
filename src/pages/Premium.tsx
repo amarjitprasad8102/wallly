@@ -280,25 +280,25 @@ const Premium = () => {
               </div>
               
               <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold mb-6 gradient-text leading-tight">
-                Unlock the Ultimate Random Chat Experience
+                Skip the line. Unlock the good stuff.
               </h1>
               <p className="text-lg sm:text-xl text-muted-foreground mb-8 max-w-3xl mx-auto">
-                Get gender & age filters, priority matching, HD video quality, and unlimited connections. 
-                Take your random video chat experience to the next level.
+                Gender + age filters, front-of-queue matching, HD video, and a crown that hits different.
+                Built for people who actually mean it.
               </p>
 
               <div className="flex flex-wrap justify-center gap-4 mb-8">
                 <div className="flex items-center gap-2 text-muted-foreground">
                   <Check className="w-5 h-5 text-green-500" />
-                  <span>Cancel anytime</span>
+                  <span>Cancel whenever, no drama</span>
                 </div>
                 <div className="flex items-center gap-2 text-muted-foreground">
                   <Check className="w-5 h-5 text-green-500" />
-                  <span>Secure payments</span>
+                  <span>Payments locked down</span>
                 </div>
                 <div className="flex items-center gap-2 text-muted-foreground">
                   <Check className="w-5 h-5 text-green-500" />
-                  <span>Instant activation</span>
+                  <span>Live the second you pay</span>
                 </div>
               </div>
             </div>
