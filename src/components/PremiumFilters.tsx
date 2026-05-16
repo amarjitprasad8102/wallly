@@ -4,6 +4,7 @@ import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { Slider } from '@/components/ui/slider';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import GenderSelect from '@/components/GenderSelect';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Crown, Filter, Users, Zap, Lock, Heart, Palette, Headphones } from 'lucide-react';
@@ -16,7 +17,7 @@ interface PremiumFiltersProps {
 }
 
 export interface PremiumFilterSettings {
-  genderFilter: 'any' | 'male' | 'female';
+  genderFilter: string; // 'any' | any value from GENDER_OPTIONS
   ageRange: [number, number];
   priorityMatching: boolean;
   interestPriority: boolean;
@@ -119,21 +120,18 @@ const PremiumFilters = ({ isPremium, onFiltersChange, className = '' }: PremiumF
         <div className="space-y-2">
           <Label className="text-sm font-medium flex items-center gap-2">
             <Users className="w-4 h-4" />
-            Gender Preference
+            Gender / Identity Preference
           </Label>
-          <Select 
-            value={filters.genderFilter} 
-            onValueChange={(value: 'any' | 'male' | 'female') => updateFilter('genderFilter', value)}
-          >
-            <SelectTrigger>
-              <SelectValue placeholder="Select gender" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="any">Any Gender</SelectItem>
-              <SelectItem value="male">Male Only</SelectItem>
-              <SelectItem value="female">Female Only</SelectItem>
-            </SelectContent>
-          </Select>
+          <GenderSelect
+            value={filters.genderFilter}
+            onValueChange={(value) => updateFilter('genderFilter', value)}
+            placeholder="Select preference"
+            includeAny
+            anyLabel="Any — match with everyone"
+          />
+          <p className="text-xs text-muted-foreground">
+            Filter by gay, lesbian, bi, trans, non-binary, top, bottom & more — fully LGBTQ+ inclusive.
+          </p>
         </div>
 
         {/* Age Range */}

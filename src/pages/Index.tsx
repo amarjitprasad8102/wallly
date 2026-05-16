@@ -354,7 +354,8 @@ const Index = () => {
     <div className="min-h-screen bg-gradient-subtle flex flex-col">
       <Helmet>
         <title>Wallly App — Start a Random Video or Text Chat</title>
-        <meta name="description" content="Jump into a random video or text chat in one click. Match with strangers worldwide, share images, and add friends on Wallly." />
+        <meta name="description" content="LGBTQ+ friendly random video & text chat. Match with gay, lesbian, bi, trans, non-binary, queer, top, bottom or straight strangers worldwide on Wallly." />
+        <meta name="keywords" content="lgbtq video chat, gay random chat, lesbian chat, bisexual chat, trans chat, non-binary chat, queer video chat, top bottom chat, wallly" />
         <link rel="canonical" href="https://wallly.in/app" />
         <meta property="og:title" content="Wallly App — Start a Random Video or Text Chat" />
         <meta property="og:description" content="Jump into a random video or text chat in one click. Match with strangers worldwide on Wallly." />
@@ -636,6 +637,39 @@ const Index = () => {
               </p>
             </div>
           </div>
+
+          {/* LGBTQ+ Inclusive Section — boosts SEO for inclusive search terms */}
+          <section
+            aria-labelledby="inclusive-heading"
+            className="mt-10 sm:mt-16 bg-gradient-to-br from-pink-500/5 via-purple-500/5 to-blue-500/5 border border-border rounded-2xl p-5 sm:p-8 text-left animate-slide-up"
+            style={{ animationDelay: '0.4s' }}
+          >
+            <div className="flex items-center gap-2 mb-3">
+              <span className="text-2xl" aria-hidden="true">🏳️‍🌈</span>
+              <h2 id="inclusive-heading" className="text-xl sm:text-2xl font-bold">
+                LGBTQ+ friendly — every identity welcome
+              </h2>
+            </div>
+            <p className="text-sm sm:text-base text-muted-foreground mb-4">
+              Wallly is built for everyone. Pick the gender, orientation, or role that fits you —
+              and filter your matches the same way. Random video chat for gay, lesbian, bisexual,
+              pansexual, asexual, transgender, non-binary, queer and straight users alike.
+            </p>
+            <div className="flex flex-wrap gap-2 text-xs sm:text-sm">
+              {[
+                'Male', 'Female', 'Non-binary', 'Transgender', 'Genderfluid', 'Agender',
+                'Gay', 'Lesbian', 'Bisexual', 'Pansexual', 'Asexual', 'Demisexual', 'Queer', 'Straight',
+                'Top', 'Bottom', 'Versatile', 'Switch',
+              ].map((tag) => (
+                <span
+                  key={tag}
+                  className="px-3 py-1 rounded-full bg-background/60 border border-border text-foreground/80"
+                >
+                  {tag}
+                </span>
+              ))}
+            </div>
+          </section>
         </div>
       </div>
 

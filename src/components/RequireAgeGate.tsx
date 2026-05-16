@@ -3,13 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import GenderSelect from "@/components/GenderSelect";
 import {
   Dialog,
   DialogContent,
@@ -117,18 +111,14 @@ const RequireAgeGate = () => {
           </div>
           {needsGender && (
             <div className="grid gap-2">
-              <Label htmlFor="gate-gender">Gender</Label>
-              <Select value={gender} onValueChange={setGender} disabled={saving}>
-                <SelectTrigger id="gate-gender">
-                  <SelectValue placeholder="Select your gender" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="male">Male</SelectItem>
-                  <SelectItem value="female">Female</SelectItem>
-                  <SelectItem value="other">Other</SelectItem>
-                  <SelectItem value="prefer_not_to_say">Prefer not to say</SelectItem>
-                </SelectContent>
-              </Select>
+              <Label htmlFor="gate-gender">Gender / Identity</Label>
+              <GenderSelect
+                id="gate-gender"
+                value={gender}
+                onValueChange={setGender}
+                disabled={saving}
+                placeholder="Select your gender or identity"
+              />
             </div>
           )}
         </div>
