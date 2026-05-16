@@ -204,8 +204,8 @@ const Landing = () => {
                 <p className="text-[11px] text-white/50 mt-4 uppercase tracking-widest">free • no download • 16+</p>
               </div>
 
-              {/* Right ticker column */}
-              <div className="col-span-12 lg:col-span-3 order-3 flex lg:flex-col gap-3 lg:gap-4 lg:pb-10">
+              {/* Right ticker column — desktop only */}
+              <div className="hidden lg:flex col-span-12 lg:col-span-3 order-3 lg:flex-col gap-3 lg:gap-4 lg:pb-10">
                 <div className="rounded-2xl overflow-hidden border border-white/15 bg-black/40 backdrop-blur-xl aspect-[4/5] lg:rotate-[3deg] relative">
                   <div className="absolute inset-0 bg-gradient-to-br from-blue-500/40 via-transparent to-white/10" />
                   <div className="absolute top-2 left-2 text-[10px] uppercase tracking-widest bg-red-500 px-2 py-0.5 rounded-sm">● LIVE</div>
@@ -218,6 +218,20 @@ const Landing = () => {
                   <div className="text-[10px] uppercase tracking-widest text-white/60">since 2024</div>
                   <div style={heading} className="text-3xl mt-1">2.3M+</div>
                   <div className="text-xs text-white/60">connections made</div>
+                </div>
+              </div>
+
+              {/* Mobile stat strip — compact replacement for the side cards */}
+              <div className="lg:hidden col-span-12 order-3 mt-2 grid grid-cols-2 gap-3">
+                <div className="rounded-2xl border border-white/15 bg-white/5 backdrop-blur-xl p-3">
+                  <div className="flex items-center gap-1.5 text-[10px] uppercase tracking-widest text-blue-200/80">
+                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" /> Online
+                  </div>
+                  <div style={heading} className="text-xl mt-0.5">12,847</div>
+                </div>
+                <div className="rounded-2xl border border-white/15 bg-gradient-to-br from-blue-500/20 to-transparent backdrop-blur-xl p-3">
+                  <div className="text-[10px] uppercase tracking-widest text-white/60">connections</div>
+                  <div style={heading} className="text-xl mt-0.5">2.3M+</div>
                 </div>
               </div>
             </div>
