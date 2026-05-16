@@ -12,5 +12,8 @@ Allow: /
 
 User-agent: *
 Allow: /
+Disallow: /admin
+Disallow: /connections
+Disallow: /profile
 
 Sitemap: https://wallly.in/sitemap.xml
