@@ -889,8 +889,8 @@ export default function Admin() {
       // Send deletion notification email first
       const deleteTemplate = emailTemplates.find(t => t.id === "account-deleted");
       if (deleteTemplate) {
-        await supabase.functions.invoke('send-ses-email', {
-          body: { to: selectedUserForAction.email, subject: deleteTemplate.subject, html: deleteTemplate.content, templateUsed: "account-deleted" },
+        await supabase.functions.invoke('send-email', {
+          body: { to: selectedUserForAction.email, subject: deleteTemplate.subject, html: deleteTemplate.content },
         });
       }
 
