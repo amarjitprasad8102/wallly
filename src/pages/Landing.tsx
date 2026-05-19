@@ -56,13 +56,13 @@ const Landing = () => {
   return (
     <>
       <Helmet>
-        <title>Wallly — Talk to Strangers, Make Friends | Free Random Video Chat</title>
+        <title>Wallly — Random Video Chat to Meet New Friends</title>
         <meta name="description" content="Wallly is an LGBTQ+ friendly Gen-Z random video & text chat. Meet gay, lesbian, bi, trans, non-binary, queer & straight strangers worldwide. Free, no download, 16+." />
         <meta name="keywords" content="random video chat, lgbtq chat, gay video chat, lesbian chat, bisexual chat, trans chat, non-binary chat, queer chat, top bottom chat, talk to strangers, omegle alternative, ometv alternative, wallly" />
         <link rel="canonical" href="https://wallly.in/" />
         <meta property="og:type" content="website" />
         <meta property="og:url" content="https://wallly.in/" />
-        <meta property="og:title" content="Wallly — Talk to Strangers, Make Friends" />
+        <meta property="og:title" content="Wallly — Random Video Chat to Meet New Friends" />
         <meta property="og:description" content="Random video & text chat with a Gen-Z vibe. Free, no download, ages 16+." />
         <meta property="og:image" content="https://wallly.in/logo.png" />
         <meta name="twitter:card" content="summary_large_image" />
@@ -75,6 +75,19 @@ const Landing = () => {
           operatingSystem: "Web Browser",
           offers: { "@type": "Offer", price: "0", priceCurrency: "USD" }
         })}</script>
+        <script type="application/ld+json">{JSON.stringify({
+          "@context": "https://schema.org",
+          "@type": "FAQPage",
+          mainEntity: [
+            { "@type": "Question", name: "What is Wallly?", acceptedAnswer: { "@type": "Answer", text: "Wallly is a free random video chat platform that connects you with strangers worldwide through video chat, text messaging, and image sharing." } },
+            { "@type": "Question", name: "Is Wallly free to use?", acceptedAnswer: { "@type": "Answer", text: "Yes, Wallly is completely free. You can video chat, text chat, and share images at no cost. Premium features are optional." } },
+            { "@type": "Question", name: "Is Wallly a good Omegle alternative?", acceptedAnswer: { "@type": "Answer", text: "Yes, Wallly is a modern Omegle and OmeTV alternative with both video and text chat and a global user base." } },
+            { "@type": "Question", name: "Can I chat with strangers based on interests?", acceptedAnswer: { "@type": "Answer", text: "Yes. Wallly supports interest-based matching so you can talk to strangers who share your hobbies." } },
+            { "@type": "Question", name: "Is Wallly safe?", acceptedAnswer: { "@type": "Answer", text: "Wallly enforces age verification (16+), AI moderation, and spam protection. You can skip any conversation instantly." } },
+            { "@type": "Question", name: "Can I add friends on Wallly?", acceptedAnswer: { "@type": "Answer", text: "Yes. You can find past chats in your history and add people as friends to stay connected." } }
+          ]
+        })}</script>
+
       </Helmet>
 
       <div
@@ -84,7 +97,7 @@ const Landing = () => {
         {/* NAV — floating pill with chunky shadow */}
         <nav className="fixed top-3 sm:top-6 left-1/2 -translate-x-1/2 z-50 w-[94%] max-w-5xl bg-white border-[3px] sm:border-4 border-black px-3 sm:px-6 py-2 sm:py-3 flex justify-between items-center shadow-[5px_5px_0px_0px_rgba(0,0,0,1)] sm:shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] rounded-none">
           <button onClick={() => navigate('/')} className="flex items-center gap-2">
-            <img src={logo} alt="Wallly" width="28" height="28" className="w-7 h-7 border-2 border-black" />
+            <img src={logo} alt="Wallly — Random Video Chat" width="28" height="28" className="w-7 h-7 border-2 border-black" />
             <span style={heading} className="text-lg sm:text-2xl uppercase tracking-tighter italic">Wallly</span>
           </button>
           <div className="hidden md:flex gap-7 font-semibold text-sm">
@@ -151,7 +164,8 @@ const Landing = () => {
               </div>
 
               <h1 style={heading} className="text-[2.25rem] xs:text-[2.75rem] sm:text-7xl lg:text-[7.5rem] uppercase leading-[0.9] sm:leading-[0.88] tracking-tighter mb-6 sm:mb-8 break-words">
-                Where the <span className="outline-text text-[#5D5DFF]">walls</span> end, you find a <span className="text-[#FF72C0] italic underline decoration-[6px] sm:decoration-[12px] underline-offset-[4px] sm:underline-offset-8 decoration-black">friend</span>
+                <span className="sr-only">Wallly — Random Video Chat to Meet New Friends Worldwide. </span>
+                <span aria-hidden="true">Where the <span className="outline-text text-[#5D5DFF]">walls</span> end, you find a <span className="text-[#FF72C0] italic underline decoration-[6px] sm:decoration-[12px] underline-offset-[4px] sm:underline-offset-8 decoration-black">friend</span></span>
               </h1>
 
               <p className="text-lg sm:text-2xl max-w-2xl mx-auto mb-10 font-medium text-[#1A1A1A]/80">
@@ -336,13 +350,13 @@ const Landing = () => {
             <div className="grid grid-cols-2 md:grid-cols-5 gap-8 mb-10">
               <div className="col-span-2">
                 <div className="flex items-center gap-2 mb-3">
-                  <img src={logo} alt="Wallly" width="32" height="32" loading="lazy" className="w-8 h-8 border-2 border-white" />
+                  <img src={logo} alt="Wallly — Random Video Chat" width="32" height="32" loading="lazy" className="w-8 h-8 border-2 border-white" />
                   <span style={heading} className="text-xl uppercase italic">Wallly</span>
                 </div>
                 <p className="text-sm text-white/70 max-w-xs">Where the walls end, you find a friend.</p>
               </div>
               <div>
-                <h4 style={heading} className="text-xs uppercase tracking-widest text-[#E4FF00] mb-3">Product</h4>
+                <h3 style={heading} className="text-xs uppercase tracking-widest text-[#E4FF00] mb-3">Product</h3>
                 <ul className="space-y-2 text-sm text-white/70">
                   <li><button onClick={() => navigate('/auth')} className="hover:text-white">Video Chat</button></li>
                   <li><button onClick={() => navigate('/auth')} className="hover:text-white">Text Chat</button></li>
@@ -351,7 +365,7 @@ const Landing = () => {
                 </ul>
               </div>
               <div>
-                <h4 style={heading} className="text-xs uppercase tracking-widest text-[#FF72C0] mb-3">Resources</h4>
+                <h3 style={heading} className="text-xs uppercase tracking-widest text-[#FF72C0] mb-3">Resources</h3>
                 <ul className="space-y-2 text-sm text-white/70">
                   <li><button onClick={() => navigate('/howtouse')} className="hover:text-white">How to Use</button></li>
                   <li><button onClick={() => navigate('/blog')} className="hover:text-white">Blog</button></li>
@@ -359,7 +373,7 @@ const Landing = () => {
                 </ul>
               </div>
               <div>
-                <h4 style={heading} className="text-xs uppercase tracking-widest text-[#5D5DFF] mb-3">Legal</h4>
+                <h3 style={heading} className="text-xs uppercase tracking-widest text-[#5D5DFF] mb-3">Legal</h3>
                 <ul className="space-y-2 text-sm text-white/70">
                   <li><button onClick={() => navigate('/privacy')} className="hover:text-white">Privacy</button></li>
                   <li><a href="mailto:help@corevia.in" className="hover:text-white">help@corevia.in</a></li>
