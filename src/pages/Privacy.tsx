@@ -21,6 +21,10 @@ const Privacy = () => {
         <meta name="description" content="Wallly Privacy Policy. Learn how we protect your data and keep your chats safe." />
         <meta name="keywords" content="privacy policy, data protection, chat privacy, user safety" />
         <link rel="canonical" href="https://wallly.in/privacy" />
+        <meta property="og:title" content="Privacy Policy - Wallly" />
+        <meta property="og:description" content="How Wallly protects your data and keeps your random video and text chats safe." />
+        <meta property="og:url" content="https://wallly.in/privacy" />
+        <meta property="og:type" content="article" />
       </Helmet>
       
       <div className="min-h-screen bg-gradient-subtle">
