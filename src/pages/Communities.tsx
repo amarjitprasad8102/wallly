@@ -133,6 +133,16 @@ const Communities = () => {
         <meta name="description" content="Join Indian communities on Wallly. Create, join & engage with interest-based groups." />
         <meta name="keywords" content="indian communities, bharatiya samudaay, online communities, interest groups" />
         <link rel="canonical" href="https://wallly.in/c" />
+        <meta property="og:title" content="Bharatiya Samudaay - Indian Communities | Wallly" />
+        <meta property="og:description" content="Join Indian communities on Wallly. Create, join & engage with interest-based groups." />
+        <meta property="og:url" content="https://wallly.in/c" />
+        <meta property="og:type" content="website" />
+        <script type="application/ld+json">{JSON.stringify({
+          "@context": "https://schema.org",
+          "@type": "CollectionPage",
+          name: "Bharatiya Samudaay - Indian Communities",
+          url: "https://wallly.in/c"
+        })}</script>
       </Helmet>
       
       <div className="min-h-screen bg-gradient-subtle">

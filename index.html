@@ -10,6 +10,8 @@
     <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=Hind:wght@300;400;500;600;700&display=swap" />
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=Hind:wght@300;400;500;600;700&display=swap" media="print" onload="this.media='all'" />
     <title>Wallly — Free Random Video Chat with Strangers</title>
+    <!-- Note: title <60 chars. Above is 47 chars. -->
+
     <meta name="description" content="Free random video &amp; text chat to meet strangers worldwide. The modern Omegle alternative — share images, find friends, connect in seconds.">
     <meta name="author" content="Wallly" />
     <link rel="canonical" href="https://wallly.in/" />
@@ -125,63 +127,8 @@
     }
     </script>
     
-    <!-- Structured Data - FAQPage Schema -->
-    <script type="application/ld+json">
-    {
-      "@context": "https://schema.org",
-      "@type": "FAQPage",
-      "mainEntity": [
-        {
-          "@type": "Question",
-          "name": "What is Wallly?",
-          "acceptedAnswer": {
-            "@type": "Answer",
-            "text": "Wallly is a free random video chat platform that connects you with strangers worldwide. Experience a random chat alternative to find friends, connect with people, and chat with strangers from all over the world through video chat, text messaging, and image sharing."
-          }
-        },
-        {
-          "@type": "Question",
-          "name": "Is Wallly free to use?",
-          "acceptedAnswer": {
-            "@type": "Answer",
-            "text": "Yes, Wallly is completely free to use. You can video chat, text chat, and share images without any cost. Connect with real people, enjoy ad free text and video chats, and build genuine friendships. Premium features are available for enhanced experience."
-          }
-        },
-        {
-          "@type": "Question",
-          "name": "Is Wallly a good Omegle alternative?",
-          "acceptedAnswer": {
-            "@type": "Answer",
-            "text": "Yes, Wallly is the best Omegle and OmeTV alternative. Find strangers worldwide with our modern, secure and feature rich platform. Connect with diverse, interesting people from around the globe through both video and text chat."
-          }
-        },
-        {
-          "@type": "Question",
-          "name": "Can I chat with strangers based on interests?",
-          "acceptedAnswer": {
-            "@type": "Answer",
-            "text": "Yes! Talk to online strangers who love what you love. Chat about hobbies and enjoy fun conversations - all from one place! Making new friends based on interests is made easy with our interest-based matching feature."
-          }
-        },
-        {
-          "@type": "Question",
-          "name": "Is Wallly safe?",
-          "acceptedAnswer": {
-            "@type": "Answer",
-            "text": "Wallly prioritizes user safety with age verification (16+), advanced AI moderation, and enhanced spam protection to keep your chats clean. You can skip any conversation instantly if you feel uncomfortable. We use the latest safety technologies."
-          }
-        },
-        {
-          "@type": "Question",
-          "name": "Can I add friends on Wallly?",
-          "acceptedAnswer": {
-            "@type": "Answer",
-            "text": "Yes! Had a fun chat but skipped by accident? Find them in your chat history and add them as a friend. Turn strangers into friends and stay connected for future conversations."
-          }
-        }
-      ]
-    }
-    </script>
+    <!-- FAQPage schema moved to src/pages/Landing.tsx (only the homepage hosts FAQ content) -->
+
     <meta property="og:title" content="Wallly — Free Random Video Chat with Strangers">
   <meta name="twitter:title" content="Wallly — Free Random Video Chat with Strangers">
   <meta property="og:description" content="Free random video &amp; text chat to meet strangers worldwide. Share images, find friends, connect in seconds.">

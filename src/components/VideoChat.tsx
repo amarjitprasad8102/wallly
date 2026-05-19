@@ -566,7 +566,7 @@ const VideoChat = ({
                         >
                           {msg.imageUrl && (
                             <div className="p-1">
-                              <SecureImage src={msg.imageUrl} alt="Shared image" className="max-w-[200px] max-h-[200px] rounded-lg" />
+                              <SecureImage src={msg.imageUrl} alt="Image shared in chat" className="max-w-[200px] max-h-[200px] rounded-lg" />
                             </div>
                           )}
                           {msg.text && <p className="px-3 py-2 text-sm">{msg.text}</p>}
@@ -580,7 +580,7 @@ const VideoChat = ({
                 {imagePreview && (
                   <div className="px-3 py-2 border-t bg-muted/50">
                     <div className="relative inline-block">
-                      <img src={imagePreview} alt="Preview" className="h-16 rounded-lg object-cover" />
+                      <img src={imagePreview} alt="Selected image preview" className="h-16 rounded-lg object-cover" />
                       <Button size="icon" variant="destructive" className="absolute -top-2 -right-2 w-5 h-5" onClick={() => { setSelectedImage(null); setImagePreview(null); }}>
                         <X className="w-3 h-3" />
                       </Button>
@@ -700,7 +700,7 @@ const VideoChat = ({
                         >
                           {msg.imageUrl && (
                             <div className="p-1">
-                              <SecureImage src={msg.imageUrl} alt="Shared image" className="max-w-[200px] max-h-[200px] rounded-lg" />
+                              <SecureImage src={msg.imageUrl} alt="Image shared in chat" className="max-w-[200px] max-h-[200px] rounded-lg" />
                             </div>
                           )}
                           {msg.text && <p className="px-3 py-2 text-sm">{msg.text}</p>}
@@ -714,7 +714,7 @@ const VideoChat = ({
                 {imagePreview && (
                   <div className="px-4 py-2 border-t bg-muted/50">
                     <div className="relative inline-block">
-                      <img src={imagePreview} alt="Preview" className="h-16 rounded-lg object-cover" />
+                      <img src={imagePreview} alt="Selected image preview" className="h-16 rounded-lg object-cover" />
                       <Button size="icon" variant="destructive" className="absolute -top-2 -right-2 w-5 h-5" onClick={() => { setSelectedImage(null); setImagePreview(null); }}>
                         <X className="w-3 h-3" />
                       </Button>
