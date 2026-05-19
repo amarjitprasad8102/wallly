@@ -1438,7 +1438,7 @@ export default function Admin() {
                 </div>
                 {blogForm.image_url && blogForm.image_url !== '/placeholder.svg' && (
                   <div className="relative w-24 h-24 rounded-lg overflow-hidden border border-border">
-                    <img src={blogForm.image_url} alt="Preview" className="w-full h-full object-cover" />
+                    <img src={blogForm.image_url} alt="Selected image preview" className="w-full h-full object-cover" />
                     <Button
                       variant="destructive"
                       size="icon"

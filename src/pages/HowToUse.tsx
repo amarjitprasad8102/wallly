@@ -43,6 +43,11 @@ const HowToUse = () => {
         <meta name="description" content="Learn how to use Wallly in 5 easy steps. Guide to random video chat, connecting by ID & communities." />
         <meta name="keywords" content="how to use, user guide, random chat tutorial, video chat guide, connect by ID" />
         <link rel="canonical" href="https://wallly.in/howtouse" />
+        <meta property="og:title" content="How to Use Wallly - Random Video Chat Guide" />
+        <meta property="og:description" content="Step-by-step guide to random video chat, connecting by ID, and joining communities on Wallly." />
+        <meta property="og:url" content="https://wallly.in/howtouse" />
+        <meta property="og:type" content="article" />
+        
         
         <script type="application/ld+json">
           {JSON.stringify({

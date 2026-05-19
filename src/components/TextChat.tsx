@@ -450,7 +450,7 @@ const TextChat = ({
                   <div className="p-1">
                     <SecureImage 
                       src={msg.imageUrl} 
-                      alt="Shared image"
+                      alt="Image shared in chat"
                       className="max-w-[300px] max-h-[300px] rounded-xl"
                     />
                   </div>
@@ -491,7 +491,7 @@ const TextChat = ({
           <div className="relative inline-block">
             <img 
               src={imagePreview} 
-              alt="Preview" 
+              alt="Selected image preview" 
               className="h-20 rounded-lg object-cover"
             />
             <Button

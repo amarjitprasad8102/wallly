@@ -389,7 +389,7 @@ const ChatWithImageSupport = ({ userId, matchedUserId, sendSignal, onSignal, lea
                   {msg.from === 'you' ? 'You' : 'Stranger'}
                 </p>
                 {msg.imageUrl && (
-                  <img src={msg.imageUrl} alt="Shared" className="max-w-full rounded-lg mb-2" />
+                  <img src={msg.imageUrl} alt="Image shared in chat" className="max-w-full rounded-lg mb-2" />
                 )}
                 {msg.text && <p>{msg.text}</p>}
               </div>
@@ -401,7 +401,7 @@ const ChatWithImageSupport = ({ userId, matchedUserId, sendSignal, onSignal, lea
         <div className="bg-card rounded-2xl shadow-card p-4">
           {imagePreview && (
             <div className="relative inline-block mb-2">
-              <img src={imagePreview} alt="Preview" className="max-h-32 rounded-lg" />
+              <img src={imagePreview} alt="Selected image preview" className="max-h-32 rounded-lg" />
               <Button
                 size="sm"
                 variant="destructive"
