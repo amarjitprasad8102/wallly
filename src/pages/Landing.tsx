@@ -200,7 +200,7 @@ const Landing = () => {
                   <span className="text-[#5D5DFF]">12,847</span> vibing right now
                 </p>
               </div>
-              <p className="text-xs mt-4 uppercase tracking-widest font-semibold text-black/60">Free • No download • 16+</p>
+              <p className="text-xs mt-4 uppercase tracking-widest font-semibold text-black/75">Free • No download • 16+</p>
             </div>
           </section>
 
@@ -353,11 +353,11 @@ const Landing = () => {
                   <img src={logo} alt="Wallly — Random Video Chat" width="32" height="32" loading="lazy" className="w-8 h-8 border-2 border-white" />
                   <span style={heading} className="text-xl uppercase italic">Wallly</span>
                 </div>
-                <p className="text-sm text-white/70 max-w-xs">Where the walls end, you find a friend.</p>
+                <p className="text-sm text-white/85 max-w-xs">Where the walls end, you find a friend.</p>
               </div>
               <div>
                 <h3 style={heading} className="text-xs uppercase tracking-widest text-[#E4FF00] mb-3">Product</h3>
-                <ul className="space-y-2 text-sm text-white/70">
+                <ul className="space-y-2 text-sm text-white/85">
                   <li><button onClick={() => navigate('/auth')} className="hover:text-white">Video Chat</button></li>
                   <li><button onClick={() => navigate('/auth')} className="hover:text-white">Text Chat</button></li>
                   <li><button onClick={() => navigate('/premium')} className="hover:text-white">Premium</button></li>
@@ -366,7 +366,7 @@ const Landing = () => {
               </div>
               <div>
                 <h3 style={heading} className="text-xs uppercase tracking-widest text-[#FF72C0] mb-3">Resources</h3>
-                <ul className="space-y-2 text-sm text-white/70">
+                <ul className="space-y-2 text-sm text-white/85">
                   <li><button onClick={() => navigate('/howtouse')} className="hover:text-white">How to Use</button></li>
                   <li><button onClick={() => navigate('/blog')} className="hover:text-white">Blog</button></li>
                   <li><button onClick={() => navigate('/contact')} className="hover:text-white">Contact</button></li>
@@ -374,13 +374,13 @@ const Landing = () => {
               </div>
               <div>
                 <h3 style={heading} className="text-xs uppercase tracking-widest text-[#5D5DFF] mb-3">Legal</h3>
-                <ul className="space-y-2 text-sm text-white/70">
+                <ul className="space-y-2 text-sm text-white/85">
                   <li><button onClick={() => navigate('/privacy')} className="hover:text-white">Privacy</button></li>
                   <li><a href="mailto:help@corevia.in" className="hover:text-white">help@corevia.in</a></li>
                 </ul>
               </div>
             </div>
-            <div className="border-t border-white/20 pt-6 flex flex-col sm:flex-row justify-between gap-3 text-xs text-white/50">
+            <div className="border-t border-white/20 pt-6 flex flex-col sm:flex-row justify-between gap-3 text-xs text-white/80">
               <p>&copy; 2025 Wallly. 16+ only. Be kind.</p>
               <p>Made by <a href="https://corevia.in" rel="dofollow" target="_blank" className="text-white/80 hover:text-white">Corevia</a></p>
             </div>
